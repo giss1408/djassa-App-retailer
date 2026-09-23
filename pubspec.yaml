@@ -1,0 +1,42 @@
+name: djassa_merchant
+description: Djassa merchant app - record sales offline, sync when there is signal.
+publish_to: none
+
+# versionCode+versionName. Bump the build number on every release build.
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.5.2
+
+# Every dependency added here costs download size and attack surface on a
+# 2014-era handset. Justify each one in ARCHITECTURE.md before adding it.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management. No codegen.
+  flutter_riverpod: ^2.5.1
+
+  # Offline sale queue. Ships with Android, so it adds no bundled engine.
+  sqflite: ^2.3.3
+  path: ^1.9.0
+
+  # Access token storage in the Android Keystore, never in SharedPreferences.
+  flutter_secure_storage: ^9.2.2
+
+  # HTTP with explicit timeouts and gzip. `http` is thinner than dio and
+  # enough for a handful of endpoints.
+  http: ^1.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  # In-memory SQLite so the offline queue is tested against the real engine,
+  # not a mock that cannot reproduce a constraint violation.
+  sqflite_common_ffi: ^2.3.3
+
+flutter:
+  # Dropped deliberately: uses-material-design bundles the ~1.6MB Material
+  # icon font. We draw the few icons we need instead. See ARCHITECTURE.md.
+  uses-material-design: false

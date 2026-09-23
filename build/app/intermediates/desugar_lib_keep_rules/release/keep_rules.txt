@@ -1,0 +1,52 @@
+-keep class j$.util.Collection$-EL {
+  public static j$.util.stream.Stream stream(java.util.Collection);
+}
+-keep interface j$.util.Map {
+  public java.lang.Object compute(java.lang.Object,java.util.function.BiFunction);
+  public java.lang.Object computeIfAbsent(java.lang.Object,java.util.function.Function);
+  public java.lang.Object computeIfPresent(java.lang.Object,java.util.function.BiFunction);
+  public void forEach(java.util.function.BiConsumer);
+  public java.lang.Object merge(java.lang.Object,java.lang.Object,java.util.function.BiFunction);
+  public void replaceAll(java.util.function.BiFunction);
+}
+-keep class j$.util.Map$-CC {
+  public static java.lang.Object $default$compute(java.util.Map,java.lang.Object,java.util.function.BiFunction);
+  public static java.lang.Object $default$computeIfAbsent(java.util.Map,java.lang.Object,java.util.function.Function);
+  public static java.lang.Object $default$computeIfPresent(java.util.Map,java.lang.Object,java.util.function.BiFunction);
+  public static void $default$forEach(java.util.Map,java.util.function.BiConsumer);
+  public static java.lang.Object $default$merge(java.util.Map,java.lang.Object,java.lang.Object,java.util.function.BiFunction);
+  public static void $default$replaceAll(java.util.Map,java.util.function.BiFunction);
+}
+-keep class j$.util.Map$-EL {
+  public static java.lang.Object getOrDefault(java.util.Map,java.lang.Object,java.lang.Object);
+}
+-keep class j$.util.Objects {
+  public static boolean equals(java.lang.Object,java.lang.Object);
+  public static int hash(java.lang.Object[]);
+  public static java.lang.Object requireNonNull(java.lang.Object);
+}
+-keep class j$.util.concurrent.ConcurrentHashMap {
+  public <init>();
+  public <init>(java.util.Map);
+}
+-keep class j$.util.concurrent.ThreadLocalRandom {
+  public static j$.util.concurrent.ThreadLocalRandom current();
+}
+-keep class j$.util.function.Predicate$-CC {
+  public static java.util.function.Predicate $default$and(java.util.function.Predicate,java.util.function.Predicate);
+  public static java.util.function.Predicate $default$negate(java.util.function.Predicate);
+  public static java.util.function.Predicate $default$or(java.util.function.Predicate,java.util.function.Predicate);
+}
+-keep interface j$.util.stream.Stream {
+  public boolean anyMatch(java.util.function.Predicate);
+}
+-keep interface java.util.function.BiConsumer {
+}
+-keep interface java.util.function.BiFunction {
+}
+-keep interface java.util.function.Consumer {
+}
+-keep interface java.util.function.Function {
+}
+-keep interface java.util.function.Predicate {
+}

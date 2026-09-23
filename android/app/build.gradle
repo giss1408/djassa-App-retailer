@@ -1,0 +1,109 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+// Release signing is read from android/key.properties, which is gitignored and
+// never committed. Without it, a release build is unsigned on purpose: we do not
+// fall back to the debug key, because a debug-signed APK is trivially replaced
+// by an attacker's build on the same device.
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+
+android {
+    namespace = "ci.djassa.djassa_merchant"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+        // Needed for java.time and other desugared APIs on API 21.
+        coreLibraryDesugaringEnabled = true
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        applicationId = "ci.djassa.djassa_merchant"
+        // API 21 (Android 5.0) reaches 2014-era budget handsets, which are
+        // primary devices in our markets, not edge cases.
+        minSdk = 21
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+
+        // Ship only the languages we translate. Drops unused AndroidX strings.
+        resourceConfigurations += ["fr", "en"]
+    }
+
+    // One APK per ABI keeps each download near 7-9MB instead of one fat binary.
+    // Sideloading over WhatsApp is common where Play Store use is low, so also
+    // build a universal APK and let the distributor choose.
+    splits {
+        abi {
+            enable = true
+            reset()
+            include "armeabi-v7a", "arm64-v8a"
+            universalApk = true
+        }
+    }
+
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias = keystoreProperties["keyAlias"]
+                keyPassword = keystoreProperties["keyPassword"]
+                storeFile = keystoreProperties["storeFile"] ? file(keystoreProperties["storeFile"]) : null
+                storePassword = keystoreProperties["storePassword"]
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            signingConfig = keystorePropertiesFile.exists() ? signingConfigs.release : null
+            // No merchant handset is x86; shipping that ABI would add ~12MB of
+            // dead weight to the universal APK. Debug builds keep every ABI so
+            // the x86_64 emulator still works.
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
+            // Strip unreachable Dart-facing Java/Kotlin and unused resources.
+            minifyEnabled = true
+            shrinkResources = true
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            // Never ship a debuggable release: it exposes the app's data
+            // directory, including the sale queue, over adb on any device.
+            debuggable = false
+        }
+    }
+
+    // Reproducible-ish builds: no timestamps baked into the APK.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
+    packagingOptions {
+        // Debug symbols are uploaded separately, not shipped to handsets.
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+}
+
+dependencies {
+    coreLibraryDesugaring "com.android.tools:desugar_jdk_libs:2.0.4"
+}
+
+flutter {
+    source = "../.."
+}

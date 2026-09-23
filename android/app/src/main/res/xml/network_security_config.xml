@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TLS policy for the merchant app.
+
+  base-config applies to every connection. Cleartext is refused outright: on a
+  shared 2G/3G network in a market, a downgraded request leaks a bearer token
+  and a merchant's full sales history to anyone on the same cell.
+
+  On API 21-23 the system trust store is used without the user store, so a
+  locally installed root cannot silently intercept traffic. We do not pin a
+  certificate here: pinning shipped in an APK that merchants update rarely is
+  an outage waiting to happen. Pinning belongs in the client, keyed to a
+  rotation schedule, once the production hostname and its CA are fixed.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <!-- Debug builds only: lets a developer point the app at a local backend
+         over the emulator loopback. This file is never part of a release
+         build's trust decisions because debug-overrides is ignored unless the
+         APK is debuggable. -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
