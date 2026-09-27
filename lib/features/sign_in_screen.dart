@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/auth/auth_repository.dart';
+import '../core/config/env.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
+import 'about_name_screen.dart';
 
 /// Sign-in.
 ///
@@ -20,8 +22,9 @@ class SignInScreen extends ConsumerStatefulWidget {
 }
 
 class _SignInScreenState extends ConsumerState<SignInScreen> {
-  final _username = TextEditingController();
-  final _password = TextEditingController();
+  // Prefilled only in debug builds given DJASSA_DEV_* defines. See Env.
+  final _username = TextEditingController(text: Env.devUsername);
+  final _password = TextEditingController(text: Env.devPassword);
   bool _busy = false;
   String? _error;
 
@@ -106,6 +109,15 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
                   FilledButton(
                     onPressed: _busy ? null : _submit,
                     child: Text(_busy ? Strings.signingIn : Strings.signIn),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => const AboutNameScreen(),
+                      ),
+                    ),
+                    child: const Text(Strings.aboutNameLink),
                   ),
                 ],
               ),

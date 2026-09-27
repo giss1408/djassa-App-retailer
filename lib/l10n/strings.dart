@@ -65,6 +65,24 @@ class Strings {
   static const stateRejected = 'Refusee';
   static const retry = 'Reessayer';
 
+  // What "djassa" means. Accents dropped, as everywhere in this file.
+  static const aboutNameLink = 'Que veut dire djassa ?';
+  static const aboutNameTitle = 'Le mot djassa';
+  static const aboutNameGrammar = '/dja.sa/ - nom';
+  static const aboutNameOrigin = 'Nouchi, la langue de la rue a Abidjan';
+  static const aboutNameSense1 =
+      'Marche informel de rue : le marche spontane, au bord de la route ou '
+      'dans le quartier, ou l\'on vend de tout, des habits de seconde main aux '
+      'telephones, souvent sans etal officiel ni autorisation.';
+  static const aboutNameSense2 =
+      'Par extension, la rue, le quartier : le monde de l\'economie '
+      'informelle et de la debrouille de tous les jours. Un milieu dur et '
+      'vivant, ou l\'on s\'en sort grace aux petits commerces, aux affaires et '
+      'au sens de la rue.';
+  static const aboutNameWhy =
+      'Djassa est fait pour les commercants du djassa : votre activite est '
+      'bien reelle, l\'application en garde la preuve.';
+
   /// Sale categories. Kept short because the backend caps `type` at 32 chars
   /// and a merchant should not be typing a category at the counter.
   static const saleTypes = <String, String>{

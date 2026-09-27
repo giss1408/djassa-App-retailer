@@ -7,6 +7,7 @@ import '../core/model/sale.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/money_text.dart';
+import 'about_name_screen.dart';
 import 'record_sale_screen.dart';
 
 /// What the merchant sees on opening the app.
@@ -158,6 +159,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             }
                           : null,
                     )),
+              const SizedBox(height: 32),
+              const _AboutNameLink(),
             ],
           ),
         ),
@@ -173,6 +176,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             s.recordedAt.month == today.month &&
             s.recordedAt.day == today.day)
         .length;
+  }
+}
+
+class _AboutNameLink extends StatelessWidget {
+  const _AboutNameLink();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: TextButton(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AboutNameScreen()),
+        ),
+        child: const Text(Strings.aboutNameLink),
+      ),
+    );
   }
 }
 

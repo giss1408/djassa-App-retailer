@@ -26,4 +26,10 @@ adb reverse "tcp:$PORT" "tcp:$PORT"
 
 # Cleartext to localhost is permitted in debug builds only, and only for
 # loopback (see android/app/src/debug/res/xml/network_security_config.xml).
-exec flutter run --dart-define=DJASSA_API_BASE="http://localhost:$PORT"
+#
+# The sign-in form is prefilled with the backend's demo user (app/api/auth.py).
+# Override with DJASSA_DEV_USERNAME / DJASSA_DEV_PASSWORD in the environment.
+exec flutter run \
+  --dart-define=DJASSA_API_BASE="http://localhost:$PORT" \
+  --dart-define=DJASSA_DEV_USERNAME="${DJASSA_DEV_USERNAME:-demo}" \
+  --dart-define=DJASSA_DEV_PASSWORD="${DJASSA_DEV_PASSWORD:-demo123}"
