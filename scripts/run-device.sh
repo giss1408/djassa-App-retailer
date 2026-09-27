@@ -12,7 +12,7 @@
 # (10.0.2.2 is emulator-only and does NOT work on a physical device.)
 set -euo pipefail
 
-PORT="${1:-8001}"
+PORT="${1:-8002}"
 cd "$(dirname "$0")/.."
 
 if ! adb get-state >/dev/null 2>&1; then

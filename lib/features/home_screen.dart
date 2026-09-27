@@ -8,6 +8,7 @@ import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/money_text.dart';
 import 'about_name_screen.dart';
+import 'deals_screen.dart';
 import 'record_sale_screen.dart';
 
 /// What the merchant sees on opening the app.
@@ -141,6 +142,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               FilledButton(
                 onPressed: _openRecordSale,
                 child: const Text(Strings.recordSale),
+              ),
+              const SizedBox(height: 12),
+              // Second to recording a sale: deals bring customers in, but the
+              // sale at the counter always comes first.
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DealsScreen()),
+                ),
+                child: const Text(Strings.myDeals),
               ),
               const SizedBox(height: 28),
               Text(Strings.recentSales, style: text.titleMedium),
