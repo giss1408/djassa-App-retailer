@@ -1,12 +1,12 @@
 # Djassa merchant app — architecture
 
-Flutter app for the [Djassa](../djassa) backend. One audience: the **merchant**.
+Flutter app for the [Djassa](../djassa-BE) backend. One audience: the **merchant**.
 It records sales on a cheap Android phone with unreliable connectivity, and
 syncs when there is signal.
 
 ## Why one app
 
-`../djassa/docs/PRODUCT-CONCEPT.md` sets the boundary:
+`../djassa-BE/docs/PRODUCT-CONCEPT.md` sets the boundary:
 
 > Customers also need a simple way to earn benefits from repeat purchases
 > **without installing a heavy application** [...] SMS, WhatsApp, QR codes,
@@ -33,7 +33,7 @@ rewrite.
 `/api/payments` in the backend **initiates** a payment and returns a
 `checkout_url`; the money moves inside Orange Money, Wave, or MTN MoMo. There is
 no wallet model, no balance endpoint, and no user-to-user transfer in
-`../djassa/backend-api/app/models.py`. The only working adapter today is
+`../djassa-BE/backend-api/app/models.py`. The only working adapter today is
 `SandboxPaymentProvider`, which returns `https://sandbox.invalid/` URLs; a live
 provider name resolves to `ConfiguredProviderUnavailable` and raises.
 
@@ -179,7 +179,7 @@ Checked against the running backend, not just read from the source:
 
 ## Backend facts that shape the client
 
-Read from `../djassa/backend-api` as of this writing:
+Read from `../djassa-BE/backend-api` as of this writing:
 
 - **Auth is a hardcoded demo user** (`demo` / `demo123`) in `app/api/auth.py`.
   There is no registration, no OTP, no refresh token. `POST /api/token` takes

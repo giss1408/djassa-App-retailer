@@ -7,6 +7,8 @@ import '../core/model/sale.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/money_text.dart';
+import 'about_name_screen.dart';
+import 'deals_screen.dart';
 import 'record_sale_screen.dart';
 
 /// What the merchant sees on opening the app.
@@ -141,6 +143,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onPressed: _openRecordSale,
                 child: const Text(Strings.recordSale),
               ),
+              const SizedBox(height: 12),
+              // Second to recording a sale: deals bring customers in, but the
+              // sale at the counter always comes first.
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const DealsScreen()),
+                ),
+                child: const Text(Strings.myDeals),
+              ),
               const SizedBox(height: 28),
               Text(Strings.recentSales, style: text.titleMedium),
               const SizedBox(height: 8),
@@ -158,6 +170,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             }
                           : null,
                     )),
+              const SizedBox(height: 32),
+              const _AboutNameLink(),
             ],
           ),
         ),
@@ -173,6 +187,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             s.recordedAt.month == today.month &&
             s.recordedAt.day == today.day)
         .length;
+  }
+}
+
+class _AboutNameLink extends StatelessWidget {
+  const _AboutNameLink();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: TextButton(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AboutNameScreen()),
+        ),
+        child: const Text(Strings.aboutNameLink),
+      ),
+    );
   }
 }
 

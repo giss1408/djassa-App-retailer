@@ -12,7 +12,7 @@
 # (10.0.2.2 is emulator-only and does NOT work on a physical device.)
 set -euo pipefail
 
-PORT="${1:-8001}"
+PORT="${1:-8002}"
 cd "$(dirname "$0")/.."
 
 if ! adb get-state >/dev/null 2>&1; then
@@ -26,4 +26,10 @@ adb reverse "tcp:$PORT" "tcp:$PORT"
 
 # Cleartext to localhost is permitted in debug builds only, and only for
 # loopback (see android/app/src/debug/res/xml/network_security_config.xml).
-exec flutter run --dart-define=DJASSA_API_BASE="http://localhost:$PORT"
+#
+# The sign-in form is prefilled with the backend's demo user (app/api/auth.py).
+# Override with DJASSA_DEV_USERNAME / DJASSA_DEV_PASSWORD in the environment.
+exec flutter run \
+  --dart-define=DJASSA_API_BASE="http://localhost:$PORT" \
+  --dart-define=DJASSA_DEV_USERNAME="${DJASSA_DEV_USERNAME:-demo}" \
+  --dart-define=DJASSA_DEV_PASSWORD="${DJASSA_DEV_PASSWORD:-demo123}"

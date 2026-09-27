@@ -2,7 +2,7 @@
 
 Flutter app for merchants: record a sale on a cheap Android phone, even with no
 signal, and sync when there is one. Talks to the FastAPI backend in
-[`../djassa`](../djassa).
+[`../djassa-BE`](../djassa-BE).
 
 Two constraints shape every decision, and they are not negotiable:
 
@@ -17,7 +17,7 @@ a network call. It records why each trade was made.
 Start the backend first:
 
 ```bash
-cd ../djassa/backend-api
+cd ../djassa-BE/backend-api
 docker compose -f docker-compose.dev.yml up -d db redis
 export DJASSA_SECRET_KEY=dev-only-not-a-real-secret
 export DATABASE_URL=postgresql+asyncpg://djassa:djassa@127.0.0.1:5432/djassa

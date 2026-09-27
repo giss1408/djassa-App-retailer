@@ -25,6 +25,18 @@ class Env {
     defaultValue: 'http://10.0.2.2:8000',
   );
 
+  /// Sign-in prefill for development, e.g.
+  ///   --dart-define=DJASSA_DEV_USERNAME=demo
+  ///   --dart-define=DJASSA_DEV_PASSWORD=demo123
+  /// Empty unless passed, and ignored in a release build (see
+  /// `devUsername`/`devPassword`), so no credential can ship in an APK by
+  /// accident.
+  static const String _devUsername = String.fromEnvironment('DJASSA_DEV_USERNAME');
+  static const String _devPassword = String.fromEnvironment('DJASSA_DEV_PASSWORD');
+
+  static String get devUsername => isRelease ? '' : _devUsername;
+  static String get devPassword => isRelease ? '' : _devPassword;
+
   /// Wall-clock budget for a single request. Deliberately generous: a 2G
   /// round trip in a market can take several seconds, and failing early just
   /// makes the merchant retry and spend the bytes twice.

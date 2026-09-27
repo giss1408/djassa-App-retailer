@@ -126,6 +126,11 @@ class ApiClient {
     return _asObject(decoded);
   }
 
+  /// DELETE a resource. Expects 204; anything in the body is ignored.
+  Future<void> delete(String path) async {
+    await _send('DELETE', path, authenticated: true);
+  }
+
   /// POST an `application/x-www-form-urlencoded` body.
   ///
   /// Exists for one endpoint: `/api/token` takes an OAuth2 password form, not
