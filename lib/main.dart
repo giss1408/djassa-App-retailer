@@ -6,6 +6,7 @@ import 'core/providers.dart';
 import 'features/home_screen.dart';
 import 'features/sign_in_screen.dart';
 import 'ui/theme.dart';
+import 'ui/widgets.dart';
 
 void main() {
   // Refuses to launch a release build pointed at a cleartext host.
@@ -64,8 +65,11 @@ class _Splash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: DjassaColors.orangeDeep,
+      body: Center(
+        child: Text('d', style: serifStyle(64, color: Colors.white, height: 0.9)),
+      ),
     );
   }
 }
@@ -91,12 +95,29 @@ class _StartupFailure extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Djassa', style: text.headlineMedium),
-              const SizedBox(height: 12),
-              Text(
-                "Le telephone n'a pas pu ouvrir la base locale. "
-                'Redemarrez l\'application.',
-                style: text.bodyMedium,
+              SoftCard(
+                color: DjassaColors.sand,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.error_outline_rounded, color: DjassaColors.danger),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Djassa', style: text.headlineSmall),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Le telephone n'a pas pu ouvrir la base locale. "
+                            'Redemarrez l\'application.',
+                            style: text.bodyMedium,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               Text('$error', style: text.bodySmall),

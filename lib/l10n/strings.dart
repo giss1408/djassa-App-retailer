@@ -21,6 +21,7 @@ class Strings {
   const Strings._();
 
   // Sign-in
+  static const signInTitle = 'Djassa';
   static const signInSubtitle = 'Espace marchand';
   static const username = 'Identifiant';
   static const password = 'Mot de passe';
@@ -28,23 +29,32 @@ class Strings {
   static const signingIn = 'Connexion...';
   static const signInRejected = 'Identifiant ou mot de passe incorrect.';
   static const signOut = 'Se deconnecter';
+  static const signOutConfirm = 'Se deconnecter ?';
+  static const signOutConfirmHint = 'Les ventes non envoyees restent sur ce telephone.';
 
   // Home
   static const today = "Aujourd'hui";
   static const salesToday = 'ventes du jour';
   static const noSalesYet = 'Aucune vente enregistree aujourd\'hui.';
+  static const noSalesYetHint = 'Vos ventes du jour et leur montant total apparaitront ici.';
   static const recordSale = 'Enregistrer une vente';
   static const recentSales = 'Dernieres ventes';
+  static const seeAll = 'Tout voir';
+  static const menu = 'Menu';
+  static const greeting = 'Bonjour';
+  static const homeTagline = 'Espace marchand';
 
   // Sync status. The merchant needs to know what has left the phone and what
   // has not, in words, not a spinner.
   static const allSent = 'Tout est envoye';
   static const waitingToSend = 'en attente d\'envoi';
+  static const waitingToSendOne = '1 vente en attente d\'envoi';
   static const sendNow = 'Envoyer maintenant';
   static const sending = 'Envoi...';
   static const sentOk = 'Ventes envoyees';
   static const noConnection = 'Pas de connexion. Les ventes restent sur le telephone.';
   static const needsAttention = 'a verifier';
+  static const needsAttentionOne = '1 vente a verifier';
 
   // Record a sale
   static const amount = 'Montant';
@@ -64,6 +74,7 @@ class Strings {
   static const stateSynced = 'Envoyee';
   static const stateRejected = 'Refusee';
   static const retry = 'Reessayer';
+  static const loadFailed = 'Impossible de charger. Verifiez votre connexion.';
 
   // Deals ("bons plans") shown to customers in the Djassa app.
   static const myDeals = 'Mes bons plans';
@@ -85,6 +96,7 @@ class Strings {
   static const sponsored = 'Mis en avant par Djassa';
   static const endsOn = 'Jusqu\'au';
   static const maxDealsHint = 'Maximum 5 bons plans en meme temps.';
+  static const maxDealsReached = 'Vous avez deja 5 bons plans en cours.';
 
   // New deal
   static const dealTitle = 'Titre de l\'offre';
@@ -121,6 +133,13 @@ class Strings {
 
   /// "14 oct." for deal end dates.
   static String shortDate(DateTime t) => '${t.day} ${_months[t.month - 1]}';
+
+  /// "14:32" for a sale's time in the recent list.
+  static String shortTime(DateTime t) {
+    final h = t.hour.toString().padLeft(2, '0');
+    final m = t.minute.toString().padLeft(2, '0');
+    return '$h:$m';
+  }
 
   // What "djassa" means. Accents dropped, as everywhere in this file.
   static const aboutNameLink = 'Que veut dire djassa ?';

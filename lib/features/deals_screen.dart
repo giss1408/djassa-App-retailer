@@ -6,11 +6,16 @@ import '../core/model/money.dart';
 import '../core/net/api_exception.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
-import '../ui/back_button.dart';
 import '../ui/money_text.dart';
+import '../ui/theme.dart';
+import '../ui/widgets.dart';
 import 'new_deal_screen.dart';
 
 /// The merchant's live offers, and the way to publish a new one.
+///
+/// Logic is unchanged from the app's original screen: same load, same confirm
+/// dialog before ending a deal, same error message that quotes the server's
+/// own words rather than a generic failure.
 class DealsScreen extends ConsumerStatefulWidget {
   const DealsScreen({super.key});
 
@@ -78,37 +83,48 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final deals = _deals;
+    final atLimit = deals != null && deals.length >= 5;
 
     return Scaffold(
-      appBar: AppBar(leading: const DjassaBackButton(), title: const Text(Strings.myDeals)),
+      appBar: AppBar(title: const Text(Strings.myDeals)),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _load,
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
-              Text(Strings.myDealsIntro, style: text.bodySmall),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.info_outline_rounded, size: 17, color: DjassaColors.muted),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text(Strings.myDealsIntro, style: text.bodySmall)),
+                ],
+              ),
               const SizedBox(height: 20),
-              FilledButton(onPressed: _new, child: const Text(Strings.newDeal)),
+              FilledButton.icon(
+                onPressed: atLimit ? null : _new,
+                icon: const Icon(Icons.add_rounded),
+                label: const Text(Strings.newDeal),
+              ),
               const SizedBox(height: 8),
-              Text(Strings.maxDealsHint, style: text.bodySmall),
+              Text(
+                atLimit ? Strings.maxDealsReached : Strings.maxDealsHint,
+                style: text.bodySmall?.copyWith(color: atLimit ? DjassaColors.orangeDeep : null),
+              ),
               const SizedBox(height: 24),
-              if (_error != null) ...[
-                Text(_error!, style: text.bodyMedium),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(onPressed: _load, child: const Text(Strings.retry)),
-                ),
-              ] else if (deals == null)
-                const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator()))
-              else if (deals.isEmpty) ...[
-                Text(Strings.noDeals, style: text.titleMedium),
-                const SizedBox(height: 6),
-                Text(Strings.noDealsHint, style: text.bodySmall),
-              ] else
+              if (_error != null)
+                LoadError(onRetry: _load, message: _error!, retryLabel: Strings.retry)
+              else if (deals == null)
+                const LoadingCards(count: 3)
+              else if (deals.isEmpty)
+                const EmptyState(icon: Icons.local_offer_outlined, title: Strings.noDeals, message: Strings.noDealsHint)
+              else
                 for (final d in deals)
-                  DealTile(deal: d, ending: _ending == d.id, onEnd: _ending == null ? () => _end(d) : null),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: DealTile(deal: d, ending: _ending == d.id, onEnd: _ending == null ? () => _end(d) : null),
+                  ),
             ],
           ),
         ),
@@ -128,14 +144,7 @@ class DealTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-      ),
+    return SoftCard(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -144,17 +153,41 @@ class DealTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (deal.isFeatured) ...[
-                  Text(Strings.sponsored, style: text.labelMedium?.copyWith(color: colors.primary)),
-                  const SizedBox(height: 4),
+                  const Tag(Strings.sponsored, icon: Icons.bolt_rounded, color: DjassaColors.orangeDeep, background: DjassaColors.orangeTint),
+                  const SizedBox(height: 8),
                 ],
                 Text(deal.title, style: text.titleMedium),
                 const SizedBox(height: 4),
-                Text(dealOffer(deal.discountPercent, deal.price, deal.originalPrice), style: text.bodyMedium),
-                Text('${Strings.endsOn} ${Strings.shortDate(deal.endsAt)}', style: text.bodySmall),
+                Text(dealOffer(deal.discountPercent, deal.price, deal.originalPrice),
+                    style: text.bodyMedium?.copyWith(color: DjassaColors.orangeDeep, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    // Flexible: this Row sits in an Expanded column next to a
+                    // TextButton whose own width is fixed, so the text here
+                    // must be able to shrink rather than push past the card's
+                    // edge — the bug a first pass at this row shipped with.
+                    Flexible(
+                      child: Text(
+                        '${Strings.endsOn} ${Strings.shortDate(deal.endsAt)}',
+                        style: text.bodySmall,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          TextButton(onPressed: onEnd, child: Text(ending ? '...' : Strings.endDeal)),
+          TextButton(
+            onPressed: onEnd,
+            child: ending
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Text(Strings.endDeal),
+          ),
         ],
       ),
     );

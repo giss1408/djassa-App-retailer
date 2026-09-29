@@ -7,6 +7,8 @@ import '../core/model/sale.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/money_text.dart';
+import '../ui/theme.dart';
+import '../ui/widgets.dart';
 import 'about_name_screen.dart';
 import 'deals_screen.dart';
 import 'record_sale_screen.dart';
@@ -22,6 +24,11 @@ import 'record_sale_screen.dart';
 /// Question 2 is why the queue is shown in plain words rather than hidden behind
 /// a spinner. A merchant who cannot tell what reached the server will not trust
 /// the app with their books.
+///
+/// The logic below is unchanged from the app's original screen: same load
+/// order, same delayed re-read after recording a sale (to catch up with the
+/// background sync it deliberately does not await), same honest "offline is
+/// not an error" framing. Only the presentation changed.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -106,74 +113,149 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await _load();
   }
 
+  Future<void> _confirmSignOut() async {
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(Strings.signOutConfirm),
+        content: const Text(Strings.signOutConfirmHint),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text(Strings.cancel)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text(Strings.signOut)),
+        ],
+      ),
+    );
+    if (sure == true) ref.read(sessionProvider.notifier).signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final username = ref.watch(sessionProvider).username;
+    final name = username == null || username.isEmpty ? null : '${username[0].toUpperCase()}${username.substring(1)}';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Djassa'),
-        actions: [
-          TextButton(
-            onPressed: () => ref.read(sessionProvider.notifier).signOut(),
-            child: const Text(Strings.signOut),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _load,
-          child: ListView(
-            padding: const EdgeInsets.all(20),
-            children: [
-              _TodayCard(total: _total, count: _todayCount, loading: _loading),
-              const SizedBox(height: 16),
-              _QueueBanner(
-                pending: _pending,
-                rejected: _rejected,
-                syncing: _syncing,
-                onSync: _sync,
-              ),
-              if (_notice != null) ...[
-                const SizedBox(height: 12),
-                Text(_notice!, style: text.bodySmall),
-              ],
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _openRecordSale,
-                child: const Text(Strings.recordSale),
-              ),
-              const SizedBox(height: 12),
-              // Second to recording a sale: deals bring customers in, but the
-              // sale at the counter always comes first.
-              OutlinedButton(
-                style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const DealsScreen()),
+      body: RefreshIndicator(
+        onRefresh: _load,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            // Same brand header as the customer app's home tab: greeting,
+            // wordmark-style initial, and the day's total riding over the
+            // gradient's bottom edge.
+            Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 54),
+                  child: PatternedSurface(
+                    gradient: DjassaColors.headerGradient,
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(DjassaRadius.xl + 4)),
+                    padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 14, 12, 84),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(Strings.greeting.toUpperCase(),
+                                  style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.4)),
+                              const SizedBox(height: 2),
+                              Text(name ?? 'Djassa', style: serifStyle(36, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              const SizedBox(height: 4),
+                              Text(Strings.homeTagline, style: TextStyle(color: Colors.white.withOpacity(0.88), fontSize: 13.5)),
+                            ],
+                          ),
+                        ),
+                        _AccountMenu(initial: name?[0] ?? 'D', onSignOut: _confirmSignOut),
+                      ],
+                    ),
+                  ),
                 ),
-                child: const Text(Strings.myDeals),
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  bottom: 0,
+                  child: _TodayCard(total: _total, count: _todayCount, loading: _loading),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 110),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Sync state stays in plain words, not a spinner — the one
+                  // rule this app cannot trade away for a nicer visual, since
+                  // it is what makes a merchant trust the app with their books.
+                  _QueueBanner(pending: _pending, rejected: _rejected, syncing: _syncing, onSync: _sync),
+                  if (_notice != null) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_outline_rounded, size: 16, color: DjassaColors.success),
+                        const SizedBox(width: 6),
+                        Expanded(child: Text(_notice!, style: text.bodySmall)),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.point_of_sale_rounded,
+                          label: Strings.recordSale,
+                          color: Colors.white,
+                          background: DjassaColors.orangeDeep,
+                          onTap: _openRecordSale,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.local_offer_rounded,
+                          label: Strings.myDeals,
+                          color: DjassaColors.orangeDeep,
+                          background: DjassaColors.orangeTint,
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealsScreen())),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+                  const SectionHeader(Strings.recentSales),
+                  if (_recent.isEmpty && !_loading)
+                    const EmptyState(
+                      icon: Icons.receipt_long_outlined,
+                      title: Strings.noSalesYet,
+                      message: Strings.noSalesYetHint,
+                    )
+                  else if (_loading)
+                    const LoadingCards(count: 3)
+                  else
+                    SoftCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: Column(
+                        children: [
+                          for (final sale in _recent)
+                            _SaleRow(
+                              sale: sale,
+                              onRetry: sale.syncState == SaleSyncState.rejected
+                                  ? () async {
+                                      await ref.read(saleRepositoryProvider).retryRejected(sale.localId!);
+                                      await _sync();
+                                    }
+                                  : null,
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 28),
-              Text(Strings.recentSales, style: text.titleMedium),
-              const SizedBox(height: 8),
-              if (_recent.isEmpty && !_loading)
-                Text(Strings.noSalesYet, style: text.bodySmall)
-              else
-                ..._recent.map((sale) => _SaleRow(
-                      sale: sale,
-                      onRetry: sale.syncState == SaleSyncState.rejected
-                          ? () async {
-                              await ref
-                                  .read(saleRepositoryProvider)
-                                  .retryRejected(sale.localId!);
-                              await _sync();
-                            }
-                          : null,
-                    )),
-              const SizedBox(height: 32),
-              const _AboutNameLink(),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -181,37 +263,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   int get _todayCount {
     final today = DateTime.now();
-    return _recent
-        .where((s) =>
-            s.recordedAt.year == today.year &&
-            s.recordedAt.month == today.month &&
-            s.recordedAt.day == today.day)
-        .length;
+    return _recent.where((s) => s.recordedAt.year == today.year && s.recordedAt.month == today.month && s.recordedAt.day == today.day).length;
   }
 }
 
-class _AboutNameLink extends StatelessWidget {
-  const _AboutNameLink();
+/// Initial in a translucent disc; opens sign-out and the name explainer.
+/// Same shape as the customer app's account menu.
+class _AccountMenu extends StatelessWidget {
+  const _AccountMenu({required this.initial, required this.onSignOut});
+
+  final String initial;
+  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: TextButton(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const AboutNameScreen()),
+    return PopupMenuButton<String>(
+      tooltip: Strings.menu,
+      offset: const Offset(0, 52),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DjassaRadius.md)),
+      onSelected: (v) {
+        if (v == 'about') {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutNameScreen()));
+        } else if (v == 'logout') {
+          onSignOut();
+        }
+      },
+      itemBuilder: (_) => const [
+        PopupMenuItem(
+          value: 'about',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.auto_stories_outlined), title: Text(Strings.aboutNameLink)),
         ),
-        child: const Text(Strings.aboutNameLink),
+        PopupMenuItem(
+          value: 'logout',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.logout_rounded), title: Text(Strings.signOut)),
+        ),
+      ],
+      child: Container(
+        width: 44,
+        height: 44,
+        margin: const EdgeInsets.only(top: 4, right: 4),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.18),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withOpacity(0.35), width: 1.5),
+        ),
+        child: Text(initial.toUpperCase(), style: serifStyle(22, color: Colors.white, height: 1)),
       ),
     );
   }
 }
 
 class _TodayCard extends StatelessWidget {
-  const _TodayCard({
-    required this.total,
-    required this.count,
-    required this.loading,
-  });
+  const _TodayCard({required this.total, required this.count, required this.loading});
 
   final Money? total;
   final int count;
@@ -219,47 +323,46 @@ class _TodayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return PatternedSurface(
+      gradient: DjassaColors.loyaltyGradient,
+      borderRadius: BorderRadius.circular(DjassaRadius.lg),
+      boxShadow: djassaShadowStrong,
+      patternOpacity: 0.07,
+      padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
+      child: Row(
         children: [
-          Text(Strings.today, style: text.labelMedium),
-          const SizedBox(height: 6),
-          Text(
-            loading
-                ? '...'
-                : total == null
-                    ? formatMoney(Money.fromMinor(0, 'XOF'))
-                    : formatMoney(total!),
-            // Deliberately the largest thing on the screen: it is the number
-            // the merchant opens the app to see.
-            style: text.headlineMedium,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(Strings.today.toUpperCase(),
+                    style: TextStyle(color: Colors.white.withOpacity(0.72), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+                const SizedBox(height: 4),
+                // Deliberately the largest thing on the screen: it is the
+                // number the merchant opens the app to see.
+                Text(
+                  loading ? '...' : formatMoney(total ?? Money.fromMinor(0, 'XOF')),
+                  style: serifStyle(38, color: Colors.white, height: 1),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text('$count ${Strings.salesToday}',
+                    style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 13.5, fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
-          const SizedBox(height: 2),
-          Text('$count ${Strings.salesToday}', style: text.bodySmall),
         ],
       ),
     );
   }
 }
 
-/// Tells the merchant, in words, what is still on the phone.
+/// Tells the merchant, in words, what is still on the phone. Unchanged rule
+/// from the app's original banner: state is a word, not a colour, because a
+/// cheap screen in sunlight washes hues out and a merchant may be colour-blind.
 class _QueueBanner extends StatelessWidget {
-  const _QueueBanner({
-    required this.pending,
-    required this.rejected,
-    required this.syncing,
-    required this.onSync,
-  });
+  const _QueueBanner({required this.pending, required this.rejected, required this.syncing, required this.onSync});
 
   final int pending;
   final int rejected;
@@ -271,30 +374,83 @@ class _QueueBanner extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     if (pending == 0 && rejected == 0) {
-      return Text(Strings.allSent, style: text.bodySmall);
+      return Row(
+        children: [
+          const Icon(Icons.check_circle_rounded, size: 18, color: DjassaColors.success),
+          const SizedBox(width: 8),
+          Text(Strings.allSent, style: text.bodyMedium),
+        ],
+      );
     }
 
-    return Row(
-      children: [
-        Expanded(
+    return SoftCard(
+      color: rejected > 0 ? const Color(0xFFFDE4E4) : DjassaColors.sand,
+      padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
+      child: Row(
+        children: [
+          Icon(
+            rejected > 0 ? Icons.error_outline_rounded : Icons.cloud_upload_outlined,
+            color: rejected > 0 ? DjassaColors.danger : DjassaColors.orangeDeep,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (pending > 0) Text(pending == 1 ? Strings.waitingToSendOne : '$pending ${Strings.waitingToSend}', style: text.bodyMedium),
+                if (rejected > 0)
+                  Text(rejected == 1 ? Strings.needsAttentionOne : '$rejected ${Strings.needsAttention}',
+                      style: text.bodySmall?.copyWith(color: DjassaColors.danger)),
+              ],
+            ),
+          ),
+          if (pending > 0)
+            TextButton(
+              onPressed: syncing ? null : onSync,
+              child: Text(syncing ? Strings.sending : Strings.sendNow),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Icon tile for the two things a merchant does most: record a sale, manage
+/// deals. Same shape as the customer app's home-tab quick actions.
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({required this.icon, required this.label, required this.onTap, required this.color, required this.background});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: background,
+      borderRadius: BorderRadius.circular(DjassaRadius.md),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(DjassaRadius.md),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (pending > 0)
-                Text('$pending ${Strings.waitingToSend}',
-                    style: text.bodyMedium),
-              if (rejected > 0)
-                Text('$rejected ${Strings.needsAttention}',
-                    style: text.bodySmall),
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: color),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ],
           ),
         ),
-        if (pending > 0)
-          TextButton(
-            onPressed: syncing ? null : onSync,
-            child: Text(syncing ? Strings.sending : Strings.sendNow),
-          ),
-      ],
+      ),
     );
   }
 }
@@ -308,44 +464,42 @@ class _SaleRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
 
-    // State is carried by a word, never by colour alone: a merchant may be
-    // colour-blind, and a cheap screen in sunlight washes hues out anyway.
-    final (label, color) = switch (sale.syncState) {
-      SaleSyncState.synced => (Strings.stateSynced, colors.onSurfaceVariant),
-      SaleSyncState.pending => (Strings.statePending, colors.onSurface),
-      SaleSyncState.rejected => (Strings.stateRejected, colors.error),
+    // State is carried by a word and an icon, never by colour alone: a
+    // merchant may be colour-blind, and a cheap screen in sunlight washes
+    // hues out anyway.
+    final (label, color, icon) = switch (sale.syncState) {
+      SaleSyncState.synced => (Strings.stateSynced, DjassaColors.muted, Icons.check_rounded),
+      SaleSyncState.pending => (Strings.statePending, DjassaColors.ink, Icons.schedule_rounded),
+      SaleSyncState.rejected => (Strings.stateRejected, DjassaColors.danger, Icons.error_outline_rounded),
     };
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 36,
+            height: 36,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+            child: Icon(icon, size: 18, color: color),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(formatMoney(sale.amount), style: text.bodyMedium),
+                Text(formatMoney(sale.amount), style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text(
-                  '${_time(sale.recordedAt)} - $label',
-                  style: text.bodySmall?.copyWith(color: color),
-                ),
+                Text('${Strings.shortTime(sale.recordedAt)} - $label', style: text.bodySmall?.copyWith(color: color)),
               ],
             ),
           ),
-          if (onRetry != null)
-            TextButton(onPressed: onRetry, child: const Text(Strings.retry)),
+          if (onRetry != null) TextButton(onPressed: onRetry, child: const Text(Strings.retry)),
         ],
       ),
     );
-  }
-
-  String _time(DateTime at) {
-    final h = at.hour.toString().padLeft(2, '0');
-    final m = at.minute.toString().padLeft(2, '0');
-    return '$h:$m';
   }
 }

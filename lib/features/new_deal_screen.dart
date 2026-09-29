@@ -6,13 +6,17 @@ import '../core/model/deal.dart';
 import '../core/net/api_exception.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
-import '../ui/back_button.dart';
+import '../ui/theme.dart';
 import 'deals_screen.dart';
 
 enum _Kind { percent, price }
 
 /// Publishes a deal. Three questions (what, how much off, how long) and a
 /// preview of what customers will see, so there is no surprise once it is live.
+///
+/// Validation and submission are unchanged from the app's original screen:
+/// same client-side check before any network call, same server-message
+/// passthrough on refusal.
 class NewDealScreen extends ConsumerStatefulWidget {
   const NewDealScreen({super.key});
 
@@ -88,7 +92,7 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
     final digits = [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(8)];
 
     return Scaffold(
-      appBar: AppBar(leading: const DjassaBackButton(), title: const Text(Strings.newDeal)),
+      appBar: AppBar(title: const Text(Strings.newDeal)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -173,17 +177,37 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
                 decoration: const InputDecoration(labelText: Strings.dealDescription, hintText: Strings.dealDescriptionHint),
               ),
               const SizedBox(height: 24),
-              Text(Strings.preview, style: text.labelMedium),
+              Row(
+                children: [
+                  const Icon(Icons.visibility_outlined, size: 16, color: DjassaColors.muted),
+                  const SizedBox(width: 6),
+                  // Flexible: at labelMedium's weight-700 15sp (the merchant
+                  // theme's floor, wider than the customer app's 13sp), this
+                  // row overflowed the screen width by a sub-pixel amount —
+                  // caught only by the test harness's exact layout, not by
+                  // eye, but a real assertion failure either way.
+                  Flexible(child: Text(Strings.preview, style: text.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                ],
+              ),
               const SizedBox(height: 8),
               _Preview(draft: draft),
               if (_error != null) ...[
                 const SizedBox(height: 16),
-                Text(_error!, style: text.bodySmall?.copyWith(color: colors.error)),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.error_outline_rounded, size: 18, color: colors.error),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(_error!, style: text.bodySmall?.copyWith(color: colors.error))),
+                  ],
+                ),
               ],
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: _busy ? null : _publish,
-                child: Text(_busy ? Strings.publishing : Strings.publish),
+                child: _busy
+                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                    : const Text(Strings.publish),
               ),
             ],
           ),
@@ -194,6 +218,8 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
 }
 
 /// Roughly how the offer reads in the customer app: headline, title, end date.
+/// Framed like a little phone card, so the merchant sees the offer the way a
+/// customer will rather than as another form field.
 class _Preview extends StatelessWidget {
   const _Preview({required this.draft});
 
@@ -202,27 +228,33 @@ class _Preview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
     final offer = dealOffer(draft.discountPercent, draft.price, draft.originalPrice);
     final ends = DateTime.now().add(draft.duration);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: colors.outlineVariant),
-        borderRadius: BorderRadius.circular(10),
+        color: DjassaColors.surface,
+        border: Border.all(color: DjassaColors.orangeTint, width: 1.5),
+        borderRadius: BorderRadius.circular(DjassaRadius.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(offer.isEmpty ? '...' : offer, style: text.headlineMedium?.copyWith(color: colors.primary)),
+          Text(offer.isEmpty ? '...' : offer, style: serifStyle(30, color: DjassaColors.orangeDeep)),
           const SizedBox(height: 4),
           Text(draft.title.trim().isEmpty ? Strings.dealTitleHint : draft.title.trim(), style: text.titleMedium),
           if (draft.description != null && draft.description!.trim().isNotEmpty) ...[
             const SizedBox(height: 2),
             Text(draft.description!.trim(), style: text.bodySmall),
           ],
-          const SizedBox(height: 6),
-          Text('${Strings.endsOn} ${Strings.shortDate(ends)}', style: text.bodySmall),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Text('${Strings.endsOn} ${Strings.shortDate(ends)}', style: text.bodySmall),
+            ],
+          ),
         ],
       ),
     );

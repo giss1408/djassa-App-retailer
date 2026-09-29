@@ -5,6 +5,8 @@ import '../core/auth/auth_repository.dart';
 import '../core/config/env.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
+import '../ui/theme.dart';
+import '../ui/widgets.dart';
 import 'about_name_screen.dart';
 
 /// Sign-in.
@@ -26,6 +28,7 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   final _username = TextEditingController(text: Env.devUsername);
   final _password = TextEditingController(text: Env.devPassword);
   bool _busy = false;
+  bool _obscure = true;
   String? _error;
 
   @override
@@ -62,68 +65,110 @@ class _SignInScreenState extends ConsumerState<SignInScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final colors = Theme.of(context).colorScheme;
+    final top = MediaQuery.paddingOf(context).top;
 
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text('Djassa', style: text.headlineMedium),
-                  const SizedBox(height: 4),
-                  Text(Strings.signInSubtitle, style: text.bodyMedium),
-                  const SizedBox(height: 28),
-                  TextField(
-                    controller: _username,
-                    enabled: !_busy,
-                    autocorrect: false,
-                    // Never offer to autofill or suggest: a market phone is
-                    // often shared or handed around.
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.next,
-                    decoration: const InputDecoration(labelText: Strings.username),
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          // Same treatment as the customer app's sign-in header, so the two
+          // apps' first screen reads as one product before a merchant ever
+          // sees the rest of either.
+          PatternedSurface(
+            gradient: DjassaColors.headerGradient,
+            borderRadius: const BorderRadius.vertical(bottom: Radius.circular(36)),
+            padding: EdgeInsets.fromLTRB(28, top + 44, 28, 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 58,
+                  height: 58,
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
+                  alignment: Alignment.center,
+                  child: Text('d', style: serifStyle(44, color: DjassaColors.orangeDeep, height: 0.9)),
+                ),
+                const SizedBox(height: 22),
+                Text(Strings.signInTitle, style: serifStyle(42, color: Colors.white)),
+                const SizedBox(height: 8),
+                Text(Strings.signInSubtitle, style: TextStyle(color: Colors.white.withOpacity(0.88), fontSize: 15.5)),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _username,
+                  enabled: !_busy,
+                  autocorrect: false,
+                  // Never offer to autofill or suggest: a market phone is
+                  // often shared or handed around.
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: Strings.username,
+                    prefixIcon: Icon(Icons.person_outline_rounded),
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _password,
-                    enabled: !_busy,
-                    obscureText: true,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _submit(),
-                    decoration: const InputDecoration(labelText: Strings.password),
-                  ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      _error!,
-                      style: text.bodySmall?.copyWith(color: colors.error),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _password,
+                  enabled: !_busy,
+                  obscureText: _obscure,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    labelText: Strings.password,
+                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    // Big enough for a thumb, and lets a merchant check what
+                    // they typed on a shared or borrowed device before
+                    // sending it to the server.
+                    suffixIcon: IconButton(
+                      onPressed: () => setState(() => _obscure = !_obscure),
+                      icon: Icon(_obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                     ),
-                  ],
-                  const SizedBox(height: 24),
-                  FilledButton(
-                    onPressed: _busy ? null : _submit,
-                    child: Text(_busy ? Strings.signingIn : Strings.signIn),
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
+                ),
+                if (_error != null) ...[
+                  const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.error_outline_rounded, size: 18, color: colors.error),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(_error!, style: text.bodySmall?.copyWith(color: colors.error))),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: _busy ? null : _submit,
+                  child: _busy
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+                        )
+                      : const Text(Strings.signIn),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: TextButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const AboutNameScreen(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const AboutNameScreen()),
                     ),
                     child: const Text(Strings.aboutNameLink),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

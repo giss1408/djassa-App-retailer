@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/model/money.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
-import '../ui/back_button.dart';
 import '../ui/money_text.dart';
+import '../ui/theme.dart';
 
 /// Records a sale at the counter.
 ///
@@ -19,6 +19,11 @@ import '../ui/money_text.dart';
 /// signed-in account (`app/api/sales.py`), which removed the placeholder this
 /// screen used to carry — and with it the possibility of a client naming which
 /// business a sale belongs to.
+///
+/// Visual polish stops at the point where it would cost the merchant a second
+/// at the counter: the amount field is still the first thing focused, the
+/// keyboard is still numeric-only, and the save button still closes the screen
+/// the instant the row is on disk rather than showing a confirmation dialog.
 class RecordSaleScreen extends ConsumerStatefulWidget {
   const RecordSaleScreen({super.key});
 
@@ -51,7 +56,7 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
   /// a misread amount is money.
   Money? _parseAmount() {
     final raw =
-        _amount.text.trim().replaceAll('\u00A0', '').replaceAll(' ', '');
+        _amount.text.trim().replaceAll(' ', '').replaceAll(' ', '');
     if (raw.isEmpty) return null;
     final normalized = raw.replaceAll(',', '.');
     try {
@@ -99,47 +104,58 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
     final parsed = _parseAmount();
 
     return Scaffold(
-      appBar: AppBar(
-        // The Material icon font is not bundled, so the default back button
-        // has no glyph. See DjassaBackButton.
-        leading: const DjassaBackButton(),
-        title: const Text(Strings.recordSale),
-      ),
+      appBar: AppBar(title: const Text(Strings.recordSale)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextField(
-                controller: _amount,
-                enabled: !_busy,
-                autofocus: true,
-                // The numeric keypad is the single biggest speed win at a
-                // counter: big keys, no letters to hunt through.
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                  signed: false,
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+                decoration: BoxDecoration(
+                  color: DjassaColors.surface,
+                  borderRadius: BorderRadius.circular(DjassaRadius.lg),
+                  border: Border.all(color: DjassaColors.line),
                 ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-                  LengthLimitingTextInputFormatter(12),
-                ],
-                style: text.headlineMedium,
-                textInputAction: TextInputAction.done,
-                onChanged: (_) => setState(() => _error = null),
-                onSubmitted: (_) => _save(),
-                decoration: const InputDecoration(
-                  labelText: Strings.amount,
-                  hintText: Strings.amountHint,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _amount,
+                      enabled: !_busy,
+                      autofocus: true,
+                      // The numeric keypad is the single biggest speed win at
+                      // a counter: big keys, no letters to hunt through.
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: false,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                        LengthLimitingTextInputFormatter(12),
+                      ],
+                      style: serifStyle(40),
+                      textInputAction: TextInputAction.done,
+                      onChanged: (_) => setState(() => _error = null),
+                      onSubmitted: (_) => _save(),
+                      decoration: const InputDecoration(
+                        labelText: Strings.amount,
+                        hintText: Strings.amountHint,
+                        border: InputBorder.none,
+                        filled: false,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    // Echo the parsed amount back, formatted. It is the
+                    // merchant's check against a mistyped digit before the
+                    // sale is recorded.
+                    if (parsed != null) ...[
+                      const SizedBox(height: 4),
+                      Text(formatMoney(parsed), style: text.bodyMedium?.copyWith(color: DjassaColors.muted)),
+                    ],
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              // Echo the parsed amount back, formatted. It is the merchant's
-              // check against a mistyped digit before the sale is recorded.
-              Text(
-                parsed == null ? '' : formatMoney(parsed),
-                style: text.bodyMedium,
               ),
               const SizedBox(height: 20),
               Text(Strings.saleType, style: text.labelMedium),
@@ -167,24 +183,38 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
                 decoration: const InputDecoration(
                   labelText: Strings.customerOptional,
                   hintText: Strings.customerHint,
+                  prefixIcon: Icon(Icons.person_outline_rounded),
                 ),
               ),
               if (_error != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  _error!,
-                  style: text.bodySmall?.copyWith(color: colors.error),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.error_outline_rounded, size: 18, color: colors.error),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(_error!, style: text.bodySmall?.copyWith(color: colors.error))),
+                  ],
                 ),
               ],
               const SizedBox(height: 28),
               FilledButton(
                 onPressed: _busy ? null : _save,
-                child: Text(_busy ? Strings.saving : Strings.save),
+                child: _busy
+                    ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                    : const Text(Strings.save),
               ),
               const SizedBox(height: 12),
-              // Sets the expectation up front, so a queued sale later is not a
-              // surprise.
-              Text(Strings.savedOffline, style: text.bodySmall),
+              // Sets the expectation up front, so a queued sale later is not
+              // a surprise.
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.phonelink_lock_outlined, size: 15, color: colors.onSurfaceVariant),
+                  const SizedBox(width: 6),
+                  Text(Strings.savedOffline, style: text.bodySmall),
+                ],
+              ),
             ],
           ),
         ),

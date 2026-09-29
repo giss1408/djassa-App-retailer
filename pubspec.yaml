@@ -37,6 +37,20 @@ dev_dependencies:
   sqflite_common_ffi: ^2.3.3
 
 flutter:
-  # Dropped deliberately: uses-material-design bundles the ~1.6MB Material
-  # icon font. We draw the few icons we need instead. See ARCHITECTURE.md.
-  uses-material-design: false
+  # Icons on, matching the customer app (djassa-App-user). Release builds
+  # tree-shake the Material icon font down to the glyphs actually used (a few
+  # KB), so the ~1.6MB objection this app shipped with no longer holds — see
+  # ARCHITECTURE.md for the size measurement that justifies the change.
+  uses-material-design: true
+
+  # The site's display face, for the wordmark and large numerals only (~70KB
+  # per style) — what makes this app read as the same brand as djassa-Web and
+  # djassa-App-user rather than a generic Material screen. SIL Open Font
+  # License, see assets/fonts/OFL.txt. Same file, copied from djassa-App-user
+  # so both apps ship the exact same bytes.
+  fonts:
+    - family: InstrumentSerif
+      fonts:
+        - asset: assets/fonts/InstrumentSerif-Regular.ttf
+        - asset: assets/fonts/InstrumentSerif-Italic.ttf
+          style: italic
