@@ -17,7 +17,11 @@ class SaleDao {
   Future<Sale> insert(Sale sale) async {
     final localId = await _db.insert('sales', {
       'idempotency_key': sale.idempotencyKey,
-      'merchant_id': sale.merchantId,
+      // `merchant_id` is a vestigial NOT NULL column: the server derives the
+      // venue from the token now, but SQLite before 3.35 (Android < 14, and
+      // minSdk here is 21) cannot DROP COLUMN, and recreating `sales` would
+      // risk a merchant's unsynced sales. Written as 0 and never read.
+      'merchant_id': 0,
       'amount_minor': sale.amount.minorUnits,
       'currency': sale.amount.currency,
       'type': sale.type,
@@ -36,7 +40,7 @@ class SaleDao {
   /// The next batch to send.
   ///
   /// Capped at 50 because that is the backend's hard limit on
-  /// `SyncRequest.operations` (`app/schemas/__init__.py:59`); a larger batch is
+  /// `SaleSyncIn.operations` (`app/schemas/customer.py`); a larger batch is
   /// rejected wholesale. Oldest first, so a long outage drains in the order the
   /// merchant made the sales.
   Future<List<Sale>> pendingBatch({int limit = 50}) async {
@@ -180,7 +184,6 @@ class SaleDao {
     return Sale(
       localId: row['local_id'] as int?,
       idempotencyKey: row['idempotency_key'] as String,
-      merchantId: row['merchant_id'] as int,
       amount: Money.fromMinor(minor, currency),
       type: row['type'] as String,
       recordedAt: DateTime.fromMillisecondsSinceEpoch(

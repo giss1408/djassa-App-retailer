@@ -61,7 +61,6 @@ void main() {
   tearDown(() async => closeDb());
 
   Future<Sale> record(int amount, {String currency = 'XOF'}) => repo.recordSale(
-        merchantId: 7,
         amount: Money.fromMajor(amount, currency),
         type: 'sale',
       );
@@ -97,7 +96,6 @@ void main() {
         () async {
       expect(
         () => repo.recordSale(
-          merchantId: 7,
           amount: Money.fromMajor(0, 'XOF'),
           type: 'sale',
         ),
@@ -145,21 +143,56 @@ void main() {
       expect(server.receivedBatches.length, 3);
     });
 
-    test('omits user_id so the server derives ownership from the token',
+    test('names neither the user nor the venue, so the server decides both',
         () async {
       await record(500);
       await sync.syncOnce();
 
       final op = (server.receivedBatches.single['operations'] as List).single
           as Map<String, Object?>;
+      // The fix behind the merged stream: a client cannot assert which business
+      // a sale belongs to (`app/api/sales.py`).
       expect(op.containsKey('user_id'), isFalse);
+      expect(op.containsKey('merchant_id'), isFalse);
+      expect(op.containsKey('venue_id'), isFalse);
       expect(op.keys.toSet(), {
-        'merchant_id',
         'amount',
         'currency',
         'type',
+        'occurred_at',
         'idempotency_key',
       });
+    });
+
+    test('sends the day the merchant made the sale, not the day it synced',
+        () async {
+      // Queued while offline, sent later: the backend keeps both timestamps and
+      // the merchant's daily total must use the earlier one.
+      server.failWith = http.ClientException('offline');
+      final sale = await record(700);
+      server.failWith = null;
+      await sync.drain();
+
+      final op = (server.receivedBatches.last['operations'] as List).single
+          as Map<String, Object?>;
+      // Compared against the stored row, not the in-memory one: the ledger keeps
+      // millisecond precision, so a microsecond difference here is storage
+      // granularity rather than a wrong timestamp.
+      final stored = (await dao.recent()).single;
+      expect(
+        DateTime.parse(op['occurred_at']! as String).toUtc(),
+        stored.recordedAt.toUtc(),
+      );
+      expect(sale.idempotencyKey, stored.idempotencyKey);
+    });
+
+    test('a sale the server accepts carries back its server id', () async {
+      await record(900);
+      await sync.syncOnce();
+
+      final stored = (await dao.recent()).single;
+      expect(stored.syncState, SaleSyncState.synced);
+      expect(stored.serverId, isNotNull);
     });
 
     test('sends XOF amounts without a bogus minor unit', () async {

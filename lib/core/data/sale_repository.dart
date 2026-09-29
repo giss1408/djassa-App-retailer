@@ -42,7 +42,6 @@ class SaleRepository {
   /// in front of them; worse, a timeout would look like a failure for a sale
   /// that is safely recorded.
   Future<Sale> recordSale({
-    required int merchantId,
     required Money amount,
     required String type,
     String? customerRef,
@@ -55,7 +54,6 @@ class SaleRepository {
 
     final sale = Sale(
       idempotencyKey: newIdempotencyKey(_random),
-      merchantId: merchantId,
       amount: amount,
       type: type,
       recordedAt: recordedAt ?? DateTime.now(),

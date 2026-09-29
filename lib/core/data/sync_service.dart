@@ -44,8 +44,8 @@ class SyncOutcome {
 ///
 /// A sale is recorded locally first and sent later. Every send carries the
 /// idempotency key generated when the sale was recorded, so the backend can
-/// recognise a repeat: it looks the key up and returns the existing transaction
-/// rather than creating a second one (`app/api/transactions.py:39-47`).
+/// recognise a repeat: it looks the key up and returns the existing sale event
+/// rather than creating a second one (`app/api/sales.py`).
 ///
 /// This matters because on a flaky network **we cannot distinguish a lost
 /// request from a lost response**. Without the key, every timeout would force a
@@ -54,7 +54,7 @@ class SyncOutcome {
 ///
 /// ## Why batches
 ///
-/// `POST /api/transactions/sync` takes up to 50 operations in one request. On
+/// `POST /api/merchant/sales/sync` takes up to 50 operations in one request. On
 /// 2G, fifty round trips cost fifty TLS-protected exchanges and a lot of the
 /// merchant's data bundle; one request costs one. The backend commits each
 /// operation separately and returns a per-operation result, so a single bad row
@@ -144,7 +144,7 @@ class SyncService {
     Map<String, Object?> response;
     try {
       response = await _client.postJson(
-        '/api/transactions/sync',
+        '/api/merchant/sales/sync',
         body: {
           'operations':
               batch.map((sale) => sale.toSyncOperationJson()).toList(),
@@ -185,7 +185,7 @@ class SyncService {
       decided.add(key);
 
       final status = entry['status'];
-      final serverId = _serverIdOf(entry['transaction']);
+      final serverId = _serverIdOf(entry['sale']);
 
       switch (status) {
         case 'accepted':
@@ -234,9 +234,9 @@ class SyncService {
     );
   }
 
-  int? _serverIdOf(Object? transaction) {
-    if (transaction is Map) {
-      final id = transaction['id'];
+  int? _serverIdOf(Object? sale) {
+    if (sale is Map) {
+      final id = sale['id'];
       if (id is int) return id;
     }
     return null;

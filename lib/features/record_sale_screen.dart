@@ -15,14 +15,12 @@ import '../ui/money_text.dart';
 /// blocks on the network, and the confirmation appears the moment the row is on
 /// disk.
 ///
-/// The merchant id is fixed for now. Outlet registration does not exist in the
-/// backend yet, and `/api/transactions` creates a merchant row on demand for an
-/// unknown id (`app/api/transactions.py:49-54`).
+/// There is no merchant id here any more. The backend derives the venue from the
+/// signed-in account (`app/api/sales.py`), which removed the placeholder this
+/// screen used to carry — and with it the possibility of a client naming which
+/// business a sale belongs to.
 class RecordSaleScreen extends ConsumerStatefulWidget {
   const RecordSaleScreen({super.key});
-
-  /// Placeholder until outlet registration exists server-side.
-  static const demoMerchantId = 1;
 
   /// CI is the first market, so XOF is the default. Once the merchant's outlet
   /// carries a country, this comes from `/api/config/countries`.
@@ -83,7 +81,6 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
 
     final customer = _customer.text.trim();
     await ref.read(saleRepositoryProvider).recordSale(
-          merchantId: RecordSaleScreen.demoMerchantId,
           amount: amount,
           type: _type,
           customerRef: customer.isEmpty ? null : customer,

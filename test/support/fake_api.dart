@@ -6,9 +6,10 @@ import 'package:http/testing.dart';
 /// A stand-in for the Djassa backend that reproduces the behaviour the offline
 /// queue depends on — above all, idempotency-key deduplication.
 ///
-/// Modelled on `app/api/transactions.py`: a key already seen returns the
-/// original transaction with status `already_processed` instead of creating a
-/// second one.
+/// Modelled on `app/api/sales.py`: a key already seen returns the original sale
+/// event with status `already_processed` instead of creating a second one. The
+/// venue is never taken from the request — the real endpoint derives it from the
+/// token, so a body carrying one would be a bug this fake must not hide.
 class FakeDjassaServer {
   FakeDjassaServer();
 
@@ -31,7 +32,7 @@ class FakeDjassaServer {
   /// Keys the server refuses permanently, as a validation failure would.
   final Set<String> rejectKeys = {};
 
-  /// Distinct transactions the server believes it created.
+  /// Distinct sales the server believes it created.
   int get transactionCount => _byKey.length;
 
   http.Client client() {
@@ -42,7 +43,7 @@ class FakeDjassaServer {
       if (request.url.path == '/api/token') {
         return _tokenResponse(request);
       }
-      if (request.url.path == '/api/transactions/sync') {
+      if (request.url.path == '/api/merchant/sales/sync') {
         return _syncResponse(request);
       }
       return http.Response('{"detail":"not found"}', 404,
@@ -86,6 +87,17 @@ class FakeDjassaServer {
     for (final op in operations) {
       final key = op['idempotency_key'] as String;
 
+      // The real endpoint has no venue or merchant field to read. If the client
+      // ever starts sending one, that is a regression, not something to accept.
+      if (op.containsKey('merchant_id') || op.containsKey('venue_id')) {
+        results.add({
+          'idempotency_key': key,
+          'status': 'rejected',
+          'error': 'the server derives the venue from the token',
+        });
+        continue;
+      }
+
       if (rejectKeys.contains(key)) {
         results.add({
           'idempotency_key': key,
@@ -100,7 +112,7 @@ class FakeDjassaServer {
         results.add({
           'idempotency_key': key,
           'status': 'already_processed',
-          'transaction': _transaction(existing, op),
+          'sale': _sale(existing, op),
         });
         continue;
       }
@@ -110,7 +122,7 @@ class FakeDjassaServer {
       results.add({
         'idempotency_key': key,
         'status': 'accepted',
-        'transaction': _transaction(id, op),
+        'sale': _sale(id, op),
       });
     }
 
@@ -126,15 +138,22 @@ class FakeDjassaServer {
     );
   }
 
-  Map<String, Object?> _transaction(int id, Map<String, Object?> op) => {
+  /// The `SaleOut` shape (`app/schemas/customer.py`). `venue_id` comes from the
+  /// server's own view of who is signed in, never from the request.
+  Map<String, Object?> _sale(int id, Map<String, Object?> op) => {
         'id': id,
-        'merchant_id': op['merchant_id'],
-        'user_id': 'demo',
+        'venue_id': signedInVenueId,
+        'source': 'cash_declared',
         'amount': op['amount'],
         'currency': op['currency'],
         'type': op['type'],
-        'timestamp': DateTime.now().toUtc().toIso8601String(),
+        'occurred_at': op['occurred_at'] ?? DateTime.now().toUtc().toIso8601String(),
+        'recorded_at': DateTime.now().toUtc().toIso8601String(),
+        'idempotency_key': op['idempotency_key'],
       };
+
+  /// The venue the fake's token belongs to, as the real server would resolve it.
+  static const signedInVenueId = 10;
 
   /// An unsigned token shaped like the backend's HS256 JWT. Only the payload is
   /// ever read client-side, and only to avoid a doomed round trip.
