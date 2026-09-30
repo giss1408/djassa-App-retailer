@@ -146,6 +146,8 @@ class _WaveConnectScreenState extends ConsumerState<WaveConnectScreen> {
                   const _Steps(),
                   const SizedBox(height: 16),
                 ],
+                const _ScopeWarning(),
+                const SizedBox(height: 16),
                 TextField(
                   controller: _key,
                   enabled: !_saving,
@@ -190,6 +192,31 @@ class _WaveConnectScreenState extends ConsumerState<WaveConnectScreen> {
                 ]),
               ],
             ),
+    );
+  }
+}
+
+/// The one rule that keeps a leaked key harmless: Checkout only, never Payout.
+class _ScopeWarning extends StatelessWidget {
+  const _ScopeWarning();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDE4E4),
+        borderRadius: BorderRadius.circular(DjassaRadius.md),
+        border: Border.all(color: DjassaColors.danger),
+      ),
+      child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(Icons.warning_amber_rounded, color: DjassaColors.danger),
+        SizedBox(width: 10),
+        Expanded(
+          child: Text(Strings.waveScopeWarning,
+              style: TextStyle(color: Color(0xFF8E1C1C), fontWeight: FontWeight.w700, fontSize: 14.5, height: 1.35)),
+        ),
+      ]),
     );
   }
 }

@@ -131,10 +131,12 @@ class Strings {
       'Reliez votre compte Wave Business : les clients qui paient avec Wave dans Djassa paient directement sur votre compte Wave. Djassa ne touche jamais l\'argent.';
   static const waveSteps = [
     'Ouvrez business.wave.com, section Developpeur, puis Cles API.',
-    'Creez une cle avec l\'acces "Checkout API" et copiez-la (Wave ne l\'affiche qu\'une fois).',
+    'Creez une cle en cochant UNIQUEMENT "Checkout API", et copiez-la (Wave ne l\'affiche qu\'une fois).',
     'Collez-la ci-dessous et appuyez sur Connecter.',
     'Djassa affiche ensuite une adresse de webhook a ajouter dans Wave ; collez ici le secret de signature que Wave vous donne.',
   ];
+  static const waveScopeWarning =
+      'Cochez uniquement "Checkout API". Ne cochez JAMAIS "Payout API" (envoi d\'argent) : avec cette permission, la cle pourrait vider votre compte si elle etait volee.';
   static const waveKeyLabel = 'Cle API Wave';
   static const waveSecretLabel = 'Secret de signature du webhook';
   static const waveSecretHelp = 'Facultatif au debut : les paiements se confirment aussi sans lui, plus lentement.';
