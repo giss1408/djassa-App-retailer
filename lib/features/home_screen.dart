@@ -10,6 +10,7 @@ import '../ui/money_text.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'about_name_screen.dart';
+import 'collect_payment_screen.dart';
 import 'customer_points_screen.dart';
 import 'deals_screen.dart';
 import 'record_sale_screen.dart';
@@ -215,6 +216,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 12),
+                      // Getting paid by QR: the other way a sale reaches the
+                      // books, confirmed by the wallet rather than typed.
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.qr_code_2_rounded,
+                          label: Strings.collect,
+                          color: Colors.white,
+                          background: DjassaColors.green,
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CollectPaymentScreen())),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
                       Expanded(
                         child: _QuickAction(
                           icon: Icons.local_offer_rounded,
@@ -224,15 +241,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealsScreen())),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _QuickAction(
+                          icon: Icons.stars_rounded,
+                          label: Strings.customerPoints,
+                          color: DjassaColors.green,
+                          background: DjassaColors.greenTint,
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerPointsScreen())),
+                        ),
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 12),
-                  _QuickAction(
-                    icon: Icons.stars_rounded,
-                    label: Strings.customerPoints,
-                    color: DjassaColors.green,
-                    background: DjassaColors.greenTint,
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerPointsScreen())),
                   ),
                   const SizedBox(height: 28),
                   const SectionHeader(Strings.recentSales),

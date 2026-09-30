@@ -33,6 +33,10 @@ dependencies:
   # 13.x is the line that supports Flutter 3.24.
   geolocator: ^13.0.1
 
+  # Draws the payment QR the customer scans (Encaisser, Mon QR fixe). Pure
+  # Dart, no native code: the QR is rendered on the phone, nothing is fetched.
+  qr_flutter: ^4.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

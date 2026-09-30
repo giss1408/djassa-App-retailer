@@ -9,6 +9,7 @@ import 'data/sync_service.dart';
 import 'deals_api.dart';
 import 'location_api.dart';
 import 'loyalty_api.dart';
+import 'payment_api.dart';
 import 'net/api_client.dart';
 
 /// Wiring for the whole app. Nothing here holds UI state.
@@ -50,6 +51,8 @@ final dealsApiProvider = Provider<DealsApi>((ref) => DealsApi(ref.watch(apiClien
 final loyaltyApiProvider = Provider<LoyaltyApi>((ref) => LoyaltyApi(ref.watch(apiClientProvider)));
 
 final locationApiProvider = Provider<LocationApi>((ref) => LocationApi(ref.watch(apiClientProvider)));
+
+final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {
   // Depends on the database being open; the UI gates on [databaseProvider]

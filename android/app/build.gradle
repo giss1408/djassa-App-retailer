@@ -93,9 +93,15 @@ android {
     }
 
     packagingOptions {
-        // Debug symbols are uploaded separately, not shipped to handsets.
+        // Compress the native libraries (Flutter engine, compiled Dart) inside
+        // the APK. The APK is shared as a download on WhatsApp and every update
+        // is a full download on a prepaid bundle, so this halves what testers
+        // pay for (measured: 16.4 MB -> 7.8 MB for arm64). The cost: Android
+        // unpacks the libraries at install, about 8 MB more storage and a few
+        // seconds more to install. Revisit when distributing through the Play
+        // Store, which compresses and splits downloads itself.
         jniLibs {
-            useLegacyPackaging = false
+            useLegacyPackaging = true
         }
     }
 }

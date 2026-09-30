@@ -79,6 +79,32 @@ class Strings {
   static const retry = 'Reessayer';
   static const loadFailed = 'Impossible de charger. Verifiez votre connexion.';
 
+  // Getting paid by QR: the customer scans with the Djassa app and pays from
+  // their own wallet, straight to the merchant's.
+  static const collect = 'Encaisser';
+  static const collectIntro = 'Entrez le montant, puis montrez le QR code au client.';
+  static const showQr = 'Afficher le QR code';
+  static const creatingQr = 'Creation du QR code...';
+  static const scanToPay = 'Le client scanne ce QR code avec l\'application Djassa';
+  static const orTypeCode = 'ou tape le code';
+  static const expiresIn = 'Expire dans';
+  static const waitingForPayment = 'En attente du paiement...';
+  static const customerPaying = 'Le client est en train de payer...';
+  static const paid = 'Paye';
+  static const paidWith = 'Paye avec';
+  static const customerEarned = 'points gagnes par le client';
+  static const newCollect = 'Nouvel encaissement';
+  static const cancelQr = 'Annuler ce QR code';
+  static const qrExpired = 'QR code expire. Creez-en un nouveau.';
+  static const qrCancelled = 'QR code annule.';
+  static const amountRange = 'Montant entre 100 F et 2 000 000 F.';
+  static const paymentNeedsConnection = 'Connexion necessaire pour encaisser par QR code.';
+  static const moneyGoesToYou = 'L\'argent va directement sur votre portefeuille mobile money. Djassa ne le garde jamais.';
+  static const fixedQr = 'Mon QR code fixe';
+  static const fixedQrIntro =
+      'A imprimer et coller au comptoir. Le client le scanne et tape lui-meme le montant.';
+  static const printHint = 'Faites une capture d\'ecran pour l\'imprimer.';
+
   // Shop position, so customers get directions ("Itineraire") to the shop.
   static const shopLocation = 'Position du commerce';
   static const shopLocationIntro =
