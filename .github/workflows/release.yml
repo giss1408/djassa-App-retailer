@@ -88,13 +88,40 @@ jobs:
             echo "::error::Signing secrets are missing. Run scripts/create-signing-key.sh and add them to the repository secrets."
             exit 1
           fi
-          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
-          cat > android/key.properties <<PROPS
-          storeFile=$RUNNER_TEMP/release.jks
-          storePassword=$KEYSTORE_PASSWORD
-          keyAlias=$KEY_ALIAS
-          keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}
-          PROPS
+          # Tolerate stray whitespace or line breaks picked up when pasting.
+          KEYSTORE_PASSWORD="$(printf '%s' "$KEYSTORE_PASSWORD" | tr -d '\r\n')"
+          KEY_PASSWORD="$(printf '%s' "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}" | tr -d '\r\n')"
+          KEY_ALIAS="$(printf '%s' "$KEY_ALIAS" | tr -d '\r\n ')"
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > "$RUNNER_TEMP/release.jks"
+
+          # Check the key before a three-minute build, and say which secret is wrong.
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" >/dev/null 2>&1; then
+            echo "::error::ANDROID_KEYSTORE_PASSWORD does not open the keystore in ANDROID_KEYSTORE_BASE64. Re-enter the password this app's key was created with (not the other app's), with no trailing space."
+            exit 1
+          fi
+          if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null 2>&1; then
+            echo "::error::ANDROID_KEY_ALIAS '$KEY_ALIAS' is not in the keystore. Aliases found:"
+            keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" | grep -i privatekeyentry || true
+            exit 1
+          fi
+          echo "Keystore and alias check out."
+          # keytool creates PKCS12 keystores, which have a single password: the
+          # key's password is the store's. Use it if the two secrets disagree.
+          if [ "$KEY_PASSWORD" != "$KEYSTORE_PASSWORD" ]; then
+            echo "::warning::ANDROID_KEY_PASSWORD differs from ANDROID_KEYSTORE_PASSWORD; using the keystore password for the key (PKCS12 keystores have one password)."
+            KEY_PASSWORD="$KEYSTORE_PASSWORD"
+          fi
+
+          # key.properties is a Java properties file, where a backslash is an
+          # escape character: double it, or a password containing one would be
+          # silently altered and rejected by the signer.
+          esc() { printf '%s' "$1" | sed 's/\\/\\\\/g'; }
+          {
+            echo "storeFile=$RUNNER_TEMP/release.jks"
+            echo "storePassword=$(esc "$KEYSTORE_PASSWORD")"
+            echo "keyAlias=$(esc "$KEY_ALIAS")"
+            echo "keyPassword=$(esc "$KEY_PASSWORD")"
+          } > android/key.properties
 
       # Version name from the tag (v0.1.0 -> 0.1.0); version code from the run
       # number, so every release installs as an update over the previous one.
