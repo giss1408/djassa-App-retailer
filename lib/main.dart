@@ -21,7 +21,7 @@ class DjassaApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Djassa',
+      title: 'Djassa Pro',
       debugShowCheckedModeBanner: false,
       theme: djassaTheme(),
       home: const _Root(),
@@ -106,7 +106,7 @@ class _StartupFailure extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Djassa', style: text.headlineSmall),
+                          Text('Djassa Pro', style: text.headlineSmall),
                           const SizedBox(height: 8),
                           Text(
                             "Le telephone n'a pas pu ouvrir la base locale. "

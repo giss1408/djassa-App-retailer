@@ -21,7 +21,9 @@ class Strings {
   const Strings._();
 
   // Sign-in
-  static const signInTitle = 'Djassa';
+  // "Djassa Pro": the merchant app, told apart from the customer app
+  // ("Djassa") on a phone that has both.
+  static const signInTitle = 'Djassa Pro';
   static const signInSubtitle = 'Espace marchand';
   static const username = 'Identifiant';
   static const password = 'Mot de passe';
