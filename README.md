@@ -37,7 +37,7 @@ affect a native app — but do set `CORS_ORIGINS` if you also run the web site.
 
 ## Test distribution
 
-Testers install from one link shared on WhatsApp: `djassa.onrender.com/app`.
+Testers install from one link shared on WhatsApp: the site's `/app` page.
 Signed APKs are published as GitHub Releases by
 [`.github/workflows/release.yml`](.github/workflows/release.yml) when a version
 tag is pushed (`scripts/create-signing-key.sh` once, then
@@ -48,7 +48,7 @@ backend on Render + Neon and Firebase App Distribution:
 ## Build for distribution
 
 ```bash
-scripts/build-release.sh https://djassa-api.onrender.com
+scripts/build-release.sh https://<your-api>.onrender.com
 ```
 
 This produces one APK per ARM ABI (13.0 MB for armeabi-v7a, 15.8 MB for arm64)

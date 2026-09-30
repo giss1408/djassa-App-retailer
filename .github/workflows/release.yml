@@ -12,7 +12,7 @@
 # One-time setup (repository Settings → Secrets and variables → Actions):
 #   Secrets  ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
 #            ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD   (scripts/create-signing-key.sh)
-#   Variable DJASSA_API_BASE  optional; defaults to the Render test API below.
+#   Variable DJASSA_API_BASE  REQUIRED: your API address, e.g. https://djassa-api-xxxx.onrender.com
 #   Firebase App Distribution (optional, for the field pilot):
 #   Secrets  FIREBASE_APP_ID, FIREBASE_SERVICE_ACCOUNT_JSON
 #   Variable FIREBASE_TESTER_GROUPS  optional; defaults to "pilote".
@@ -29,7 +29,10 @@ permissions:
 
 env:
   APP: "djassa-marchand"
-  API_BASE: ${{ vars.DJASSA_API_BASE || 'https://djassa-api.onrender.com' }}
+  # Your API's own address (Render shows it under the service name). No
+  # default on purpose: Render names are global, and a guessed address can
+  # belong to someone else's service.
+  API_BASE: ${{ vars.DJASSA_API_BASE }}
   FLUTTER_VERSION: "3.24.2"
 
 jobs:
@@ -53,6 +56,16 @@ jobs:
       # The offline-queue tests run SQLite through FFI, which needs the system library.
       - name: System SQLite
         run: sudo apt-get update -qq && sudo apt-get install -y -qq libsqlite3-dev
+
+      - name: API address
+        run: |
+          case "$API_BASE" in
+            https://*) echo "Building against $API_BASE" ;;
+            *) echo "::error::Set the repository variable DJASSA_API_BASE to your API's https address (Settings → Secrets and variables → Actions → Variables)."; exit 1 ;;
+          esac
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 "$API_BASE/health" || true)
+          echo "Health check: HTTP $code"
+          if [ "$code" != "200" ]; then echo "::warning::$API_BASE/health did not answer 200 (a sleeping free instance may just be waking up)."; fi
 
       - name: Dependencies
         run: flutter pub get

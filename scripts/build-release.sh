@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Build the merchant APKs for distribution.
 #
-# Usage: scripts/build-release.sh https://djassa-api.onrender.com [extra flutter build args]
-#   e.g. scripts/build-release.sh https://djassa-api.onrender.com --build-name=0.1.0 --build-number=7
+# Usage: scripts/build-release.sh <https api base> [extra flutter build args]
+#   e.g. scripts/build-release.sh https://djassa-api-xxxx.onrender.com --build-name=0.1.0 --build-number=7
 #
 # Produces one APK per ARM ABI plus a universal APK for sideloading, with Dart
 # obfuscation on and the symbol map kept in build/symbols/ so a crash report
