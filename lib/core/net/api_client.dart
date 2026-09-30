@@ -126,6 +126,13 @@ class ApiClient {
     return _asObject(decoded);
   }
 
+  /// PUT a JSON body that replaces a value (e.g. the shop's position).
+  /// Idempotent by nature, so no idempotency key is needed.
+  Future<Map<String, Object?>> putJson(String path, {Object? body}) async {
+    final decoded = await _send('PUT', path, jsonBody: body, authenticated: true);
+    return _asObject(decoded);
+  }
+
   /// DELETE a resource. Expects 204; anything in the body is ignored.
   Future<void> delete(String path) async {
     await _send('DELETE', path, authenticated: true);

@@ -1,11 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The app talks to the Djassa API and nothing else. No location, no
-         contacts, no storage, no phone state: a merchant tool does not need
-         them, and every permission we skip is one less consent to explain. -->
+    <!-- The app talks to the Djassa API and nothing else. No contacts, no
+         storage, no phone state: a merchant tool does not need them, and
+         every permission we skip is one less consent to explain. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Read-only: lets us queue a sale instead of failing when there is no
          signal. It does not grant the ability to change network state. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <!-- Foreground location only, asked at the moment the merchant says "I am
+         in my shop" on the Position du commerce screen: one fix, so customers
+         get directions to the shop. No background location permission. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:label="Djassa"

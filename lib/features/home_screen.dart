@@ -13,6 +13,7 @@ import 'about_name_screen.dart';
 import 'customer_points_screen.dart';
 import 'deals_screen.dart';
 import 'record_sale_screen.dart';
+import 'shop_location_screen.dart';
 
 /// What the merchant sees on opening the app.
 ///
@@ -293,11 +294,17 @@ class _AccountMenu extends StatelessWidget {
       onSelected: (v) {
         if (v == 'about') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutNameScreen()));
+        } else if (v == 'location') {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShopLocationScreen()));
         } else if (v == 'logout') {
           onSignOut();
         }
       },
       itemBuilder: (_) => const [
+        PopupMenuItem(
+          value: 'location',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.storefront_outlined), title: Text(Strings.shopLocation)),
+        ),
         PopupMenuItem(
           value: 'about',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.auto_stories_outlined), title: Text(Strings.aboutNameLink)),

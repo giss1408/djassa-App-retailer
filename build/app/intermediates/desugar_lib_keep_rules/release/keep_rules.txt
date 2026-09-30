@@ -1,5 +1,33 @@
+-keep class j$.lang.Iterable$-CC {
+  public static void $default$forEach(java.lang.Iterable,java.util.function.Consumer);
+}
+-keep interface j$.util.Collection {
+  public void forEach(java.util.function.Consumer);
+  public j$.util.stream.Stream parallelStream();
+  public boolean removeIf(java.util.function.Predicate);
+  public j$.util.Spliterator spliterator();
+  public j$.util.stream.Stream stream();
+  public java.lang.Object[] toArray(java.util.function.IntFunction);
+}
+-keep class j$.util.Collection$-CC {
+  public static j$.util.stream.Stream $default$parallelStream(java.util.Collection);
+  public static boolean $default$removeIf(java.util.Collection,java.util.function.Predicate);
+  public static j$.util.stream.Stream $default$stream(java.util.Collection);
+  public static java.lang.Object[] $default$toArray(java.util.Collection,java.util.function.IntFunction);
+}
 -keep class j$.util.Collection$-EL {
   public static j$.util.stream.Stream stream(java.util.Collection);
+}
+-keep class j$.util.DesugarCollections {
+  public static java.util.Map synchronizedMap(java.util.Map);
+}
+-keep interface j$.util.List {
+  public void replaceAll(java.util.function.UnaryOperator);
+  public void sort(java.util.Comparator);
+}
+-keep class j$.util.List$-CC {
+  public static void $default$replaceAll(java.util.List,java.util.function.UnaryOperator);
+  public static void $default$sort(java.util.List,java.util.Comparator);
 }
 -keep interface j$.util.Map {
   public java.lang.Object compute(java.lang.Object,java.util.function.BiFunction);
@@ -25,9 +53,23 @@
   public static int hash(java.lang.Object[]);
   public static java.lang.Object requireNonNull(java.lang.Object);
 }
+-keep interface j$.util.Spliterator {
+}
+-keep class j$.util.Spliterator$Wrapper {
+  public static java.util.Spliterator convert(j$.util.Spliterator);
+}
+-keep class j$.util.Spliterators {
+  public static j$.util.Spliterator spliterator(java.util.Collection,int);
+}
 -keep class j$.util.concurrent.ConcurrentHashMap {
   public <init>();
+  public <init>(int,float,int);
   public <init>(java.util.Map);
+  public boolean containsKey(java.lang.Object);
+  public java.lang.Object get(java.lang.Object);
+  public java.lang.Object putIfAbsent(java.lang.Object,java.lang.Object);
+  public java.lang.Object remove(java.lang.Object);
+  public boolean remove(java.lang.Object,java.lang.Object);
 }
 -keep class j$.util.concurrent.ThreadLocalRandom {
   public static j$.util.concurrent.ThreadLocalRandom current();
@@ -40,6 +82,9 @@
 -keep interface j$.util.stream.Stream {
   public boolean anyMatch(java.util.function.Predicate);
 }
+-keep class j$.util.stream.Stream$Wrapper {
+  public static java.util.stream.Stream convert(j$.util.stream.Stream);
+}
 -keep interface java.util.function.BiConsumer {
 }
 -keep interface java.util.function.BiFunction {
@@ -48,5 +93,9 @@
 }
 -keep interface java.util.function.Function {
 }
+-keep interface java.util.function.IntFunction {
+}
 -keep interface java.util.function.Predicate {
+}
+-keep interface java.util.function.UnaryOperator {
 }

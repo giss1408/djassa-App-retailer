@@ -60,6 +60,7 @@ we never need that scope on a handset we do not control.
 | `flutter_secure_storage` | Access token in the Android Keystore. `SharedPreferences` is world-readable to anyone with adb or root. |
 | `http` | A handful of endpoints with explicit timeouts. Thinner than `dio`. |
 | `path` | Joining the database path. Transitive anyway. |
+| `geolocator` | One GPS fix of the shop, so customers get directions to it (the customer app's "Itinéraire"). Taken only after the merchant confirms "I am in my shop", in the foreground, never in the background. Costs about 0.3 MB per APK. `geolocator_android` is pinned to 4.6.1 in `dependency_overrides`: 4.6.2 does not build with Flutter 3.24. |
 
 Every addition costs download size and attack surface on a 2014-era handset.
 Justify it in this table before adding it.
@@ -134,9 +135,12 @@ Recorded here because each one is a deliberate trade, not a default:
 - **API base URL is a `--dart-define`**, not a runtime setting. `Env.assertHttpsInRelease()`
   kills a release build pointed at http at launch, rather than failing every
   request later.
-- **Two permissions only**: `INTERNET` and `ACCESS_NETWORK_STATE`. No location,
-  contacts, storage, or phone state — every permission skipped is one less
-  consent to explain to a merchant.
+- **Few permissions**: `INTERNET`, `ACCESS_NETWORK_STATE`, and foreground
+  location (`ACCESS_FINE_LOCATION`/`ACCESS_COARSE_LOCATION`). Location is asked
+  for only on the "Position du commerce" screen, after the merchant confirms
+  they are standing in the shop, and is used for one fix; there is no
+  background location permission. No contacts, storage, or phone state —
+  every permission skipped is one less consent to explain to a merchant.
 
 ## Size discipline
 

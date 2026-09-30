@@ -79,6 +79,36 @@ class Strings {
   static const retry = 'Reessayer';
   static const loadFailed = 'Impossible de charger. Verifiez votre connexion.';
 
+  // Shop position, so customers get directions ("Itineraire") to the shop.
+  static const shopLocation = 'Position du commerce';
+  static const shopLocationIntro =
+      'Enregistrez la position de votre commerce : vos clients auront l\'itineraire '
+      'jusqu\'a vous dans l\'application Djassa.';
+  static const shopLocationSet = 'Position enregistree';
+  static const shopLocationNotSet = 'Pas encore de position';
+  static const shopLocationNotSetHint = 'Vos clients ne voient que l\'adresse ecrite, souvent imprecise.';
+  static const precision = 'Precision';
+  static const recordHere = 'Enregistrer la position ici';
+  static const updateHere = 'Mettre a jour avec la position actuelle';
+  static const inShopQuestion = 'Etes-vous dans votre commerce en ce moment ?';
+  static const inShopQuestionHint =
+      'La position actuelle du telephone deviendra l\'adresse de votre commerce pour vos clients.';
+  static const yesInShop = 'Oui, je suis dans mon commerce';
+  static const notNow = 'Non, plus tard';
+  static const locating = 'Recherche de la position...';
+  static const locatingHint = 'Restez dans le commerce, pres d\'une porte ou d\'une fenetre.';
+  static const useThisPosition = 'Utiliser cette position ?';
+  static const useThisPositionHint = 'Precision du GPS';
+  static const retryLocate = 'Reessayer';
+  static const locationSaved = 'Position enregistree. Vos clients ont maintenant l\'itineraire.';
+  static const locationServiceOff = 'La localisation est desactivee. Activez-la dans les parametres du telephone.';
+  static const locationDenied = 'Djassa n\'a pas l\'autorisation d\'utiliser la position.';
+  static const openSettings = 'Ouvrir les parametres';
+  static const locationTooVague =
+      'Position trop imprecise. Approchez-vous d\'une porte ou d\'une fenetre, puis reessayez.';
+  static const locationNeedsConnection = 'Connexion necessaire pour enregistrer la position.';
+  static const meters = 'm';
+
   // Customer points at the counter.
   static const customerPoints = 'Points client';
   static const customerPointsIntro =

@@ -28,6 +28,11 @@ dependencies:
   # enough for a handful of endpoints.
   http: ^1.2.2
 
+  # One GPS fix, taken only when the merchant confirms they are standing in
+  # the shop, so customers get directions to it. Never in the background.
+  # 13.x is the line that supports Flutter 3.24.
+  geolocator: ^13.0.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -54,3 +59,10 @@ flutter:
         - asset: assets/fonts/InstrumentSerif-Regular.ttf
         - asset: assets/fonts/InstrumentSerif-Italic.ttf
           style: italic
+
+dependency_overrides:
+  # geolocator_android 4.6.2 reads flutter.compileSdkVersion from its own
+  # Gradle file, which the Flutter 3.24 Gradle plugin does not provide
+  # ("Could not get unknown property 'flutter'"). 4.6.1 is the last version
+  # that builds here. Remove when Flutter is upgraded.
+  geolocator_android: 4.6.1

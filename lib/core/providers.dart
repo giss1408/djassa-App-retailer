@@ -7,6 +7,7 @@ import 'data/sale_dao.dart';
 import 'data/sale_repository.dart';
 import 'data/sync_service.dart';
 import 'deals_api.dart';
+import 'location_api.dart';
 import 'loyalty_api.dart';
 import 'net/api_client.dart';
 
@@ -47,6 +48,8 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 final dealsApiProvider = Provider<DealsApi>((ref) => DealsApi(ref.watch(apiClientProvider)));
 
 final loyaltyApiProvider = Provider<LoyaltyApi>((ref) => LoyaltyApi(ref.watch(apiClientProvider)));
+
+final locationApiProvider = Provider<LocationApi>((ref) => LocationApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {
   // Depends on the database being open; the UI gates on [databaseProvider]
