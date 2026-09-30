@@ -6,7 +6,7 @@ syncs when there is signal.
 
 ## Why one app
 
-`../djassa-BE/docs/PRODUCT-CONCEPT.md` sets the boundary:
+`../djassa-BE/docs/business/CONCEPT.md` sets the boundary:
 
 > Customers also need a simple way to earn benefits from repeat purchases
 > **without installing a heavy application** [...] SMS, WhatsApp, QR codes,
