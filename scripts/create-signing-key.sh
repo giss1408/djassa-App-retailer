@@ -24,14 +24,24 @@ command -v keytool >/dev/null || { echo "error: keytool not found; install a JDK
 
 read -r -s -p "Choose a keystore password (16+ characters): " PASS; echo
 [ ${#PASS} -ge 16 ] || { echo "error: use at least 16 characters." >&2; exit 1; }
+# Typing is hidden, so ask twice: a typo here becomes the key's password and
+# nobody finds out until the build fails.
+read -r -s -p "Type it again: " PASS2; echo
+[ "$PASS" = "$PASS2" ] || { echo "error: the two passwords differ; nothing was created." >&2; exit 1; }
+unset PASS2
 
 keytool -genkeypair -v -keystore "$OUT" -alias "$ALIAS" \
   -keyalg RSA -keysize 4096 -validity 10000 \
   -storepass "$PASS" -keypass "$PASS" \
   -dname "CN=Djassa marchand, O=Djassa, L=Abidjan, C=CI" >/dev/null
 
+# Prove the password opens the new key before anyone relies on it.
+keytool -list -keystore "$OUT" -storepass "$PASS" -alias "$ALIAS" >/dev/null \
+  || { echo "error: the new keystore does not open with that password; removing it." >&2; rm -f "$OUT"; exit 1; }
+
 echo
-echo "Created $OUT. Back it up now, with the password, in a password manager."
+echo "Created $OUT and checked that the password opens it."
+echo "Back it up now, with the password, in a password manager."
 echo
 echo "GitHub secrets to create in this repository:"
 echo "  ANDROID_KEYSTORE_BASE64   = (copied to your clipboard below)"
