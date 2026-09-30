@@ -15,6 +15,7 @@ import 'customer_points_screen.dart';
 import 'deals_screen.dart';
 import 'record_sale_screen.dart';
 import 'shop_location_screen.dart';
+import 'wave_connect_screen.dart';
 
 /// What the merchant sees on opening the app.
 ///
@@ -313,6 +314,8 @@ class _AccountMenu extends StatelessWidget {
       onSelected: (v) {
         if (v == 'about') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutNameScreen()));
+        } else if (v == 'wave') {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WaveConnectScreen()));
         } else if (v == 'location') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShopLocationScreen()));
         } else if (v == 'logout') {
@@ -320,6 +323,10 @@ class _AccountMenu extends StatelessWidget {
         }
       },
       itemBuilder: (_) => const [
+        PopupMenuItem(
+          value: 'wave',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.account_balance_wallet_outlined), title: Text(Strings.waveMenu)),
+        ),
         PopupMenuItem(
           value: 'location',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.storefront_outlined), title: Text(Strings.shopLocation)),

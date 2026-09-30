@@ -123,6 +123,41 @@ class Strings {
       'La position actuelle du telephone deviendra l\'adresse de votre commerce pour vos clients.';
   static const yesInShop = 'Oui, je suis dans mon commerce';
   static const notNow = 'Non, plus tard';
+
+  // Wave: the merchant's own Wave Business account (pilot).
+  static const waveMenu = 'Connecter Wave';
+  static const waveTitle = 'Paiements Wave';
+  static const waveIntro =
+      'Reliez votre compte Wave Business : les clients qui paient avec Wave dans Djassa paient directement sur votre compte Wave. Djassa ne touche jamais l\'argent.';
+  static const waveSteps = [
+    'Ouvrez business.wave.com, section Developpeur, puis Cles API.',
+    'Creez une cle avec l\'acces "Checkout API" et copiez-la (Wave ne l\'affiche qu\'une fois).',
+    'Collez-la ci-dessous et appuyez sur Connecter.',
+    'Djassa affiche ensuite une adresse de webhook a ajouter dans Wave ; collez ici le secret de signature que Wave vous donne.',
+  ];
+  static const waveKeyLabel = 'Cle API Wave';
+  static const waveSecretLabel = 'Secret de signature du webhook';
+  static const waveSecretHelp = 'Facultatif au debut : les paiements se confirment aussi sans lui, plus lentement.';
+  static const waveKeyMissing = 'Collez la cle API Wave complete.';
+  static const waveConnect = 'Connecter';
+  static const waveUpdate = 'Enregistrer';
+  static const waveConnected = 'Compte Wave connecte';
+  static const waveConnectedKey = 'Wave connecte, cle';
+  static const waveWebhookOk = 'Webhook configure : les paiements sont confirmes instantanement.';
+  static const waveWebhookMissing = 'Webhook pas encore configure : ajoutez l\'adresse ci-dessous dans Wave, puis collez le secret.';
+  static const waveLastEvent = 'Dernier message de Wave :';
+  static const waveWebhookAddress = 'Adresse du webhook a coller dans Wave';
+  static const waveWebhookEvents =
+      'Evenements a cocher : checkout.session.completed, checkout.session.payment_failed, merchant.payment_received.';
+  static const waveReplace = 'Changer la cle ou le secret';
+  static const waveDisconnect = 'Deconnecter Wave';
+  static const waveDisconnectQuestion = 'Deconnecter Wave ?';
+  static const waveDisconnectHint =
+      'Djassa oubliera votre cle. Pensez aussi a la revoquer dans le portail Wave Business.';
+  static const waveSafety =
+      'La cle permet de creer des paiements vers votre compte, pas de retirer de l\'argent. Elle est chiffree chez Djassa et vous pouvez la revoquer a tout moment dans Wave.';
+  static const copy = 'Copier';
+  static const copied = 'Copie';
   static const locating = 'Recherche de la position...';
   static const locatingHint = 'Restez dans le commerce, pres d\'une porte ou d\'une fenetre.';
   static const useThisPosition = 'Utiliser cette position ?';

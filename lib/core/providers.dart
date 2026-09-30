@@ -8,6 +8,7 @@ import 'data/sale_repository.dart';
 import 'data/sync_service.dart';
 import 'deals_api.dart';
 import 'location_api.dart';
+import 'wave_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
 import 'net/api_client.dart';
@@ -51,6 +52,7 @@ final dealsApiProvider = Provider<DealsApi>((ref) => DealsApi(ref.watch(apiClien
 final loyaltyApiProvider = Provider<LoyaltyApi>((ref) => LoyaltyApi(ref.watch(apiClientProvider)));
 
 final locationApiProvider = Provider<LocationApi>((ref) => LocationApi(ref.watch(apiClientProvider)));
+final waveApiProvider = Provider<WaveApi>((ref) => WaveApi(ref.watch(apiClientProvider)));
 
 final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
 
