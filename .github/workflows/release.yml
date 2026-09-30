@@ -95,6 +95,11 @@ jobs:
           KEY_PASSWORD="$(tidy ANDROID_KEY_PASSWORD "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}")"
           KEY_ALIAS="$(tidy ANDROID_KEY_ALIAS "$KEY_ALIAS")"
           KEYSTORE_BASE64="$(tidy ANDROID_KEYSTORE_BASE64 "$KEYSTORE_BASE64" | tr -d ' \t')"
+          # Base64 never starts with '=', and its padding follows from its length:
+          # drop a separator copied along ("=MII...") or an extra '=' at the end,
+          # then pad back to a multiple of four.
+          KEYSTORE_BASE64="$(printf '%s' "$KEYSTORE_BASE64" | sed -e 's/^=*//' -e 's/=*$//')"
+          while [ $(( ${#KEYSTORE_BASE64} % 4 )) -ne 0 ]; do KEYSTORE_BASE64="${KEYSTORE_BASE64}="; done
           echo "Secret lengths (not values): keystore base64 ${#KEYSTORE_BASE64}, password ${#KEYSTORE_PASSWORD}, alias '$KEY_ALIAS'."
 
           if ! printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
