@@ -32,7 +32,7 @@ class SignInUnavailable extends SignInResult {
 ///
 /// The backend's `/api/token` authenticates a **single hardcoded demo user**
 /// (`app/api/auth.py:8`). There is no registration, no OTP, no phone-based
-/// login, and no refresh token. `PRODUCT-CONCEPT.md` calls for Tier 0 identity
+/// login, and no refresh token. `djassa-BE/docs/business/CONCEPT.md` calls for Tier 0 identity
 /// anchored to a mobile-money account, which does not exist server-side yet.
 ///
 /// This class therefore speaks the API that exists — username and password —

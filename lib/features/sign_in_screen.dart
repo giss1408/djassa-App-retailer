@@ -11,7 +11,7 @@ import 'about_name_screen.dart';
 ///
 /// The backend authenticates a single hardcoded demo user and offers no
 /// registration or OTP (`app/api/auth.py`), so this asks for a username and
-/// password — the only thing that exists. `PRODUCT-CONCEPT.md` calls for Tier 0
+/// password — the only thing that exists. `djassa-BE/docs/business/CONCEPT.md` calls for Tier 0
 /// identity anchored to a mobile-money number instead; when that lands
 /// server-side this screen changes and nothing behind it does.
 class SignInScreen extends ConsumerStatefulWidget {
