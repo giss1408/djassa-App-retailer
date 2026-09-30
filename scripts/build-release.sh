@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build the merchant APKs for distribution.
 #
-# Usage: scripts/build-release.sh https://api.djassa.ci
+# Usage: scripts/build-release.sh https://djassa-api.onrender.com [extra flutter build args]
+#   e.g. scripts/build-release.sh https://djassa-api.onrender.com --build-name=0.1.0 --build-number=7
 #
 # Produces one APK per ARM ABI plus a universal APK for sideloading, with Dart
 # obfuscation on and the symbol map kept in build/symbols/ so a crash report
@@ -10,9 +11,10 @@ set -euo pipefail
 
 API_BASE="${1:-}"
 if [ -z "$API_BASE" ]; then
-  echo "usage: $0 <https api base url>" >&2
+  echo "usage: $0 <https api base url> [extra flutter build args]" >&2
   exit 2
 fi
+shift
 case "$API_BASE" in
   https://*) ;;
   *) echo "error: API base must be https, got: $API_BASE" >&2; exit 2 ;;
@@ -30,7 +32,8 @@ fi
 # Flutter tool look for a single app-release.apk and report a spurious failure.
 flutter build apk --release \
   --obfuscate --split-debug-info=build/symbols \
-  --dart-define=DJASSA_API_BASE="$API_BASE"
+  --dart-define=DJASSA_API_BASE="$API_BASE" \
+  "$@"
 
 echo
 echo "Artifacts:"

@@ -1,0 +1,159 @@
+# Build the signed test APKs and publish them as a GitHub Release.
+#
+# Trigger: push a version tag, e.g.  git tag v0.1.0 && git push origin v0.1.0
+# (or run it by hand from the Actions tab).
+#
+# The APKs get FIXED names, so these links always serve the newest release and
+# can be shared once on WhatsApp (the site's /app page uses them):
+#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-arm64.apk
+#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-armv7.apk
+#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-universel.apk
+#
+# One-time setup (repository Settings → Secrets and variables → Actions):
+#   Secrets  ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
+#            ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD   (scripts/create-signing-key.sh)
+#   Variable DJASSA_API_BASE  optional; defaults to the Render test API below.
+#   Firebase App Distribution (optional, for the field pilot):
+#   Secrets  FIREBASE_APP_ID, FIREBASE_SERVICE_ACCOUNT_JSON
+#   Variable FIREBASE_TESTER_GROUPS  optional; defaults to "pilote".
+
+name: Release APKs
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  APP: "djassa-marchand"
+  API_BASE: ${{ vars.DJASSA_API_BASE || 'https://djassa-api.onrender.com' }}
+  FLUTTER_VERSION: "3.24.2"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      # The offline-queue tests run SQLite through FFI, which needs the system library.
+      - name: System SQLite
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libsqlite3-dev
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Analyze and test
+        run: |
+          flutter analyze
+          flutter test
+
+      # Never publish an unsigned or debug-signed APK: testers could not update
+      # it, and a debug key would let anyone ship a replacement.
+      - name: Signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ]; then
+            echo "::error::Signing secrets are missing. Run scripts/create-signing-key.sh and add them to the repository secrets."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks"
+          cat > android/key.properties <<PROPS
+          storeFile=$RUNNER_TEMP/release.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}
+          PROPS
+
+      # Version name from the tag (v0.1.0 -> 0.1.0); version code from the run
+      # number, so every release installs as an update over the previous one.
+      - name: Version
+        id: version
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then NAME="${GITHUB_REF#refs/tags/v}"; else NAME="0.0.0-dev"; fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "number=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        run: scripts/build-release.sh "$API_BASE" --build-name="${{ steps.version.outputs.name }}" --build-number="${{ steps.version.outputs.number }}"
+
+      - name: Stable file names
+        run: |
+          mkdir -p dist
+          OUT=build/app/outputs/flutter-apk
+          cp "$OUT/app-arm64-v8a-release.apk"   "dist/$APP-arm64.apk"
+          cp "$OUT/app-armeabi-v7a-release.apk" "dist/$APP-armv7.apk"
+          cp "$OUT/app-release.apk"             "dist/$APP-universel.apk"
+          ( cd dist && sha256sum *.apk > SHA256SUMS.txt && ls -la )
+          echo "ARM64_MB=$(du -m dist/$APP-arm64.apk | cut -f1)" >> "$GITHUB_ENV"
+          echo "ARMV7_MB=$(du -m dist/$APP-armv7.apk | cut -f1)" >> "$GITHUB_ENV"
+          echo "UNIVERSAL_MB=$(du -m dist/$APP-universel.apk | cut -f1)" >> "$GITHUB_ENV"
+
+      # The obfuscation map: needed to read a crash report from the field.
+      # Kept with the run, never attached to the public release.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: symbols-${{ steps.version.outputs.name }}
+          path: build/symbols
+          retention-days: 90
+
+      - name: GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.apk
+            dist/SHA256SUMS.txt
+          body: |
+            **Version de test** — API : ${{ env.API_BASE }} (serveur de test, aucun argent réel).
+
+            **Installer sur Android**
+            1. Téléchargez l'APK adapté à votre téléphone :
+               - `${{ env.APP }}-arm64.apk` (~${{ env.ARM64_MB }} Mo) : la plupart des téléphones récents
+               - `${{ env.APP }}-armv7.apk` (~${{ env.ARMV7_MB }} Mo) : téléphones plus anciens
+               - `${{ env.APP }}-universel.apk` (~${{ env.UNIVERSAL_MB }} Mo) : si vous ne savez pas
+            2. Ouvrez le fichier, puis autorisez « Installer des applications inconnues » pour votre navigateur ou WhatsApp.
+            3. Touchez **Installer**. Les versions suivantes s'installent par-dessus, sans perdre vos données.
+
+      # Field pilot: invite testers by email, see who installed which version.
+      # Skipped until the Firebase secrets exist. No Firebase SDK is added to
+      # the app (docs: no analytics or crash SDK on the merchant's bundle).
+      - name: Firebase App Distribution
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          GROUPS: ${{ vars.FIREBASE_TESTER_GROUPS || 'pilote' }}
+        run: |
+          if [ -z "$FIREBASE_APP_ID" ] || [ -z "$FIREBASE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "Firebase secrets not set: skipping App Distribution."
+            exit 0
+          fi
+          echo "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase.json"
+          npx --yes firebase-tools@13 appdistribution:distribute "dist/$APP-universel.apk" \
+            --app "$FIREBASE_APP_ID" --groups "$GROUPS" \
+            --release-notes "Version ${{ steps.version.outputs.name }} (test, API ${{ env.API_BASE }})"
+          rm -f "$RUNNER_TEMP/firebase.json"
+
+      - name: Clean up signing material
+        if: always()
+        run: rm -f android/key.properties "$RUNNER_TEMP/release.jks"

@@ -35,10 +35,20 @@ flutter run --dart-define=DJASSA_API_BASE=http://10.0.2.2:8000
 The backend's CORS default allows `http://localhost:3000` only, which does not
 affect a native app — but do set `CORS_ORIGINS` if you also run the web site.
 
+## Test distribution
+
+Testers install from one link shared on WhatsApp: `djassa.onrender.com/app`.
+Signed APKs are published as GitHub Releases by
+[`.github/workflows/release.yml`](.github/workflows/release.yml) when a version
+tag is pushed (`scripts/create-signing-key.sh` once, then
+`git tag v0.1.0 && git push origin v0.1.0`). Full procedure, including the free
+backend on Render + Neon and Firebase App Distribution:
+[`../djassa-BE/docs/technical/DEPLOY-TEST.md`](../djassa-BE/docs/technical/DEPLOY-TEST.md).
+
 ## Build for distribution
 
 ```bash
-scripts/build-release.sh https://api.djassa.ci
+scripts/build-release.sh https://djassa-api.onrender.com
 ```
 
 This produces one APK per ARM ABI (13.0 MB for armeabi-v7a, 15.8 MB for arm64)
