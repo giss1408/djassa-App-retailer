@@ -88,11 +88,25 @@ jobs:
             echo "::error::Signing secrets are missing. Run scripts/create-signing-key.sh and add them to the repository secrets."
             exit 1
           fi
-          # Tolerate stray whitespace or line breaks picked up when pasting.
-          KEYSTORE_PASSWORD="$(printf '%s' "$KEYSTORE_PASSWORD" | tr -d '\r\n')"
-          KEY_PASSWORD="$(printf '%s' "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}" | tr -d '\r\n')"
-          KEY_ALIAS="$(printf '%s' "$KEY_ALIAS" | tr -d '\r\n ')"
-          printf '%s' "$KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > "$RUNNER_TEMP/release.jks"
+          # Forgive what copying can add: the secret's own "NAME=" prefix (from
+          # the secrets file), surrounding quotes, spaces and line breaks.
+          tidy() { printf '%s' "$2" | tr -d '\r\n' | sed -e "s/^[[:space:]]*$1=//" -e 's/^[[:space:]]*//; s/[[:space:]]*$//' -e 's/^"\(.*\)"$/\1/' -e "s/^'\(.*\)'$/\1/"; }
+          KEYSTORE_PASSWORD="$(tidy ANDROID_KEYSTORE_PASSWORD "$KEYSTORE_PASSWORD")"
+          KEY_PASSWORD="$(tidy ANDROID_KEY_PASSWORD "${KEY_PASSWORD:-$KEYSTORE_PASSWORD}")"
+          KEY_ALIAS="$(tidy ANDROID_KEY_ALIAS "$KEY_ALIAS")"
+          KEYSTORE_BASE64="$(tidy ANDROID_KEYSTORE_BASE64 "$KEYSTORE_BASE64" | tr -d ' \t')"
+          echo "Secret lengths (not values): keystore base64 ${#KEYSTORE_BASE64}, password ${#KEYSTORE_PASSWORD}, alias '$KEY_ALIAS'."
+
+          if ! printf '%s' "$KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.jks" 2>/dev/null; then
+            bad=$(printf '%s' "$KEYSTORE_BASE64" | LC_ALL=C tr -d 'A-Za-z0-9+/=' | wc -c)
+            echo "::error::ANDROID_KEYSTORE_BASE64 is not valid base64 (${#KEYSTORE_BASE64} characters, $bad not base64). Paste the value alone, as produced by scripts/create-signing-key.sh."
+            exit 1
+          fi
+          # A keystore (PKCS12 or JKS) is DER-encoded: it starts with 0x30 0x82.
+          if [ "$(head -c 2 "$RUNNER_TEMP/release.jks" | od -An -tx1 | tr -d ' \n')" != "3082" ]; then
+            echo "::error::ANDROID_KEYSTORE_BASE64 decodes, but not to a keystore ($(wc -c < "$RUNNER_TEMP/release.jks") bytes). Did you paste the password or another value into it?"
+            exit 1
+          fi
 
           # Check the key before a three-minute build, and say which secret is wrong.
           if ! keytool -list -keystore "$RUNNER_TEMP/release.jks" -storepass "$KEYSTORE_PASSWORD" >/dev/null 2>&1; then
