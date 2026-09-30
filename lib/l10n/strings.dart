@@ -62,6 +62,9 @@ class Strings {
   static const saleType = 'Type';
   static const customerOptional = 'Client (optionnel)';
   static const customerHint = 'Numero de telephone';
+  static const customerEarnsHint = 'Avec son numero, le client gagne des points chez vous.';
+  static const customerPhoneInvalid = 'Numero invalide : 10 chiffres, par ex. 07 12 34 56 78.';
+  static const pointsShort = 'pts';
   static const save = 'Enregistrer';
   static const saving = 'Enregistrement...';
   static const savedOffline = 'Vente enregistree sur le telephone.';
@@ -75,6 +78,27 @@ class Strings {
   static const stateRejected = 'Refusee';
   static const retry = 'Reessayer';
   static const loadFailed = 'Impossible de charger. Verifiez votre connexion.';
+
+  // Customer points at the counter.
+  static const customerPoints = 'Points client';
+  static const customerPointsIntro =
+      'Entrez le numero du client pour voir ses points chez vous et lui donner une recompense.';
+  static const phoneLabel = 'Numero du client';
+  static const lookUp = 'Voir les points';
+  static const lookingUp = 'Recherche...';
+  static const pointsHere = 'points chez vous';
+  static const noRewards = 'Aucune recompense configuree pour votre commerce.';
+  static const give = 'Donner';
+  static const giving = 'Envoi...';
+  static const pointsMissing = 'encore';
+  static const giveConfirm = 'Donner cette recompense ?';
+  static const giveConfirmHint = 'Les points seront retires du compte du client.';
+  static const voucherTitle = 'Recompense donnee';
+  static const voucherCode = 'Code';
+  static const remainingPoints = 'Points restants';
+  static const ok = 'OK';
+  static const pointsNeedConnection = 'Connexion necessaire pour voir les points du client.';
+  static const notEnoughPoints = 'Pas assez de points pour cette recompense.';
 
   // Deals ("bons plans") shown to customers in the Djassa app.
   static const myDeals = 'Mes bons plans';

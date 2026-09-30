@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/model/money.dart';
+import '../core/model/phone.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/money_text.dart';
@@ -79,16 +80,24 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
       return;
     }
 
+    // Checked here, with the customer still at the counter, rather than by the
+    // server after sync: a wrong number found hours later cannot be fixed.
+    final typed = _customer.text.trim();
+    final customer = typed.isEmpty ? null : normalizeIvorianPhone(typed);
+    if (typed.isNotEmpty && customer == null) {
+      setState(() => _error = Strings.customerPhoneInvalid);
+      return;
+    }
+
     setState(() {
       _busy = true;
       _error = null;
     });
 
-    final customer = _customer.text.trim();
     await ref.read(saleRepositoryProvider).recordSale(
           amount: amount,
           type: _type,
-          customerRef: customer.isEmpty ? null : customer,
+          customerRef: customer,
         );
 
     if (!mounted) return;
@@ -180,9 +189,12 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
                 autocorrect: false,
                 enableSuggestions: false,
                 inputFormatters: [LengthLimitingTextInputFormatter(20)],
+                onChanged: (_) => setState(() => _error = null),
                 decoration: const InputDecoration(
                   labelText: Strings.customerOptional,
                   hintText: Strings.customerHint,
+                  helperText: Strings.customerEarnsHint,
+                  helperMaxLines: 2,
                   prefixIcon: Icon(Icons.person_outline_rounded),
                 ),
               ),

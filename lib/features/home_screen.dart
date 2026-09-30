@@ -10,6 +10,7 @@ import '../ui/money_text.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'about_name_screen.dart';
+import 'customer_points_screen.dart';
 import 'deals_screen.dart';
 import 'record_sale_screen.dart';
 
@@ -223,6 +224,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 12),
+                  _QuickAction(
+                    icon: Icons.stars_rounded,
+                    label: Strings.customerPoints,
+                    color: DjassaColors.green,
+                    background: DjassaColors.greenTint,
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerPointsScreen())),
                   ),
                   const SizedBox(height: 28),
                   const SectionHeader(Strings.recentSales),
@@ -494,6 +503,10 @@ class _SaleRow extends StatelessWidget {
                 Text(formatMoney(sale.amount), style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
                 Text('${Strings.shortTime(sale.recordedAt)} - $label', style: text.bodySmall?.copyWith(color: color)),
+                // Shown so the merchant can tell the customer what they earned.
+                if ((sale.pointsAwarded ?? 0) > 0)
+                  Text('+${sale.pointsAwarded} ${Strings.pointsShort}',
+                      style: text.bodySmall?.copyWith(color: DjassaColors.green, fontWeight: FontWeight.w700)),
               ],
             ),
           ),

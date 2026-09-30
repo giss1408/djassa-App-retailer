@@ -1,4 +1,5 @@
 import 'money.dart';
+import 'phone.dart';
 
 /// Where a locally recorded sale stands relative to the server.
 ///
@@ -47,6 +48,7 @@ class Sale {
     this.attemptCount = 0,
     this.lastError,
     this.customerRef,
+    this.pointsAwarded,
   });
 
   /// sqflite rowid. Null until inserted.
@@ -85,10 +87,14 @@ class Sale {
   /// token or a raw server payload.
   final String? lastError;
 
-  /// Optional customer identifier (phone or QR payload) captured at the
-  /// counter. Local-only today: the backend's transaction schema has no field
-  /// for it, and loyalty endpoints do not exist yet.
+  /// The customer's phone number, captured at the counter and normalised to
+  /// E.164 before saving (`normalizeIvorianPhone`). Sent as `customer_phone`,
+  /// so the customer earns this venue's points on the sale.
   final String? customerRef;
+
+  /// Points the server granted the customer, once the sale is accepted. Null
+  /// while pending, or for a sale recorded before points existed.
+  final int? pointsAwarded;
 
   bool get isPending => syncState == SaleSyncState.pending;
 
@@ -99,6 +105,7 @@ class Sale {
     int? attemptCount,
     String? lastError,
     bool clearLastError = false,
+    int? pointsAwarded,
   }) {
     return Sale(
       localId: localId ?? this.localId,
@@ -111,6 +118,7 @@ class Sale {
       attemptCount: attemptCount ?? this.attemptCount,
       lastError: clearLastError ? null : (lastError ?? this.lastError),
       customerRef: customerRef,
+      pointsAwarded: pointsAwarded ?? this.pointsAwarded,
     );
   }
 
@@ -131,7 +139,17 @@ class Sale {
         // The merchant's own clock, so a sale queued overnight counts on the day
         // it was made rather than the day the network came back.
         'occurred_at': recordedAt.toUtc().toIso8601String(),
+        // Only a number that normalises is sent. A sale queued by an older
+        // version of this app may hold free text here; sending it would get
+        // the whole sale rejected, and a rejected sale is money missing from
+        // the merchant's books. Better to record it without the points.
+        if (_customerPhone != null) 'customer_phone': _customerPhone,
       };
+
+  String? get _customerPhone {
+    final ref = customerRef;
+    return ref == null ? null : normalizeIvorianPhone(ref);
+  }
 
   /// The per-operation shape inside `POST /api/merchant/sales/sync`, which is
   /// the same plus the idempotency key.

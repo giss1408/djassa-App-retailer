@@ -186,15 +186,17 @@ class SyncService {
 
       final status = entry['status'];
       final serverId = _serverIdOf(entry['sale']);
+      final points = _pointsOf(entry['sale']);
 
       switch (status) {
         case 'accepted':
-          await _dao.markSynced(localId: sale!.localId!, serverId: serverId);
+          await _dao.markSynced(localId: sale!.localId!, serverId: serverId, pointsAwarded: points);
           sent++;
         case 'already_processed':
           // The key was already on the server: an earlier attempt landed and we
           // never saw the reply. Exactly the duplicate we exist to prevent.
-          await _dao.markSynced(localId: sale!.localId!, serverId: serverId);
+          // The server reports the points it granted then, not new ones.
+          await _dao.markSynced(localId: sale!.localId!, serverId: serverId, pointsAwarded: points);
           already++;
         case 'rejected':
           final reason = entry['error'];
@@ -232,6 +234,14 @@ class SyncService {
       rejected: rejected,
       remaining: await _dao.pendingCount(),
     );
+  }
+
+  int? _pointsOf(Object? sale) {
+    if (sale is Map) {
+      final points = sale['points_awarded'];
+      if (points is int) return points;
+    }
+    return null;
   }
 
   int? _serverIdOf(Object? sale) {

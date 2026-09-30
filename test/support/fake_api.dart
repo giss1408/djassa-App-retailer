@@ -150,6 +150,10 @@ class FakeDjassaServer {
         'occurred_at': op['occurred_at'] ?? DateTime.now().toUtc().toIso8601String(),
         'recorded_at': DateTime.now().toUtc().toIso8601String(),
         'idempotency_key': op['idempotency_key'],
+        // Like the real server: points only when a customer number came with
+        // the sale, at the venue's rate (1 point per 100 F here).
+        'points_awarded': op['customer_phone'] == null ? 0 : double.parse(op['amount'] as String) ~/ 100,
+        'customer': op['customer_phone'] == null ? null : '07 •• •• 56 78',
       };
 
   /// The venue the fake's token belongs to, as the real server would resolve it.

@@ -14,7 +14,7 @@ class AppDatabase {
   static const _fileName = 'djassa.db';
 
   /// Bump on every schema change and add a matching branch in [_migrate].
-  static const int schemaVersion = 1;
+  static const int schemaVersion = 2;
 
   static Future<AppDatabase> open({String? path}) async {
     final dbPath = path ?? p.join(await getDatabasesPath(), _fileName);
@@ -51,7 +51,8 @@ class AppDatabase {
         sync_state       TEXT    NOT NULL DEFAULT 'pending',
         attempt_count    INTEGER NOT NULL DEFAULT 0,
         next_attempt_at  INTEGER,
-        last_error       TEXT
+        last_error       TEXT,
+        points_awarded   INTEGER
       )
     ''');
 
@@ -85,11 +86,14 @@ class AppDatabase {
   }
 
   static Future<void> _migrate(Database db, int from, int to) async {
-    // Only v1 exists. When v2 arrives, add an `if (from < 2)` block here that
-    // migrates forward without dropping the sales table: a merchant who
-    // upgrades with unsynced sales must not lose them.
-    //
-    // Never recreate `sales` from scratch in a migration.
+    // Every step migrates forward in place. A merchant who upgrades with
+    // unsynced sales must not lose them, so never recreate `sales` from
+    // scratch in a migration.
+    if (from < 2) {
+      // v2: points the customer earned on a sale, reported by the server once
+      // it accepts the sale. Nullable, so every existing row stays valid.
+      await db.execute('ALTER TABLE sales ADD COLUMN points_awarded INTEGER');
+    }
   }
 
   Future<void> close() => db.close();

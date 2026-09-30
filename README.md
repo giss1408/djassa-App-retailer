@@ -82,14 +82,20 @@ Working end to end, verified on a Galaxy A51 against the live backend:
 28 tests pass, including the case that matters most: a response dropped *after*
 the server commits does not create a second sale.
 
-Not yet implemented: outlet registration (the merchant id is hardcoded), loyalty
-points, tontines, payment initiation, and Dioula translation.
+Customer points (integration branch): a cash sale can carry the customer's
+phone number, checked on the phone, and the customer earns the venue's points
+once it syncs; the sale list shows "+N pts". The **Points client** screen looks
+up a customer's balance by number and hands over a reward with a voucher code.
+
+Not yet implemented: outlet registration (accounts are created by hand),
+tontines, payment initiation, and Dioula translation.
 
 ## Known backend gaps that affect this app
 
 - Authentication is a hardcoded demo user (`demo` / `demo123`). No registration,
   no OTP, no refresh token.
-- There are no loyalty or points endpoints, although loyalty is the concept
-  doc's first product.
+- Points earned by phone at the counter are not yet visible in the customer
+  app: a customer account cannot prove it owns a number until there is an OTP
+  login, so the two are deliberately not merged.
 
 See the last section of [ARCHITECTURE.md](ARCHITECTURE.md) for the full list.

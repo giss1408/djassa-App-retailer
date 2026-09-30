@@ -184,9 +184,14 @@ Read from `../djassa-BE/backend-api` as of this writing:
 - **Auth is a hardcoded demo user** (`demo` / `demo123`) in `app/api/auth.py`.
   There is no registration, no OTP, no refresh token. `POST /api/token` takes
   an OAuth2 password form and returns an HS256 JWT valid for 24 h.
-- **No loyalty or points endpoints exist.** The concept doc's first product is
-  loyalty, but the backend only has generic `/api/transactions`. Points must
-  either be derived client-side or added to the backend.
+- **Points on cash sales are earned by phone number.** A sale sent to
+  `/api/merchant/sales/sync` may carry `customer_phone`; the server grants the
+  venue's points and returns `points_awarded` per sale. The number is
+  normalised on the device first (`lib/core/model/phone.dart`, mirroring
+  `app/core/phone.py`) so a typo is caught while the customer is still at the
+  counter. Balance and redemption go through
+  `/api/merchant/customers/loyalty` and `/redeem`, as POSTs so the number never
+  sits in a URL. They need a connection: the balance lives on the server.
 - **`user_id` in a request body is ignored**; the server derives ownership from
   the token. The client must not rely on sending it.
 - **Amounts are decimal strings** with 2 places, and the API rejects a currency

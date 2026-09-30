@@ -76,12 +76,13 @@ class SaleDao {
   }
 
   /// Marks a sale accepted by the server.
-  Future<void> markSynced({required int localId, required int? serverId}) async {
+  Future<void> markSynced({required int localId, required int? serverId, int? pointsAwarded}) async {
     await _db.update(
       'sales',
       {
         'sync_state': SaleSyncState.synced.storageValue,
         'server_id': serverId,
+        'points_awarded': pointsAwarded,
         'last_error': null,
         'next_attempt_at': null,
       },
@@ -195,6 +196,7 @@ class SaleDao {
       syncState: SaleSyncState.fromStorage(row['sync_state'] as String),
       attemptCount: (row['attempt_count'] as int?) ?? 0,
       lastError: row['last_error'] as String?,
+      pointsAwarded: row['points_awarded'] as int?,
     );
   }
 }
