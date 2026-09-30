@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Djassa paper, the brand's cream background (djassa-Web tokens.css). -->
+    <color name="djassa_paper">#F5F1E8</color>
+</resources>
