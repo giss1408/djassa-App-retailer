@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
+import 'package:http_parser/http_parser.dart';
 
 import '../config/env.dart';
 import 'api_exception.dart';
@@ -17,6 +18,10 @@ typedef TokenProvider = Future<String?> Function();
 /// Called when the server rejects our token, so the session can be cleared
 /// once instead of at every call site.
 typedef UnauthorizedCallback = Future<void> Function();
+
+/// Tries to renew the session with the refresh token. True when a new access
+/// token is stored and the rejected request is worth one more try.
+typedef SessionRefresher = Future<bool> Function();
 
 /// The single path every byte to the Djassa API travels through.
 ///
@@ -37,15 +42,18 @@ class ApiClient {
     http.Client? inner,
     required TokenProvider tokenProvider,
     UnauthorizedCallback? onUnauthorized,
+    SessionRefresher? onRefresh,
     String? baseUrl,
   })  : _inner = inner ?? _defaultClient(),
         _tokenProvider = tokenProvider,
         _onUnauthorized = onUnauthorized,
+        _onRefresh = onRefresh,
         _baseUrl = _normalizeBase(baseUrl ?? Env.apiBase);
 
   final http.Client _inner;
   final TokenProvider _tokenProvider;
   final UnauthorizedCallback? _onUnauthorized;
+  final SessionRefresher? _onRefresh;
   final String _baseUrl;
 
   /// A client with a connection timeout and no automatic redirect following
@@ -133,27 +141,51 @@ class ApiClient {
     return _asObject(decoded);
   }
 
+  /// PUT a JSON body, returning a decoded JSON list.
+  Future<List<Object?>> putJsonList(String path, {Object? body}) async {
+    final decoded = await _send('PUT', path, jsonBody: body, authenticated: true);
+    if (decoded is! List) throw const MalformedResponseException('Expected a JSON array');
+    return decoded;
+  }
+
   /// DELETE a resource. Expects 204; anything in the body is ignored.
   Future<void> delete(String path) async {
     await _send('DELETE', path, authenticated: true);
   }
 
-  /// POST an `application/x-www-form-urlencoded` body.
-  ///
-  /// Exists for one endpoint: `/api/token` takes an OAuth2 password form, not
-  /// JSON.
-  Future<Map<String, Object?>> postForm(
-    String path,
-    Map<String, String> fields, {
-    bool authenticated = false,
+  /// Uploads one file as the multipart field `file`, streamed from disk so a
+  /// video never sits whole in memory. It gets [Env.uploadTimeout] instead of
+  /// the usual budget: a 20 MB video on 3G takes minutes, not seconds.
+  Future<Map<String, Object?>> uploadFile(
+    String path, {
+    required String filePath,
+    required String contentType,
+    bool isRetry = false,
   }) async {
-    final decoded = await _send(
-      'POST',
-      path,
-      formBody: fields,
-      authenticated: authenticated,
-    );
-    return _asObject(decoded);
+    final token = await _tokenProvider();
+    if (token == null || token.isEmpty) throw const UnauthorizedException('Not signed in');
+    final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl$path'))
+      ..headers['Authorization'] = 'Bearer $token'
+      ..headers['Accept'] = 'application/json'
+      ..files.add(await http.MultipartFile.fromPath('file', filePath, contentType: MediaType.parse(contentType)));
+
+    http.Response response;
+    try {
+      final streamed = await _inner.send(request).timeout(Env.uploadTimeout, onTimeout: _onTimeout);
+      response = await http.Response.fromStream(streamed).timeout(Env.requestTimeout, onTimeout: _onTimeout);
+    } on TimeoutException {
+      throw const NetworkException('L\'envoi a pris trop de temps');
+    } on SocketException {
+      throw const NetworkException('No connection to the server');
+    } on HandshakeException {
+      throw const NetworkException('Could not establish a secure connection');
+    } on http.ClientException catch (error) {
+      throw NetworkException(error.message);
+    }
+    if (response.statusCode == 401 && !isRetry && _onRefresh != null && await _onRefresh()) {
+      return uploadFile(path, filePath: filePath, contentType: contentType, isRetry: true);
+    }
+    return _asObject(await _handleResponse(response, authenticated: true));
   }
 
   Map<String, Object?> _asObject(Object? body) {
@@ -168,9 +200,9 @@ class ApiClient {
     String path, {
     Map<String, String>? query,
     Object? jsonBody,
-    Map<String, String>? formBody,
     String? idempotencyKey,
     required bool authenticated,
+    bool isRetry = false,
   }) async {
     final uri = Uri.parse('$_baseUrl$path').replace(
       queryParameters: (query == null || query.isEmpty) ? null : query,
@@ -193,11 +225,7 @@ class ApiClient {
       request.headers['Idempotency-Key'] = idempotencyKey;
     }
 
-    if (formBody != null) {
-      request.headers['Content-Type'] =
-          'application/x-www-form-urlencoded; charset=utf-8';
-      request.bodyFields = formBody;
-    } else if (jsonBody != null) {
+    if (jsonBody != null) {
       request.headers['Content-Type'] = 'application/json; charset=utf-8';
       request.body = jsonEncode(jsonBody);
     }
@@ -222,15 +250,35 @@ class ApiClient {
       throw NetworkException(error.message);
     }
 
-    return _handleResponse(response);
+    // An access token lives an hour. On a 401, renew it once with the refresh
+    // token and replay the request; only if that fails is the session over.
+    // Safe to replay: a 401 means the server did nothing, and anything that
+    // creates a record carries its idempotency key into the retry.
+    if (response.statusCode == 401 && authenticated && !isRetry && _onRefresh != null) {
+      if (await _onRefresh()) {
+        return _send(
+          method,
+          path,
+          query: query,
+          jsonBody: jsonBody,
+          idempotencyKey: idempotencyKey,
+          authenticated: authenticated,
+          isRetry: true,
+        );
+      }
+    }
+
+    return _handleResponse(response, authenticated: authenticated);
   }
 
   static Never _onTimeout() => throw TimeoutException('request timed out');
 
-  Future<Object?> _handleResponse(http.Response response) async {
+  Future<Object?> _handleResponse(http.Response response, {required bool authenticated}) async {
     final status = response.statusCode;
 
-    if (status == 401) {
+    // A 401 on a call made without a token (a wrong sign-in code) is a refusal
+    // like any 4xx, with a message to show, not the end of a session.
+    if (status == 401 && authenticated) {
       // Clear the session once, centrally, rather than at each call site.
       await _onUnauthorized?.call();
       throw const UnauthorizedException();

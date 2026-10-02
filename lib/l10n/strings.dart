@@ -25,12 +25,70 @@ class Strings {
   // ("Djassa") on a phone that has both.
   static const signInTitle = 'Djassa Pro';
   static const signInSubtitle = 'Espace marchand';
-  static const username = 'Identifiant';
-  static const password = 'Mot de passe';
+  static const signInPhoneLabel = 'Numero de telephone';
+  static const signInPhoneHint = '07 12 34 56 78';
+  static const signInPhoneHelper = 'Le numero enregistre pour votre commerce. Code par SMS.';
+  static const signInSendCode = 'Recevoir le code';
+  static const signInCodeSentTo = 'Code envoye par SMS au';
+  static const signInCodeLabel = 'Code a 6 chiffres';
+  static const signInResendCode = 'Renvoyer le code';
+  static const signInChangeNumber = 'Changer de numero';
   static const signIn = 'Se connecter';
   static const signingIn = 'Connexion...';
-  static const signInRejected = 'Identifiant ou mot de passe incorrect.';
   static const signOut = 'Se deconnecter';
+
+  // Account and recovery
+  static const account = 'Mon compte';
+  static const accountNumber = 'Numero du compte';
+  static const changeNumber = 'Changer de numero';
+  static const changeNumberHint = 'Gardez votre commerce et vos ventes sur un nouveau numero.';
+  static const changeNumberIntro = 'Il faut les deux SIM : un code arrive sur l\'ancien numero, un autre sur le nouveau.';
+  static const newPhone = 'Nouveau numero';
+  static const sendCodes = 'Recevoir les codes';
+  static const oldNumberCode = 'Code recu sur l\'ancien numero';
+  static const newNumberCode = 'Code recu sur le nouveau numero';
+  static const confirmChange = 'Changer de numero';
+  static const numberChanged = 'Votre compte est maintenant sur le';
+  static const signOutOthers = 'Deconnecter les autres telephones';
+  static const signOutOthersHint = 'Telephone perdu ou vole : il perd l\'acces dans l\'heure. Les ventes de ce telephone-ci restent.';
+  static const signOutOthersConfirm = 'Deconnecter tous les autres telephones ?';
+  static const signOutOthersDone = 'Les autres telephones sont deconnectes.';
+  static const lostNumber = 'Numero perdu ?';
+  static const lostNumberTitle = 'Recuperer mon commerce';
+  static const lostNumberIntro = 'Votre ancien numero ne marche plus ? Verifiez votre nouveau numero, puis dites-nous qui vous etes. Djassa vous appelle et transfere votre commerce.';
+  static const oldPhone = 'Ancien numero';
+  static const recoveryDetails = 'Pour vous reconnaitre';
+  static const recoveryDetailsHint = 'Nom du commerce, quartier, votre nom...';
+  static const sendRequest = 'Envoyer la demande';
+  static const requestSent = 'Demande envoyee';
+  static const backToSignIn = 'Retour a la connexion';
+  static const continueLabel = 'Continuer';
+
+  // Joining Djassa as a merchant
+  static const becomePartner = 'Pas encore commercant Djassa ? Inscrivez votre commerce';
+  static const partnerTitle = 'Inscrire mon commerce';
+  static const partnerIntro =
+      'Laissez-nous vos informations : un agent Djassa vous appelle pour finaliser l\'inscription. Ce numero deviendra votre connexion a Djassa Pro.';
+  static const partnerPhone = 'Votre numero';
+  static const partnerContactName = 'Votre nom';
+  static const partnerShopName = 'Nom du commerce';
+  static const partnerCategory = 'Type de commerce';
+  static const partnerCommune = 'Commune ou quartier';
+  static const partnerAddress = 'Adresse ou repere (facultatif)';
+  static const partnerWallet = 'Les clients vous paient avec';
+  static const partnerWalletNone = 'Pas de mobile money pour l\'instant';
+  static const partnerNotes = 'Autre chose a nous dire (facultatif)';
+  static const partnerMissing = 'Remplissez votre nom, le nom du commerce et la commune.';
+  // Keys are the backend's (app/api/customer.py CATEGORIES).
+  static const partnerCategories = {
+    'maquis': 'Maquis, restaurant',
+    'superette': 'Superette, boutique',
+    'pharmacy': 'Pharmacie',
+    'mode': 'Mode',
+    'beaute': 'Beaute, coiffure',
+    'telephonie': 'Telephonie',
+  };
+  static const partnerWallets = {'wave': 'Wave', 'orange': 'Orange Money', 'mtn': 'MTN MoMo', 'moov': 'Moov Money'};
   static const signOutConfirm = 'Se deconnecter ?';
   static const signOutConfirmHint = 'Les ventes non envoyees restent sur ce telephone.';
 
@@ -124,40 +182,72 @@ class Strings {
   static const yesInShop = 'Oui, je suis dans mon commerce';
   static const notNow = 'Non, plus tard';
 
+  // Shop photos and videos
+  static const mediaMenu = 'Photos et videos';
+  static const mediaTitle = 'Photos et videos';
+  static const mediaIntro =
+      'Montrez votre commerce : 10 photos et 3 videos de 60 secondes maximum. Djassa les allege pour que vos clients les voient meme avec peu de credit.';
+  static const mediaAddPhoto = 'Ajouter une photo';
+  static const mediaTakePhoto = 'Prendre une photo';
+  static const mediaAddVideo = 'Ajouter une video';
+  static const mediaPhotos = 'photos';
+  static const mediaVideos = 'videos';
+  static const mediaEmpty = 'Aucune photo pour l\'instant. Une photo de la devanture aide vos clients a vous trouver.';
+  static const mediaUploading = 'Envoi en cours... gardez l\'application ouverte.';
+  static const mediaProcessing = 'Video en preparation. Tirez vers le bas pour actualiser.';
+  static const mediaFailed = 'Echec';
+  static const mediaDelete = 'Supprimer';
+  static const mediaDeleteQuestion = 'Supprimer ce media ?';
+  static const mediaPutFirst = 'Mettre en premier';
+  static const mediaHeavyTitle = 'Video lourde';
+  static const mediaHeavyHint = 'Cette video pese';
+  static const mediaHeavyAdvice = 'Envoyez-la plutot en Wi-Fi pour ne pas consommer votre credit.';
+  static const mediaSendAnyway = 'Envoyer quand meme';
+  static const mediaLimitReached = 'Limite atteinte : supprimez-en un d\'abord.';
+
   // Wave: the merchant's own Wave Business account (pilot).
   static const waveMenu = 'Connecter Wave';
-  static const waveTitle = 'Paiements Wave';
+  static const waveTitle = 'Wave';
   static const waveIntro =
-      'Reliez votre compte Wave Business : les clients qui paient avec Wave dans Djassa paient directement sur votre compte Wave. Djassa ne touche jamais l\'argent.';
+      'Reliez votre compte Wave Business : chaque client qui paie votre QR Wave habituel gagne ses points Djassa automatiquement. Vos clients ne changent rien. Djassa ne touche jamais l\'argent.';
+  static const waveStart = 'Commencer';
   static const waveSteps = [
-    'Ouvrez business.wave.com, section Developpeur, puis Cles API.',
-    'Creez une cle en cochant UNIQUEMENT "Checkout API", et copiez-la (Wave ne l\'affiche qu\'une fois).',
-    'Collez-la ci-dessous et appuyez sur Connecter.',
-    'Djassa affiche ensuite une adresse de webhook a ajouter dans Wave ; collez ici le secret de signature que Wave vous donne.',
+    'Ouvrez business.wave.com sur un ordinateur ou un telephone, section Developpeur, puis Webhooks.',
+    'Ajoutez un webhook avec l\'adresse ci-dessous. Choisissez "Secret de signature" et cochez l\'evenement merchant.payment_received.',
+    'Wave affiche un secret de signature : collez-le ci-dessous et enregistrez.',
+  ];
+  static const waveSecretLabel = 'Secret de signature du webhook';
+  static const waveSecretMissing = 'Collez le secret de signature donne par Wave.';
+  static const waveSave = 'Enregistrer';
+  static const waveSaved = 'Enregistre';
+  static const wavePointsOn = 'Points Wave actifs : vos clients Wave gagnent leurs points automatiquement.';
+  static const wavePointsOff = 'Pas encore actif : ajoutez le webhook dans Wave, puis collez le secret.';
+  static const waveLastEvent = 'Dernier message de Wave :';
+  static const waveWebhookAddress = 'Adresse du webhook a coller dans Wave';
+  static const waveSafetyPoints =
+      'Le secret de signature sert seulement a verifier que les messages viennent de Wave. Il ne permet ni de creer ni de deplacer un paiement.';
+  static const waveReplaceSecret = 'Changer le secret';
+
+  // Optional: paying the shop from inside the Djassa app.
+  static const wavePayTitle = 'Paiement dans l\'app Djassa (facultatif)';
+  static const wavePayIntro =
+      'Sans cela, vos clients paient votre QR Wave comme d\'habitude et gagnent leurs points. Avec, ils peuvent aussi payer depuis l\'app Djassa. Il faut alors une cle API Wave.';
+  static const wavePaySteps = [
+    'Dans business.wave.com, section Developpeur, Cles API : creez une cle en cochant UNIQUEMENT "Checkout API".',
+    'Dans votre webhook Wave, cochez aussi checkout.session.completed et checkout.session.payment_failed.',
+    'Collez la cle ci-dessous.',
   ];
   static const waveScopeWarning =
       'Cochez uniquement "Checkout API". Ne cochez JAMAIS "Payout API" (envoi d\'argent) : avec cette permission, la cle pourrait vider votre compte si elle etait volee.';
   static const waveKeyLabel = 'Cle API Wave';
-  static const waveSecretLabel = 'Secret de signature du webhook';
-  static const waveSecretHelp = 'Facultatif au debut : les paiements se confirment aussi sans lui, plus lentement.';
   static const waveKeyMissing = 'Collez la cle API Wave complete.';
-  static const waveConnect = 'Connecter';
-  static const waveUpdate = 'Enregistrer';
-  static const waveConnected = 'Compte Wave connecte';
-  static const waveConnectedKey = 'Wave connecte, cle';
-  static const waveWebhookOk = 'Webhook configure : les paiements sont confirmes instantanement.';
-  static const waveWebhookMissing = 'Webhook pas encore configure : ajoutez l\'adresse ci-dessous dans Wave, puis collez le secret.';
-  static const waveLastEvent = 'Dernier message de Wave :';
-  static const waveWebhookAddress = 'Adresse du webhook a coller dans Wave';
-  static const waveWebhookEvents =
-      'Evenements a cocher : checkout.session.completed, checkout.session.payment_failed, merchant.payment_received.';
-  static const waveReplace = 'Changer la cle ou le secret';
+  static const wavePayOn = 'Paiement dans l\'app actif, cle';
+  static const wavePaySafety =
+      'La cle permet de creer des paiements vers votre compte, pas de retirer de l\'argent. Elle est chiffree chez Djassa et vous pouvez la revoquer a tout moment dans Wave.';
   static const waveDisconnect = 'Deconnecter Wave';
   static const waveDisconnectQuestion = 'Deconnecter Wave ?';
   static const waveDisconnectHint =
-      'Djassa oubliera votre cle. Pensez aussi a la revoquer dans le portail Wave Business.';
-  static const waveSafety =
-      'La cle permet de creer des paiements vers votre compte, pas de retirer de l\'argent. Elle est chiffree chez Djassa et vous pouvez la revoquer a tout moment dans Wave.';
+      'Djassa oubliera le secret et la cle. Supprimez aussi le webhook et revoquez la cle dans le portail Wave Business.';
   static const copy = 'Copier';
   static const copied = 'Copie';
   static const locating = 'Recherche de la position...';

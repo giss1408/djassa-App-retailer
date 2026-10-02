@@ -27,6 +27,13 @@ dependencies:
   # HTTP with explicit timeouts and gzip. `http` is thinner than dio and
   # enough for a handful of endpoints.
   http: ^1.2.2
+  # MediaType for multipart uploads. Already a dependency of `http`.
+  http_parser: ^4.0.2
+
+  # Where the error reporter keeps unsent reports between launches
+  # (lib/core/monitoring/). Already compiled in through flutter_secure_storage,
+  # so declaring it adds nothing to the APK.
+  path_provider: ^2.1.4
 
   # One GPS fix, taken only when the merchant confirms they are standing in
   # the shop, so customers get directions to it. Never in the background.
@@ -36,6 +43,12 @@ dependencies:
   # Draws the payment QR the customer scans (Encaisser, Mon QR fixe). Pure
   # Dart, no native code: the QR is rendered on the phone, nothing is fetched.
   qr_flutter: ^4.1.0
+
+  # Shop photos and videos (Photos et videos screen). Uses Android's own
+  # photo picker and camera apps, so it bundles no camera or codec code;
+  # photos are shrunk on the phone (maxWidth, imageQuality) before upload,
+  # which is most of the saving on a prepaid bundle.
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

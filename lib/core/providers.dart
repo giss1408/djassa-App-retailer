@@ -8,6 +8,7 @@ import 'data/sale_repository.dart';
 import 'data/sync_service.dart';
 import 'deals_api.dart';
 import 'location_api.dart';
+import 'media_api.dart';
 import 'wave_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
@@ -25,11 +26,22 @@ final databaseProvider = FutureProvider<AppDatabase>((ref) async {
   return db;
 });
 
-final apiClientProvider = Provider<ApiClient>((ref) {
+final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
   final tokenStore = ref.watch(tokenStoreProvider);
   final client = ApiClient(
-    tokenProvider: tokenStore.readToken,
-    // A 401 from any call means the token is dead. Clear it once, here, so no
+    // An access token past its hour is renewed before the request rather
+    // than spending a round trip on a certain 401. Read lazily: the auth
+    // repository itself talks through this client.
+    tokenProvider: () async {
+      final token = await tokenStore.readToken();
+      if (token == null || token.isEmpty || !isTokenExpired(token)) return token;
+      return await ref.read(authRepositoryProvider).refresh() ? tokenStore.readToken() : token;
+    },
+    // A 401 anyway (token revoked, clock skew): renew once and replay.
+    // Offline, renewal throws a NetworkException instead of answering, so a
+    // merchant with queued sales is never signed out by a dead cell.
+    onRefresh: () => ref.read(authRepositoryProvider).refresh(),
+    // Renewal refused too: the session is over. Clear it once, here, so no
     // call site has to remember to.
     onUnauthorized: () async {
       await tokenStore.clear();
@@ -40,7 +52,7 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   return client;
 });
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
+final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     client: ref.watch(apiClientProvider),
     tokenStore: ref.watch(tokenStoreProvider),
@@ -52,6 +64,7 @@ final dealsApiProvider = Provider<DealsApi>((ref) => DealsApi(ref.watch(apiClien
 final loyaltyApiProvider = Provider<LoyaltyApi>((ref) => LoyaltyApi(ref.watch(apiClientProvider)));
 
 final locationApiProvider = Provider<LocationApi>((ref) => LocationApi(ref.watch(apiClientProvider)));
+final mediaApiProvider = Provider<MediaApi>((ref) => MediaApi(ref.watch(apiClientProvider)));
 final waveApiProvider = Provider<WaveApi>((ref) => WaveApi(ref.watch(apiClientProvider)));
 
 final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
@@ -108,13 +121,8 @@ class SessionNotifier extends Notifier<SessionState> {
     );
   }
 
-  Future<SignInResult> signIn({
-    required String username,
-    required String password,
-  }) async {
-    final result = await ref
-        .read(authRepositoryProvider)
-        .signIn(username: username, password: password);
+  Future<SignInResult> verifyCode({required String phone, required String code}) async {
+    final result = await ref.read(authRepositoryProvider).verifyCode(phone: phone, code: code);
     if (result is SignInSuccess) {
       state = SessionState(
         signedIn: true,
@@ -128,6 +136,12 @@ class SessionNotifier extends Notifier<SessionState> {
   Future<void> signOut() async {
     await ref.read(authRepositoryProvider).signOut();
     state = const SessionState(signedIn: false, checked: true);
+  }
+
+
+  /// The account moved to another number; this device holds its new session.
+  void onNumberChanged(String username) {
+    state = SessionState(signedIn: true, username: username, checked: true);
   }
 
   /// Called when the server rejects our token mid-session.

@@ -10,9 +10,11 @@ import '../ui/money_text.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'about_name_screen.dart';
+import 'account_screen.dart';
 import 'collect_payment_screen.dart';
 import 'customer_points_screen.dart';
 import 'deals_screen.dart';
+import 'media_screen.dart';
 import 'record_sale_screen.dart';
 import 'shop_location_screen.dart';
 import 'wave_connect_screen.dart';
@@ -312,7 +314,11 @@ class _AccountMenu extends StatelessWidget {
       offset: const Offset(0, 52),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DjassaRadius.md)),
       onSelected: (v) {
-        if (v == 'about') {
+        if (v == 'media') {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MediaScreen()));
+        } else if (v == 'account') {
+          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
+        } else if (v == 'about') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutNameScreen()));
         } else if (v == 'wave') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WaveConnectScreen()));
@@ -324,12 +330,20 @@ class _AccountMenu extends StatelessWidget {
       },
       itemBuilder: (_) => const [
         PopupMenuItem(
+          value: 'media',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.photo_library_outlined), title: Text(Strings.mediaMenu)),
+        ),
+        PopupMenuItem(
           value: 'wave',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.account_balance_wallet_outlined), title: Text(Strings.waveMenu)),
         ),
         PopupMenuItem(
           value: 'location',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.storefront_outlined), title: Text(Strings.shopLocation)),
+        ),
+        PopupMenuItem(
+          value: 'account',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.manage_accounts_outlined), title: Text(Strings.account)),
         ),
         PopupMenuItem(
           value: 'about',

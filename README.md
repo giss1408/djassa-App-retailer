@@ -81,7 +81,8 @@ cable, so no shared Wi-Fi is needed and the traffic never leaves the USB link.
 
 Working end to end, verified on a Galaxy A51 against the live backend:
 
-- Sign-in against `/api/token`, token held in the Android Keystore.
+- Sign-in with the shop's phone number and an SMS code; access and refresh
+  tokens held in the Android Keystore, the session renewed silently.
 - Record a sale offline; it is durable on disk before anything touches the
   network.
 - Batched sync through `/api/transactions/sync` with device-generated
@@ -102,10 +103,10 @@ tontines, payment initiation, and Dioula translation.
 
 ## Known backend gaps that affect this app
 
-- Authentication is a hardcoded demo user (`demo` / `demo123`). No registration,
-  no OTP, no refresh token.
-- Points earned by phone at the counter are not yet visible in the customer
-  app: a customer account cannot prove it owns a number until there is an OTP
-  login, so the two are deliberately not merged.
+- A shop is created by an agent (`POST /api/admin/venues`), or from a
+  merchant's own request (*Inscrire mon commerce* on the sign-in screen),
+  approved by an admin after a call. There is no fully self-service signup.
+- SMS codes cost money per message; production needs `OTP_SENDER` configured
+  (see the backend's `.env` notes in `app/services/otp_sender.py`).
 
 See the last section of [ARCHITECTURE.md](ARCHITECTURE.md) for the full list.

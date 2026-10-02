@@ -57,7 +57,10 @@ we never need that scope on a handset we do not control.
 |---|---|
 | `flutter_riverpod` | State and dependency injection without codegen. Compile-time safe, testable without a widget tree. |
 | `sqflite` | The offline sale queue needs real durability. SQLite ships with Android, so no engine is bundled. Raw SQL, hand-written DAOs — Drift's codegen was not worth the APK weight here. |
-| `flutter_secure_storage` | Access token in the Android Keystore. `SharedPreferences` is world-readable to anyone with adb or root. |
+| `flutter_secure_storage` | Access and refresh tokens in the Android Keystore. `SharedPreferences` is world-readable to anyone with adb or root. |
+| `image_picker` | Shop photos and videos (*Photos et videos*). Hands over to Android's own picker and camera apps, so no camera or codec code is bundled. Photos are shrunk on the phone (1600 px, JPEG 80) before upload: a 4 MB shot goes up as ~300 KB. |
+| `http_parser` | `MediaType` for the multipart upload. Already a dependency of `http`. |
+| `path_provider` | Where unsent error reports wait between launches. Already compiled in through `flutter_secure_storage`, so declaring it costs nothing. |
 | `http` | A handful of endpoints with explicit timeouts. Thinner than `dio`. |
 | `path` | Joining the database path. Transitive anyway. |
 | `geolocator` | One GPS fix of the shop, so customers get directions to it (the customer app's "Itinéraire"). Taken only after the merchant confirms "I am in my shop", in the foreground, never in the background. Costs about 0.3 MB per APK. `geolocator_android` is pinned to 4.6.1 in `dependency_overrides`: 4.6.2 does not build with Flutter 3.24. |
@@ -108,8 +111,17 @@ The merchant pays for every byte out of a prepaid bundle, so:
   needed on every merchant's phone. Adding it is a backend task worth doing.
 - The app **never polls** and never refreshes on its own; sync is triggered by
   recording a sale, by the merchant, or by a pull-to-refresh.
-- **No images over the network.** No avatars, no logos fetched at runtime.
-- **No analytics or crash SDK.** Those upload silently on the merchant's bundle.
+- **No images over the network**, with one exception the merchant asks for:
+  the *Photos et videos* screen shows its own 320 px thumbnails (~15 KB
+  each), only while open. Videos are never downloaded by this app. Uploads
+  have their own 10-minute budget (`Env.uploadTimeout`), and a video over
+  20 MB asks first and suggests Wi-Fi.
+- **No analytics or third-party crash SDK.** Those upload silently on the
+  merchant's bundle. Errors go to our own backend instead
+  (`lib/core/monitoring/error_reporter.dart` → `POST /api/client-events`):
+  deduplicated with a count, at most 30 queued, sent in one request at start-up
+  or when the app returns to the foreground, never on a timer. A healthy app
+  sends nothing. Messages are stripped of digit runs before they leave.
 
 ## Security decisions
 
@@ -163,7 +175,8 @@ lib/
   core/            no Flutter UI imports, ever
     config/        build-time env, feature limits
     net/           http client, gzip, timeouts, error mapping
-    auth/          token storage and lifecycle
+    auth/          phone + SMS code sign-in, token storage and renewal
+    monitoring/    uncaught error capture and reporting
     data/          sqflite schema, DAOs, the sync queue
     model/         plain Dart types mirroring the API schemas
   features/        one directory per merchant task
@@ -185,9 +198,17 @@ Checked against the running backend, not just read from the source:
 
 Read from `../djassa-BE/backend-api` as of this writing:
 
-- **Auth is a hardcoded demo user** (`demo` / `demo123`) in `app/api/auth.py`.
-  There is no registration, no OTP, no refresh token. `POST /api/token` takes
-  an OAuth2 password form and returns an HS256 JWT valid for 24 h.
+- **Sign-in is phone + SMS code** (`app/api/auth.py`). `POST /api/auth/otp/request`
+  sends a 6-digit code; `/api/auth/otp/verify` with `app: "merchant"` returns a
+  60-minute access token and a 90-day single-use refresh token, but only for a
+  number an admin has given the merchant role and linked to a venue
+  (`POST /api/admin/users/roles`). The token subject is `tel:+225…`.
+  `/api/auth/refresh` rotates the pair; replaying a used refresh token revokes
+  the session on every device that holds it, which is why renewals in the app
+  are single-flight. A renewal that cannot reach the server throws a
+  `NetworkException` instead of failing, so a merchant offline with queued
+  sales is never signed out. The old `/api/token` demo login answers 404 in
+  production.
 - **Points on cash sales are earned by phone number.** A sale sent to
   `/api/merchant/sales/sync` may carry `customer_phone`; the server grants the
   venue's points and returns `points_awarded` per sale. The number is

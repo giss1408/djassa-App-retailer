@@ -26,21 +26,31 @@ class Env {
   );
 
   /// Sign-in prefill for development, e.g.
-  ///   --dart-define=DJASSA_DEV_USERNAME=demo
-  ///   --dart-define=DJASSA_DEV_PASSWORD=demo123
-  /// Empty unless passed, and ignored in a release build (see
-  /// `devUsername`/`devPassword`), so no credential can ship in an APK by
-  /// accident.
-  static const String _devUsername = String.fromEnvironment('DJASSA_DEV_USERNAME');
-  static const String _devPassword = String.fromEnvironment('DJASSA_DEV_PASSWORD');
+  ///   --dart-define=DJASSA_DEV_PHONE=0712345678
+  /// Empty unless passed, and ignored in a release build, so no number can
+  /// ship in an APK by accident. Locally the backend's console sender with
+  /// OTP_DEV_ECHO=1 returns the code too, so no SIM is needed.
+  static const String _devPhone = String.fromEnvironment('DJASSA_DEV_PHONE');
 
-  static String get devUsername => isRelease ? '' : _devUsername;
-  static String get devPassword => isRelease ? '' : _devPassword;
+  static String get devPhone => isRelease ? '' : _devPhone;
+
+  /// Reported with each error so a crash maps to the build that shipped it.
+  /// Keep in step with `version:` in pubspec.yaml; the release script passes
+  /// it as --dart-define=DJASSA_APP_VERSION=<version>.
+  static const String appVersion = String.fromEnvironment('DJASSA_APP_VERSION', defaultValue: '0.1.0+1');
+
+  /// Debug builds print errors instead of reporting them, unless asked with
+  /// --dart-define=DJASSA_REPORT_ERRORS=true (to test the pipeline locally).
+  static const bool reportErrors = isRelease || bool.fromEnvironment('DJASSA_REPORT_ERRORS');
 
   /// Wall-clock budget for a single request. Deliberately generous: a 2G
   /// round trip in a market can take several seconds, and failing early just
   /// makes the merchant retry and spend the bytes twice.
   static const Duration requestTimeout = Duration(seconds: 30);
+
+  /// Budget for sending one photo or video. Long on purpose: a video on a
+  /// slow cell takes minutes, and cutting it off would waste what was sent.
+  static const Duration uploadTimeout = Duration(minutes: 10);
 
   /// Budget for establishing the TCP+TLS connection.
   static const Duration connectTimeout = Duration(seconds: 15);

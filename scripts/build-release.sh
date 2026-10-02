@@ -30,9 +30,24 @@ fi
 # No --split-per-abi here: the splits{} block in android/app/build.gradle
 # already emits one APK per ABI plus the universal one. Passing both makes the
 # Flutter tool look for a single app-release.apk and report a spurious failure.
+# Error reports carry this version (lib/core/monitoring/error_reporter.dart),
+# so a stack can be matched to the symbols archived for that exact build.
+# CI passes --build-name/--build-number, which override pubspec.yaml.
+APP_VERSION="$(sed -n 's/^version: *//p' pubspec.yaml)"
+BUILD_NAME="${APP_VERSION%%+*}"
+BUILD_NUMBER="${APP_VERSION#*+}"
+for arg in "$@"; do
+  case "$arg" in
+    --build-name=*) BUILD_NAME="${arg#*=}" ;;
+    --build-number=*) BUILD_NUMBER="${arg#*=}" ;;
+  esac
+done
+APP_VERSION="$BUILD_NAME+$BUILD_NUMBER"
+
 flutter build apk --release \
-  --obfuscate --split-debug-info=build/symbols \
+  --obfuscate --split-debug-info="build/symbols/$APP_VERSION" \
   --dart-define=DJASSA_API_BASE="$API_BASE" \
+  --dart-define=DJASSA_APP_VERSION="$APP_VERSION" \
   "$@"
 
 echo
@@ -41,4 +56,5 @@ echo "Artifacts:"
 # `flutter run`, which are several times larger and must never be distributed.
 ls -la build/app/outputs/flutter-apk/*release*.apk
 echo
-echo "Symbol maps (archive these, do not ship them): build/symbols/"
+echo "Symbol maps (archive these, do not ship them): build/symbols/$APP_VERSION/"
+echo "Read a reported stack with: flutter symbolize -i stack.txt -d build/symbols/$APP_VERSION/app.android-arm.symbols"

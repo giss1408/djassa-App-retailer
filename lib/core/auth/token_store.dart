@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Persists the access token in the Android Keystore.
+/// Persists the access and refresh tokens in the Android Keystore.
 ///
 /// Not `SharedPreferences`: that is a plain XML file in the app's data
 /// directory, readable by adb backup on older devices, by root, and by any
@@ -26,6 +26,7 @@ class TokenStore {
   final FlutterSecureStorage _storage;
 
   static const _tokenKey = 'access_token';
+  static const _refreshKey = 'refresh_token';
   static const _usernameKey = 'username';
 
   /// In-memory cache so a request does not hit the Keystore every time. The
@@ -47,6 +48,16 @@ class TokenStore {
     return _cachedToken;
   }
 
+  /// The long-lived token that renews the access token (`/api/auth/refresh`).
+  /// Read rarely, about once an hour, so it is not cached in memory.
+  Future<String?> readRefreshToken() async {
+    try {
+      return await _storage.read(key: _refreshKey);
+    } on Exception {
+      return null;
+    }
+  }
+
   Future<String?> readUsername() async {
     try {
       return await _storage.read(key: _usernameKey);
@@ -55,10 +66,14 @@ class TokenStore {
     }
   }
 
-  Future<void> save({required String token, required String username}) async {
+  /// [username] is what the UI shows: the masked phone ("07 •• •• 56 78").
+  /// [refreshToken] is null only for a renewed access token whose refresh
+  /// token did not change.
+  Future<void> save({required String token, String? refreshToken, required String username}) async {
     _cachedToken = token;
     _cacheLoaded = true;
     await _storage.write(key: _tokenKey, value: token);
+    if (refreshToken != null) await _storage.write(key: _refreshKey, value: refreshToken);
     await _storage.write(key: _usernameKey, value: username);
   }
 
@@ -73,6 +88,7 @@ class TokenStore {
     _cacheLoaded = true;
     try {
       await _storage.delete(key: _tokenKey);
+      await _storage.delete(key: _refreshKey);
       await _storage.delete(key: _usernameKey);
     } on Exception {
       // Nothing useful to do; the in-memory cache is already cleared.
@@ -88,9 +104,9 @@ class TokenStore {
 /// request we already know will 401 — the client's opinion of expiry is a
 /// bandwidth optimisation, nothing more.
 ///
-/// The backend signs HS256 tokens with a 24 h lifetime
-/// (`app/core/security.py:14`) and provides no refresh endpoint, so a merchant
-/// signs in again each day.
+/// Phone sign-in access tokens live 60 minutes (`app/api/auth.py`); an
+/// expired one is renewed with the refresh token before the request is sent,
+/// so the user signs in again only after 90 days without opening the app.
 DateTime? jwtExpiry(String token) {
   final parts = token.split('.');
   if (parts.length != 3) return null;
