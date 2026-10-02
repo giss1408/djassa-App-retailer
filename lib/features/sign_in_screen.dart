@@ -53,7 +53,7 @@ class SignInScreen extends StatelessWidget {
                 const PhoneSignInForm(),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const PartnerRequestScreen())),
+                  onPressed: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'partner_request'), builder: (_) => const PartnerRequestScreen())),
                   icon: const Icon(Icons.storefront_outlined),
                   label: const Text(Strings.becomePartner, textAlign: TextAlign.center),
                 ),
@@ -61,7 +61,7 @@ class SignInScreen extends StatelessWidget {
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const AboutNameScreen()),
+                      MaterialPageRoute(settings: const RouteSettings(name: 'about_name'), builder: (_) => const AboutNameScreen()),
                     ),
                     child: const Text(Strings.aboutNameLink),
                   ),

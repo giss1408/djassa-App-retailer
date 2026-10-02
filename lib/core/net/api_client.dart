@@ -23,6 +23,10 @@ typedef UnauthorizedCallback = Future<void> Function();
 /// token is stored and the rejected request is worth one more try.
 typedef SessionRefresher = Future<bool> Function();
 
+/// Told how many bytes one call cost (request and response, headers
+/// estimated, TLS not counted), so the pilot can report data used per user.
+typedef TrafficCallback = void Function(int sent, int received);
+
 /// The single path every byte to the Djassa API travels through.
 ///
 /// Responsibilities, all of them bandwidth- or security-driven:
@@ -43,8 +47,10 @@ class ApiClient {
     required TokenProvider tokenProvider,
     UnauthorizedCallback? onUnauthorized,
     SessionRefresher? onRefresh,
+    TrafficCallback? onTraffic,
     String? baseUrl,
   })  : _inner = inner ?? _defaultClient(),
+        _onTraffic = onTraffic,
         _tokenProvider = tokenProvider,
         _onUnauthorized = onUnauthorized,
         _onRefresh = onRefresh,
@@ -54,6 +60,7 @@ class ApiClient {
   final TokenProvider _tokenProvider;
   final UnauthorizedCallback? _onUnauthorized;
   final SessionRefresher? _onRefresh;
+  final TrafficCallback? _onTraffic;
   final String _baseUrl;
 
   /// A client with a connection timeout and no automatic redirect following
@@ -182,6 +189,7 @@ class ApiClient {
     } on http.ClientException catch (error) {
       throw NetworkException(error.message);
     }
+    _count(request.contentLength, request.headers, response);
     if (response.statusCode == 401 && !isRetry && _onRefresh != null && await _onRefresh()) {
       return uploadFile(path, filePath: filePath, contentType: contentType, isRetry: true);
     }
@@ -249,6 +257,7 @@ class ApiClient {
     } on http.ClientException catch (error) {
       throw NetworkException(error.message);
     }
+    _count(request.bodyBytes.length, request.headers, response);
 
     // An access token lives an hour. On a 401, renew it once with the refresh
     // token and replay the request; only if that fails is the session over.
@@ -272,6 +281,14 @@ class ApiClient {
   }
 
   static Never _onTimeout() => throw TimeoutException('request timed out');
+
+  void _count(int bodySent, Map<String, String> headersSent, http.Response response) {
+    final onTraffic = _onTraffic;
+    if (onTraffic == null) return;
+    int headerBytes(Map<String, String> headers) =>
+        headers.entries.fold(64, (sum, h) => sum + h.key.length + h.value.length + 4);
+    onTraffic(bodySent + headerBytes(headersSent), response.bodyBytes.length + headerBytes(response.headers));
+  }
 
   Future<Object?> _handleResponse(http.Response response, {required bool authenticated}) async {
     final status = response.statusCode;

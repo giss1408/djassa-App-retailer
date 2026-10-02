@@ -63,7 +63,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             title: const Text(Strings.changeNumber),
             subtitle: const Text(Strings.changeNumberHint),
             enabled: !_busy,
-            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ChangeNumberScreen())),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'change_number'), builder: (_) => const ChangeNumberScreen())),
           ),
           ListTile(
             leading: const Icon(Icons.phonelink_erase_rounded),

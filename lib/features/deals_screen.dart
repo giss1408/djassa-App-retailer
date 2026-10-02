@@ -46,7 +46,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
 
   Future<void> _new() async {
     final published = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const NewDealScreen()),
+      MaterialPageRoute(settings: const RouteSettings(name: 'new_deal'), builder: (_) => const NewDealScreen()),
     );
     if (published != true || !mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(Strings.dealPublished)));

@@ -12,6 +12,7 @@ import 'media_api.dart';
 import 'wave_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
+import 'monitoring/usage_tracker.dart';
 import 'net/api_client.dart';
 
 /// Wiring for the whole app. Nothing here holds UI state.
@@ -26,17 +27,29 @@ final databaseProvider = FutureProvider<AppDatabase>((ref) async {
   return db;
 });
 
+/// Pilot usage analytics. Disabled here; `main` overrides it with the live
+/// tracker, so tests and previews never send anything.
+final usageTrackerProvider = Provider<UsageTracker>((ref) => UsageTracker(app: 'retailer', enabled: false));
+
+/// The current access token, renewed first when it is past its hour. Shared
+/// by the API client and the usage tracker (which ties events to the shop).
+final Provider<TokenProvider> freshTokenProvider = Provider<TokenProvider>((ref) {
+  final tokenStore = ref.watch(tokenStoreProvider);
+  // Read lazily: the auth repository itself talks through the API client.
+  return () async {
+    final token = await tokenStore.readToken();
+    if (token == null || token.isEmpty || !isTokenExpired(token)) return token;
+    return await ref.read(authRepositoryProvider).refresh() ? tokenStore.readToken() : token;
+  };
+});
+
 final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
   final tokenStore = ref.watch(tokenStoreProvider);
   final client = ApiClient(
     // An access token past its hour is renewed before the request rather
-    // than spending a round trip on a certain 401. Read lazily: the auth
-    // repository itself talks through this client.
-    tokenProvider: () async {
-      final token = await tokenStore.readToken();
-      if (token == null || token.isEmpty || !isTokenExpired(token)) return token;
-      return await ref.read(authRepositoryProvider).refresh() ? tokenStore.readToken() : token;
-    },
+    // than spending a round trip on a certain 401.
+    tokenProvider: ref.watch(freshTokenProvider),
+    onTraffic: ref.watch(usageTrackerProvider).addTraffic,
     // A 401 anyway (token revoked, clock skew): renew once and replay.
     // Offline, renewal throws a NetworkException instead of answering, so a
     // merchant with queued sales is never signed out by a dead cell.

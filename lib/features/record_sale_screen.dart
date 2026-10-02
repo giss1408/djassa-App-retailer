@@ -43,8 +43,24 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
   bool _busy = false;
   String? _error;
 
+  // Pilot measures: how long recording takes, and where merchants give up.
+  final _opened = Stopwatch()..start();
+  bool _saved = false;
+  late final _usage = ref.read(usageTrackerProvider);
+
+  @override
+  void initState() {
+    super.initState();
+    _usage.track('sale_form_opened');
+  }
+
   @override
   void dispose() {
+    if (!_saved) {
+      // How far the merchant got, never what they typed.
+      final step = _amount.text.trim().isEmpty ? 'empty' : (_error != null ? 'error' : 'amount_entered');
+      _usage.track('sale_abandoned', {'step': step});
+    }
     _amount.dispose();
     _customer.dispose();
     super.dispose();
@@ -99,6 +115,12 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
           type: _type,
           customerRef: customer,
         );
+    _saved = true;
+    // In 5-second steps (capped at 2 minutes) so a busy day stays a handful
+    // of counted entries; the with/without-customer split shows whether the
+    // phone-number step is what slows merchants down.
+    final seconds = (((_opened.elapsed.inSeconds + 4) ~/ 5) * 5).clamp(5, 120);
+    _usage.track('sale_recorded', {'seconds': seconds, 'with_customer': customer != null});
 
     if (!mounted) return;
     // The sale is on disk. Close immediately — the merchant has a queue of

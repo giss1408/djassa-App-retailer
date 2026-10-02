@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/config/env.dart';
 import '../core/data/sync_service.dart';
 import '../core/model/money.dart';
 import '../core/model/sale.dart';
@@ -92,6 +93,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   ///
   /// An offline attempt is explicitly *not* an error: the sales are safe on the
   /// phone, and saying so is the difference between trust and panic.
+  /// Pilot: after 4 pm, once a day, until answered.
+  bool get _askDailyReport {
+    final usage = ref.read(usageTrackerProvider);
+    return Env.pilotDailyReport && usage.enabled && DateTime.now().hour >= 16 && !usage.trackedToday('daily_report');
+  }
+
+  void _answerDailyReport(int estimate) {
+    ref.read(usageTrackerProvider)
+      ..track('daily_report', {'sales_estimate': estimate})
+      ..markToday('daily_report');
+    setState(() => _notice = Strings.dailyReportThanks);
+  }
+
   String? _noticeFor(SyncOutcome outcome) {
     if (!outcome.didReachServer) return Strings.noConnection;
     final total = outcome.sent + outcome.alreadyOnServer;
@@ -101,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _openRecordSale() async {
     final recorded = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const RecordSaleScreen()),
+      MaterialPageRoute(settings: const RouteSettings(name: 'record_sale'), builder: (_) => const RecordSaleScreen()),
     );
     if (recorded != true) return;
 
@@ -196,6 +210,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   // rule this app cannot trade away for a nicer visual, since
                   // it is what makes a merchant trust the app with their books.
                   _QueueBanner(pending: _pending, rejected: _rejected, syncing: _syncing, onSync: _sync),
+                  if (_askDailyReport) ...[
+                    const SizedBox(height: 12),
+                    _DailyReportCard(onAnswer: _answerDailyReport),
+                  ],
                   if (_notice != null) ...[
                     const SizedBox(height: 10),
                     Row(
@@ -227,7 +245,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           label: Strings.collect,
                           color: Colors.white,
                           background: DjassaColors.green,
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CollectPaymentScreen())),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'collect_payment'), builder: (_) => const CollectPaymentScreen())),
                         ),
                       ),
                     ],
@@ -241,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           label: Strings.myDeals,
                           color: DjassaColors.orangeDeep,
                           background: DjassaColors.orangeTint,
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const DealsScreen())),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'deals'), builder: (_) => const DealsScreen())),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -251,7 +269,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           label: Strings.customerPoints,
                           color: DjassaColors.green,
                           background: DjassaColors.greenTint,
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CustomerPointsScreen())),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'customer_points'), builder: (_) => const CustomerPointsScreen())),
                         ),
                       ),
                     ],
@@ -315,15 +333,15 @@ class _AccountMenu extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(DjassaRadius.md)),
       onSelected: (v) {
         if (v == 'media') {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const MediaScreen()));
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'media'), builder: (_) => const MediaScreen()));
         } else if (v == 'account') {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AccountScreen()));
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'account'), builder: (_) => const AccountScreen()));
         } else if (v == 'about') {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AboutNameScreen()));
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'about_name'), builder: (_) => const AboutNameScreen()));
         } else if (v == 'wave') {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const WaveConnectScreen()));
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'wave_connect'), builder: (_) => const WaveConnectScreen()));
         } else if (v == 'location') {
-          Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ShopLocationScreen()));
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'shop_location'), builder: (_) => const ShopLocationScreen()));
         } else if (v == 'logout') {
           onSignOut();
         }
@@ -558,6 +576,43 @@ class _SaleRow extends StatelessWidget {
             ),
           ),
           if (onRetry != null) TextButton(onPressed: onRetry, child: const Text(Strings.retry)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pilot: "how many sales today, roughly?", one tap, once a day. Ranges
+/// rather than a number to type: quicker at closing time, and close enough
+/// for a share. Each range is sent as its middle value.
+class _DailyReportCard extends StatelessWidget {
+  const _DailyReportCard({required this.onAnswer});
+
+  final void Function(int estimate) onAnswer;
+
+  static const _ranges = [('0-5', 3), ('6-10', 8), ('11-20', 15), ('21-50', 35), ('50+', 60)];
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return SoftCard(
+      color: DjassaColors.sand,
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(Strings.dailyReportQuestion, style: text.titleSmall),
+          const SizedBox(height: 2),
+          Text(Strings.dailyReportHint, style: text.bodySmall),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final (label, estimate) in _ranges)
+                ActionChip(label: Text(label), onPressed: () => onAnswer(estimate)),
+            ],
+          ),
         ],
       ),
     );

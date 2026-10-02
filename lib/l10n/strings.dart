@@ -98,6 +98,11 @@ class Strings {
   static const noSalesYet = 'Aucune vente enregistree aujourd\'hui.';
   static const noSalesYetHint = 'Vos ventes du jour et leur montant total apparaitront ici.';
   static const recordSale = 'Enregistrer une vente';
+
+  // Pilot: end-of-day estimate (the denominator of "share of sales recorded").
+  static const dailyReportQuestion = "Aujourd'hui, combien de ventes environ ?";
+  static const dailyReportHint = 'Toutes vos ventes, meme celles pas notees ici. Une seule reponse par jour.';
+  static const dailyReportThanks = 'Merci ! A demain.';
   static const recentSales = 'Dernieres ventes';
   static const seeAll = 'Tout voir';
   static const menu = 'Menu';

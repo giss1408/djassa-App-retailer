@@ -122,6 +122,19 @@ The merchant pays for every byte out of a prepaid bundle, so:
   deduplicated with a count, at most 30 queued, sent in one request at start-up
   or when the app returns to the foreground, never on a timer. A healthy app
   sends nothing. Messages are stripped of digit runs before they leave.
+- **Usage for the pilot goes the same way, to our own backend**
+  (`lib/core/monitoring/usage_tracker.dart` → `POST /api/usage-events`).
+  A random install id (not a device id) counts installs; the shop is attached
+  from the token because the pilot is measured per merchant. Events are
+  aggregated per day on the device (40 sales are one entry with a count),
+  sent at start-up or on return to the foreground, never on a timer, and the
+  byte counter alone never triggers a request. What is sent: screen names,
+  the sale form (opened, recorded in 5-second steps, abandoned and how far),
+  the pilot's end-of-day sales estimate (`Env.pilotDailyReport`), and the
+  bytes each API call cost (`ApiClient.onTraffic`). Never what was typed,
+  never an amount or a phone number. Pushed screens need a
+  `RouteSettings(name:)`: release builds are obfuscated, so class names are
+  not readable labels.
 
 ## Security decisions
 

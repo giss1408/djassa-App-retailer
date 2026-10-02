@@ -43,6 +43,12 @@ class Env {
   /// --dart-define=DJASSA_REPORT_ERRORS=true (to test the pipeline locally).
   static const bool reportErrors = isRelease || bool.fromEnvironment('DJASSA_REPORT_ERRORS');
 
+  /// Pilot only: the end-of-day "how many sales today?" question, the
+  /// denominator of the share of sales recorded. Remove once that share is
+  /// high enough to make the question moot (planning W4-3); turn off sooner
+  /// with --dart-define=DJASSA_PILOT_DAILY_REPORT=false.
+  static const bool pilotDailyReport = bool.fromEnvironment('DJASSA_PILOT_DAILY_REPORT', defaultValue: true);
+
   /// Wall-clock budget for a single request. Deliberately generous: a 2G
   /// round trip in a market can take several seconds, and failing early just
   /// makes the merchant retry and spend the bytes twice.

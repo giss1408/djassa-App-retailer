@@ -167,7 +167,7 @@ class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
         if (!_codeStep) ...[
           const SizedBox(height: 8),
           TextButton(
-            onPressed: _busy ? null : () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const LostNumberScreen())),
+            onPressed: _busy ? null : () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'lost_number'), builder: (_) => const LostNumberScreen())),
             child: const Text(Strings.lostNumber),
           ),
         ],

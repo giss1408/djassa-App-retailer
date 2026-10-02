@@ -153,7 +153,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
           IconButton(
             tooltip: Strings.fixedQr,
             icon: const Icon(Icons.qr_code_2_rounded),
-            onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FixedQrScreen())),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'fixed_qr'), builder: (_) => const FixedQrScreen())),
           ),
         ],
       ),
