@@ -6,12 +6,13 @@
 "pro" is set in Instrument Serif italic (assets/fonts) and turned into
 outlines, so the result does not depend on the fonts installed. It sits in a
 green pill: paper text that reads on the green icon and on the paper splash
-screen alike. Everything stays inside the circle a launcher keeps when it crops
-the adaptive icon (61% of the canvas), which Android 12+ also uses as the
-splash icon.
+screen alike, and on any wallpaper: the icons have no tile behind them (the
+adaptive icon's background layer is transparent). Everything stays inside the
+circle a launcher keeps when it crops the adaptive icon (61% of the canvas),
+which Android 12+ also uses as the splash icon.
 
 Writes, for each density: mipmap-*/ic_launcher_foreground.png (adaptive icon),
-mipmap-*/ic_launcher.png (pre-Android 8 launchers) and drawable-*/launch_logo.png
+mipmap-*/ic_launcher.png (pre-Android 8 launchers, no tile) and drawable-*/launch_logo.png
 (splash before Android 12).
 """
 
@@ -93,11 +94,9 @@ def main() -> None:
     art = composition()
     # Adaptive foreground: 108 dp, the launcher supplies the green background.
     foreground = svg(art)
-    # Legacy launchers: no mask, so draw the green tile and enlarge the art.
-    legacy = svg(
-        f'<g transform="translate(512 512) scale(1.4) translate(-512 -512)">{art}</g>',
-        f'<rect width="1024" height="1024" rx="224" fill="{GREEN}"/>',
-    )
+    # Legacy launchers: no mask to crop for, so enlarge the art. No tile
+    # behind it, as on the adaptive icon.
+    legacy = svg(f'<g transform="translate(512 512) scale(1.4) translate(-512 -512)">{art}</g>')
     # Splash before Android 12: on paper, centred by launch_background.xml.
     splash = svg(f'<g transform="translate(512 512) scale(1.5) translate(-512 -512)">{art}</g>')
     with tempfile.TemporaryDirectory() as tmp:

@@ -2,7 +2,4 @@
 <resources>
     <!-- Djassa paper, the brand's cream background (djassa-Web tokens.css). -->
     <color name="djassa_paper">#F5F1E8</color>
-    <!-- Djassa green (the site's green token): the merchant app's icon background,
-         so "Djassa Pro" is told apart from the customer app's cream icon. -->
-    <color name="djassa_green">#234B39</color>
 </resources>
