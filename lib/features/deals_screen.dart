@@ -17,7 +17,11 @@ import 'new_deal_screen.dart';
 /// dialog before ending a deal, same error message that quotes the server's
 /// own words rather than a generic failure.
 class DealsScreen extends ConsumerStatefulWidget {
-  const DealsScreen({super.key});
+  const DealsScreen({super.key, this.readOnly = false});
+
+  /// A cashier sees the shop's deals, to answer customers, but publishing and
+  /// ending them stays with the owner.
+  final bool readOnly;
 
   @override
   ConsumerState<DealsScreen> createState() => _DealsScreenState();
@@ -102,17 +106,19 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              FilledButton.icon(
-                onPressed: atLimit ? null : _new,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text(Strings.newDeal),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                atLimit ? Strings.maxDealsReached : Strings.maxDealsHint,
-                style: text.bodySmall?.copyWith(color: atLimit ? DjassaColors.orangeDeep : null),
-              ),
-              const SizedBox(height: 24),
+              if (!widget.readOnly) ...[
+                FilledButton.icon(
+                  onPressed: atLimit ? null : _new,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text(Strings.newDeal),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  atLimit ? Strings.maxDealsReached : Strings.maxDealsHint,
+                  style: text.bodySmall?.copyWith(color: atLimit ? DjassaColors.orangeDeep : null),
+                ),
+                const SizedBox(height: 24),
+              ],
               if (_error != null)
                 LoadError(onRetry: _load, message: _error!, retryLabel: Strings.retry)
               else if (deals == null)
@@ -123,7 +129,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                 for (final d in deals)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: DealTile(deal: d, ending: _ending == d.id, onEnd: _ending == null ? () => _end(d) : null),
+                    child: DealTile(deal: d, ending: _ending == d.id, canEnd: !widget.readOnly, onEnd: _ending == null ? () => _end(d) : null),
                   ),
             ],
           ),
@@ -135,10 +141,13 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
 
 /// One live deal: what it offers, until when, and a way to end it.
 class DealTile extends StatelessWidget {
-  const DealTile({super.key, required this.deal, required this.onEnd, this.ending = false});
+  const DealTile({super.key, required this.deal, required this.onEnd, this.ending = false, this.canEnd = true});
 
   final Deal deal;
   final VoidCallback? onEnd;
+
+  /// False for a cashier: no "end" button at all, rather than a dead one.
+  final bool canEnd;
   final bool ending;
 
   @override
@@ -182,12 +191,13 @@ class DealTile extends StatelessWidget {
               ],
             ),
           ),
-          TextButton(
-            onPressed: onEnd,
-            child: ending
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text(Strings.endDeal),
-          ),
+          if (canEnd)
+            TextButton(
+              onPressed: onEnd,
+              child: ending
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text(Strings.endDeal),
+            ),
         ],
       ),
     );

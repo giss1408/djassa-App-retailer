@@ -137,6 +137,14 @@ void main() {
     expect(find.text(Strings.noDeals), findsOneWidget);
   });
 
+  testWidgets('a cashier sees the deals but cannot publish or end them', (tester) async {
+    final server = _DealsServer()..deals.add({'id': 7, 'title': 'Garba a 1000 F', 'price': 1000, 'ends_at': '2026-12-01T00:00:00'});
+    await _pump(tester, server, const DealsScreen(readOnly: true));
+    expect(find.text('Garba a 1000 F'), findsOneWidget);
+    expect(find.text(Strings.newDeal), findsNothing);
+    expect(find.text(Strings.endDeal), findsNothing);
+  });
+
   testWidgets('offline says so in plain words and offers a retry', (tester) async {
     final server = _DealsServer()..offline = true;
     await _pump(tester, server, const DealsScreen());

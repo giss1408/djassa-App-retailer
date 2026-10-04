@@ -108,17 +108,28 @@ class TokenStore {
 /// expired one is renewed with the refresh token before the request is sent,
 /// so the user signs in again only after 90 days without opening the app.
 DateTime? jwtExpiry(String token) {
+  final exp = _jwtClaims(token)?['exp'];
+  if (exp is! int) return null;
+  return DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+}
+
+/// The session's role: "merchant" for the shop owner, "cashier" for staff the
+/// owner added. Same caveat as [jwtExpiry]: it only decides what the app
+/// shows; the server refuses an owner-only request from a cashier anyway.
+/// Tokens from before cashiers existed carry "merchant" or nothing.
+String jwtRole(String token) {
+  final role = _jwtClaims(token)?['role'];
+  return role is String && role.isNotEmpty ? role : 'merchant';
+}
+
+Map<Object?, Object?>? _jwtClaims(String token) {
   final parts = token.split('.');
   if (parts.length != 3) return null;
   try {
-    final payload = parts[1];
     // base64url without padding, which Dart's decoder requires.
-    final normalized = base64Url.normalize(payload);
+    final normalized = base64Url.normalize(parts[1]);
     final decoded = jsonDecode(utf8.decode(base64Url.decode(normalized)));
-    if (decoded is! Map) return null;
-    final exp = decoded['exp'];
-    if (exp is! int) return null;
-    return DateTime.fromMillisecondsSinceEpoch(exp * 1000, isUtc: true);
+    return decoded is Map ? decoded : null;
   } on Exception {
     return null;
   }

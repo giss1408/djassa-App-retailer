@@ -12,6 +12,7 @@ import 'media_api.dart';
 import 'wave_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
+import 'staff_api.dart';
 import 'monitoring/usage_tracker.dart';
 import 'net/api_client.dart';
 
@@ -81,6 +82,7 @@ final mediaApiProvider = Provider<MediaApi>((ref) => MediaApi(ref.watch(apiClien
 final waveApiProvider = Provider<WaveApi>((ref) => WaveApi(ref.watch(apiClientProvider)));
 
 final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
+final staffApiProvider = Provider<StaffApi>((ref) => StaffApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {
   // Depends on the database being open; the UI gates on [databaseProvider]
@@ -103,12 +105,19 @@ final saleRepositoryProvider = Provider<SaleRepository>((ref) {
   );
 });
 
-/// Whether the merchant is signed in.
+/// Whether the merchant is signed in, and as whom.
 class SessionState {
-  const SessionState({required this.signedIn, this.username, this.checked = false});
+  const SessionState({required this.signedIn, this.username, this.checked = false, this.role = 'merchant'});
 
   final bool signedIn;
   final String? username;
+
+  /// "merchant" (the shop owner) or "cashier" (staff the owner added). A
+  /// cashier records sales, collects payments and serves points; money
+  /// settings, deals, photos, location and the team stay with the owner.
+  final String role;
+
+  bool get isOwner => role != 'cashier';
 
   /// Whether the stored token has been inspected yet. Distinguishes "signed
   /// out" from "we have not looked", so the app does not flash the login screen
@@ -131,7 +140,13 @@ class SessionNotifier extends Notifier<SessionState> {
       signedIn: valid,
       username: valid ? await auth.currentUsername() : null,
       checked: true,
+      role: await _role(),
     );
+  }
+
+  Future<String> _role() async {
+    final token = await ref.read(tokenStoreProvider).readToken();
+    return token == null || token.isEmpty ? 'merchant' : jwtRole(token);
   }
 
   Future<SignInResult> verifyCode({required String phone, required String code}) async {
@@ -141,6 +156,7 @@ class SessionNotifier extends Notifier<SessionState> {
         signedIn: true,
         username: result.username,
         checked: true,
+        role: await _role(),
       );
     }
     return result;
@@ -154,7 +170,7 @@ class SessionNotifier extends Notifier<SessionState> {
 
   /// The account moved to another number; this device holds its new session.
   void onNumberChanged(String username) {
-    state = SessionState(signedIn: true, username: username, checked: true);
+    state = SessionState(signedIn: true, username: username, checked: true, role: state.role);
   }
 
   /// Called when the server rejects our token mid-session.

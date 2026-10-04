@@ -18,6 +18,7 @@ import 'deals_screen.dart';
 import 'media_screen.dart';
 import 'record_sale_screen.dart';
 import 'shop_location_screen.dart';
+import 'staff_screen.dart';
 import 'wave_connect_screen.dart';
 
 /// What the merchant sees on opening the app.
@@ -151,7 +152,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final username = ref.watch(sessionProvider).username;
+    final session = ref.watch(sessionProvider);
+    final username = session.username;
     final name = username == null || username.isEmpty ? null : '${username[0].toUpperCase()}${username.substring(1)}';
 
     return Scaffold(
@@ -184,11 +186,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(height: 2),
                               Text(name ?? 'Djassa', style: serifStyle(36, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
                               const SizedBox(height: 4),
-                              Text(Strings.homeTagline, style: TextStyle(color: Colors.white.withOpacity(0.88), fontSize: 13.5)),
+                              Text(session.isOwner ? Strings.homeTagline : Strings.cashierBadge,
+                                  style: TextStyle(color: Colors.white.withOpacity(0.88), fontSize: 13.5)),
                             ],
                           ),
                         ),
-                        _AccountMenu(initial: name?[0] ?? 'D', onSignOut: _confirmSignOut),
+                        _AccountMenu(initial: name?[0] ?? 'D', isOwner: session.isOwner, onSignOut: _confirmSignOut),
                       ],
                     ),
                   ),
@@ -259,7 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           label: Strings.myDeals,
                           color: DjassaColors.orangeDeep,
                           background: DjassaColors.orangeTint,
-                          onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'deals'), builder: (_) => const DealsScreen())),
+                          onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'deals'), builder: (_) => DealsScreen(readOnly: !session.isOwner))),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -318,11 +321,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 /// Initial in a translucent disc; opens sign-out and the name explainer.
-/// Same shape as the customer app's account menu.
+/// Same shape as the customer app's account menu. A cashier sees only their
+/// account, the explainer and sign-out: the shop's settings are the owner's.
 class _AccountMenu extends StatelessWidget {
-  const _AccountMenu({required this.initial, required this.onSignOut});
+  const _AccountMenu({required this.initial, required this.isOwner, required this.onSignOut});
 
   final String initial;
+  final bool isOwner;
   final VoidCallback onSignOut;
 
   @override
@@ -340,13 +345,21 @@ class _AccountMenu extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'about_name'), builder: (_) => const AboutNameScreen()));
         } else if (v == 'wave') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'wave_connect'), builder: (_) => const WaveConnectScreen()));
+        } else if (v == 'team') {
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'team'), builder: (_) => const StaffScreen()));
         } else if (v == 'location') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'shop_location'), builder: (_) => const ShopLocationScreen()));
         } else if (v == 'logout') {
           onSignOut();
         }
       },
-      itemBuilder: (_) => const [
+      itemBuilder: (_) => [
+        // The shop's settings: owner only.
+        if (isOwner) ...const [
+        PopupMenuItem(
+          value: 'team',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.group_outlined), title: Text(Strings.team)),
+        ),
         PopupMenuItem(
           value: 'media',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.photo_library_outlined), title: Text(Strings.mediaMenu)),
@@ -359,15 +372,16 @@ class _AccountMenu extends StatelessWidget {
           value: 'location',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.storefront_outlined), title: Text(Strings.shopLocation)),
         ),
-        PopupMenuItem(
+        ],
+        const PopupMenuItem(
           value: 'account',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.manage_accounts_outlined), title: Text(Strings.account)),
         ),
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'about',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.auto_stories_outlined), title: Text(Strings.aboutNameLink)),
         ),
-        PopupMenuItem(
+        const PopupMenuItem(
           value: 'logout',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.logout_rounded), title: Text(Strings.signOut)),
         ),

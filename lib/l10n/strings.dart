@@ -27,7 +27,7 @@ class Strings {
   static const signInSubtitle = 'Espace marchand';
   static const signInPhoneLabel = 'Numero de telephone';
   static const signInPhoneHint = '07 12 34 56 78';
-  static const signInPhoneHelper = 'Le numero enregistre pour votre commerce. Code par SMS.';
+  static const signInPhoneHelper = 'Votre numero de gerant ou de caissier. Code par SMS.';
   static const signInSendCode = 'Recevoir le code';
   static const signInCodeSentTo = 'Code envoye par SMS au';
   static const signInCodeLabel = 'Code a 6 chiffres';
@@ -212,6 +212,28 @@ class Strings {
 
   // Wave: the merchant's own Wave Business account (pilot).
   static const waveMenu = 'Connecter Wave';
+
+  // Team: cashiers the owner adds (lib/features/staff_screen.dart)
+  static const team = 'Mon equipe';
+  static const teamIntro = 'Vos caissiers enregistrent les ventes, encaissent et donnent les points, chacun sur son telephone. Wave, bons plans, photos et position restent a vous.';
+  static const addCashier = 'Ajouter un caissier';
+  static const addCashierHint = 'Il recoit un SMS et se connecte a Djassa Pro avec ce numero.';
+  static const cashierPhone = 'Numero du caissier';
+  static const cashierName = 'Prenom (facultatif)';
+  static const cashierPhoneNeeded = 'Entrez le numero du caissier';
+  static const cashierAdded = 'Caissier ajoute. Il peut se connecter.';
+  static const cashierInvited = 'Pas encore connecte';
+  static const cashierActive = 'Connecte';
+  static const removeCashier = 'Retirer';
+  static const removeCashierConfirm = 'Retirer ce caissier ?';
+  static const removeCashierHint = 'Il perd l\'acces tout de suite, sur tous ses telephones. Ses ventes restent dans vos comptes.';
+  static const cashierRemoved = 'Caissier retire.';
+  static const noCashiers = 'Pas encore de caissier';
+  static const noCashiersHint = 'Ajoutez les personnes qui tiennent la caisse.';
+  static const teamNeedsConnection = 'Il faut une connexion pour gerer l\'equipe.';
+  static const add = 'Ajouter';
+  // Shown to a cashier, under the greeting.
+  static const cashierBadge = 'Caissier';
   static const waveTitle = 'Wave';
   static const waveIntro =
       'Reliez votre compte Wave Business : chaque client qui paie votre QR Wave habituel gagne ses points Djassa automatiquement. Vos clients ne changent rien. Djassa ne touche jamais l\'argent.';
