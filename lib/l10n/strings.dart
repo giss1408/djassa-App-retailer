@@ -88,7 +88,8 @@ class Strings {
   static const partnerMissing = 'Remplissez votre nom, le nom du commerce et la commune.';
   // Keys are the backend's (app/api/customer.py CATEGORIES).
   static const partnerCategories = {
-    'maquis': 'Maquis, restaurant',
+    'maquis': 'Maquis',
+    'restaurant': 'Restaurant',
     'superette': 'Superette, boutique',
     'pharmacy': 'Pharmacie',
     'mode': 'Mode',
