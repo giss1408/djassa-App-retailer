@@ -49,4 +49,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <!-- Lets Android 11+ hand the suggestions wa.me link to WhatsApp. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 </manifest>

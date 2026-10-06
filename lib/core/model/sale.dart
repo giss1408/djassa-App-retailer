@@ -48,6 +48,7 @@ class Sale {
     this.attemptCount = 0,
     this.lastError,
     this.customerRef,
+    this.customerConsent = false,
     this.pointsAwarded,
   });
 
@@ -92,6 +93,10 @@ class Sale {
   /// so the customer earns this venue's points on the sale.
   final String? customerRef;
 
+  /// The merchant asked and the customer agreed that Djassa keeps their
+  /// number for points. Without it the number is not sent (see [toApiJson]).
+  final bool customerConsent;
+
   /// Points the server granted the customer, once the sale is accepted. Null
   /// while pending, or for a sale recorded before points existed.
   final int? pointsAwarded;
@@ -118,6 +123,7 @@ class Sale {
       attemptCount: attemptCount ?? this.attemptCount,
       lastError: clearLastError ? null : (lastError ?? this.lastError),
       customerRef: customerRef,
+      customerConsent: customerConsent,
       pointsAwarded: pointsAwarded ?? this.pointsAwarded,
     );
   }
@@ -143,12 +149,19 @@ class Sale {
         // version of this app may hold free text here; sending it would get
         // the whole sale rejected, and a rejected sale is money missing from
         // the merchant's books. Better to record it without the points.
-        if (_customerPhone != null) 'customer_phone': _customerPhone,
+        //
+        // Same for a number without the customer's consent (queued before
+        // this app asked for it): the server would refuse the sale for a
+        // number it has no consent for, so it goes without the number.
+        if (_customerPhone != null) ...{
+          'customer_phone': _customerPhone,
+          'customer_consent': true,
+        },
       };
 
   String? get _customerPhone {
     final ref = customerRef;
-    return ref == null ? null : normalizeIvorianPhone(ref);
+    return ref == null || !customerConsent ? null : normalizeIvorianPhone(ref);
   }
 
   /// The per-operation shape inside `POST /api/merchant/sales/sync`, which is

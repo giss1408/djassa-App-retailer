@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/model/deal.dart';
+import '../l10n/strings.dart';
 import 'theme.dart';
 
 /// Shared presentational pieces, mirroring djassa-App-user/lib/ui/widgets.dart
@@ -355,6 +357,44 @@ class LoadingCards extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+
+/// The diagonal corner banner customers see on a deal's image: green
+/// "BON PLAN", red "FLASH", or the yellow "PROMO" sticker. Same colours and
+/// words as the customer app's; the corner is whichever one the card leaves free.
+class DealRibbonBanner extends StatelessWidget {
+  const DealRibbonBanner({
+    super.key,
+    required this.ribbon,
+    required this.child,
+    this.radius = DjassaRadius.lg,
+    this.location = BannerLocation.topEnd,
+  });
+
+  final DealRibbon ribbon;
+  final Widget child;
+  final double radius;
+  final BannerLocation location;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, ink) = switch (ribbon) {
+      DealRibbon.bonPlan => (Strings.ribbonBonPlan, DjassaColors.green, Colors.white),
+      DealRibbon.flash => (Strings.ribbonFlash, DjassaColors.danger, Colors.white),
+      DealRibbon.promo => (Strings.ribbonPromo, const Color(0xFFFFC83D), DjassaColors.ink),
+    };
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: Banner(
+        message: label,
+        location: location,
+        color: color,
+        textStyle: TextStyle(color: ink, fontSize: 9.5, fontWeight: FontWeight.w900, letterSpacing: 0.6, height: 1),
+        child: child,
+      ),
     );
   }
 }

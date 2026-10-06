@@ -7,6 +7,7 @@ import '../core/net/api_exception.dart';
 import '../core/providers.dart';
 import '../l10n/strings.dart';
 import '../ui/theme.dart';
+import '../ui/widgets.dart';
 import 'deals_screen.dart';
 
 enum _Kind { percent, price }
@@ -32,6 +33,7 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
   final _description = TextEditingController();
   _Kind _kind = _Kind.price;
   String _duration = '1 semaine';
+  DealRibbon _ribbon = DealRibbon.bonPlan;
   bool _busy = false;
   String? _error;
 
@@ -50,6 +52,7 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
         price: _kind == _Kind.price ? int.tryParse(_price.text) : null,
         originalPrice: _kind == _Kind.price ? int.tryParse(_original.text) : null,
         duration: Strings.dealDurations[_duration]!,
+        ribbon: _ribbon,
       );
 
   Future<void> _publish() async {
@@ -168,6 +171,21 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
                 ],
               ),
               const SizedBox(height: 20),
+              Text(Strings.dealRibbon, style: text.labelMedium),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final ribbon in DealRibbon.values)
+                    ChoiceChip(
+                      label: Text(Strings.ribbonChoices[ribbon.wire]!),
+                      selected: _ribbon == ribbon,
+                      onSelected: _busy ? null : (_) => setState(() => _ribbon = ribbon),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 20),
               TextField(
                 controller: _description,
                 enabled: !_busy,
@@ -230,32 +248,35 @@ class _Preview extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final offer = dealOffer(draft.discountPercent, draft.price, draft.originalPrice);
     final ends = DateTime.now().add(draft.duration);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: DjassaColors.surface,
-        border: Border.all(color: DjassaColors.orangeTint, width: 1.5),
-        borderRadius: BorderRadius.circular(DjassaRadius.lg),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(offer.isEmpty ? '...' : offer, style: serifStyle(30, color: DjassaColors.orangeDeep)),
-          const SizedBox(height: 4),
-          Text(draft.title.trim().isEmpty ? Strings.dealTitleHint : draft.title.trim(), style: text.titleMedium),
-          if (draft.description != null && draft.description!.trim().isNotEmpty) ...[
-            const SizedBox(height: 2),
-            Text(draft.description!.trim(), style: text.bodySmall),
-          ],
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
-              const SizedBox(width: 4),
-              Text('${Strings.endsOn} ${Strings.shortDate(ends)}', style: text.bodySmall),
+    return DealRibbonBanner(
+      ribbon: draft.ribbon,
+        child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: DjassaColors.surface,
+          border: Border.all(color: DjassaColors.orangeTint, width: 1.5),
+          borderRadius: BorderRadius.circular(DjassaRadius.lg),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(offer.isEmpty ? '...' : offer, style: serifStyle(30, color: DjassaColors.orangeDeep)),
+            const SizedBox(height: 4),
+            Text(draft.title.trim().isEmpty ? Strings.dealTitleHint : draft.title.trim(), style: text.titleMedium),
+            if (draft.description != null && draft.description!.trim().isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(draft.description!.trim(), style: text.bodySmall),
             ],
-          ),
-        ],
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                const SizedBox(width: 4),
+                Text('${Strings.endsOn} ${Strings.shortDate(ends)}', style: text.bodySmall),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -45,6 +45,7 @@ class SaleRepository {
     required Money amount,
     required String type,
     String? customerRef,
+    bool customerConsent = false,
     DateTime? recordedAt,
   }) async {
     if (amount.isNegative || amount.isZero) {
@@ -58,6 +59,7 @@ class SaleRepository {
       type: type,
       recordedAt: recordedAt ?? DateTime.now(),
       customerRef: customerRef,
+      customerConsent: customerConsent,
     );
 
     final stored = await _dao.insert(sale);

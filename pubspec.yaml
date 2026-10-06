@@ -30,6 +30,9 @@ dependencies:
   # MediaType for multipart uploads. Already a dependency of `http`.
   http_parser: ^4.0.2
 
+  # Opens WhatsApp for suggestions to the Djassa team (same as the customer app).
+  url_launcher: ^6.3.0
+
   # Where the error reporter keeps unsent reports between launches
   # (lib/core/monitoring/). Already compiled in through flutter_secure_storage,
   # so declaring it adds nothing to the APK.

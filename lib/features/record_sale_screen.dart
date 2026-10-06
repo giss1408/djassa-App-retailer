@@ -40,6 +40,8 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
   final _amount = TextEditingController();
   final _customer = TextEditingController();
   String _type = 'sale';
+  // Never pre-ticked: the merchant asks, the customer answers.
+  bool _consent = false;
   bool _busy = false;
   String? _error;
 
@@ -104,6 +106,10 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
       setState(() => _error = Strings.customerPhoneInvalid);
       return;
     }
+    if (customer != null && !_consent) {
+      setState(() => _error = Strings.customerConsentRequired);
+      return;
+    }
 
     setState(() {
       _busy = true;
@@ -114,6 +120,7 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
           amount: amount,
           type: _type,
           customerRef: customer,
+          customerConsent: customer != null && _consent,
         );
     _saved = true;
     // In 5-second steps (capped at 2 minutes) so a busy day stays a handful
@@ -220,6 +227,19 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
                   prefixIcon: Icon(Icons.person_outline_rounded),
                 ),
               ),
+              if (_customer.text.trim().isNotEmpty)
+                CheckboxListTile(
+                  value: _consent,
+                  onChanged: _busy ? null : (v) => setState(() {
+                        _consent = v ?? false;
+                        _error = null;
+                      }),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: EdgeInsets.zero,
+                  dense: true,
+                  title: const Text(Strings.customerConsent),
+                  subtitle: const Text(Strings.customerConsentHint),
+                ),
               if (_error != null) ...[
                 const SizedBox(height: 16),
                 Row(

@@ -14,7 +14,7 @@ class AppDatabase {
   static const _fileName = 'djassa.db';
 
   /// Bump on every schema change and add a matching branch in [_migrate].
-  static const int schemaVersion = 2;
+  static const int schemaVersion = 3;
 
   static Future<AppDatabase> open({String? path}) async {
     final dbPath = path ?? p.join(await getDatabasesPath(), _fileName);
@@ -52,7 +52,8 @@ class AppDatabase {
         attempt_count    INTEGER NOT NULL DEFAULT 0,
         next_attempt_at  INTEGER,
         last_error       TEXT,
-        points_awarded   INTEGER
+        points_awarded   INTEGER,
+        customer_consent INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -93,6 +94,12 @@ class AppDatabase {
       // v2: points the customer earned on a sale, reported by the server once
       // it accepts the sale. Nullable, so every existing row stays valid.
       await db.execute('ALTER TABLE sales ADD COLUMN points_awarded INTEGER');
+    }
+    if (from < 3) {
+      // v3: the customer agreed, at the counter, that Djassa keeps their
+      // number for points (docs/Reglementation/ARTCI.md in djassa-BE). Rows
+      // queued before default to 0: sent without the number, not refused.
+      await db.execute('ALTER TABLE sales ADD COLUMN customer_consent INTEGER NOT NULL DEFAULT 0');
     }
   }
 

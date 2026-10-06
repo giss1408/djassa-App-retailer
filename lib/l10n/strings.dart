@@ -129,6 +129,10 @@ class Strings {
   static const customerHint = 'Numero de telephone';
   static const customerEarnsHint = 'Avec son numero, le client gagne des points chez vous.';
   static const customerPhoneInvalid = 'Numero invalide : 10 chiffres, par ex. 07 12 34 56 78.';
+  // Asked aloud at the counter, ticked by the merchant (Law 2013-450, art. 14).
+  static const customerConsent = "Le client accepte que Djassa garde son numero pour ses points";
+  static const customerConsentHint = 'Demandez-lui. Il pourra retirer son accord dans l\'app Djassa.';
+  static const customerConsentRequired = 'Demandez au client son accord et cochez la case, ou laissez le numero vide.';
   static const pointsShort = 'pts';
   static const save = 'Enregistrer';
   static const saving = 'Enregistrement...';
@@ -345,6 +349,14 @@ class Strings {
   static const promoPrice = 'Prix promo (F)';
   static const originalPrice = 'Prix normal (F, optionnel)';
   static const dealDuration = 'Duree';
+  static const dealRibbon = 'Bandeau sur l\'image';
+  static const ribbonBonPlan = 'BON PLAN';
+  static const ribbonFlash = 'FLASH';
+  static const ribbonPromo = 'PROMO';
+  static const ribbonChoices = {'bon_plan': 'Bon plan', 'flash': 'Promo flash', 'promo': 'Sticker promo'};
+  // Suggestions to the Djassa team on WhatsApp: free for shops.
+  static const suggestions = 'Suggerer une idee';
+  static const suggestionsFailed = 'WhatsApp n\'a pas pu s\'ouvrir.';
   static const dealDescription = 'Details (optionnel)';
   static const dealDescriptionHint = 'Ex : le midi en semaine, dans la limite des stocks';
   static const preview = 'Apercu pour vos clients';

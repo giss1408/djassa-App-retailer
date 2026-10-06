@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/config/env.dart';
 import '../core/data/sync_service.dart';
@@ -323,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 /// Initial in a translucent disc; opens sign-out and the name explainer.
 /// Same shape as the customer app's account menu. A cashier sees only their
 /// account, the explainer and sign-out: the shop's settings are the owner's.
-class _AccountMenu extends StatelessWidget {
+class _AccountMenu extends ConsumerWidget {
   const _AccountMenu({required this.initial, required this.isOwner, required this.onSignOut});
 
   final String initial;
@@ -331,7 +332,8 @@ class _AccountMenu extends StatelessWidget {
   final VoidCallback onSignOut;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final suggestions = ref.watch(suggestionsLinkProvider).valueOrNull;
     return PopupMenuButton<String>(
       tooltip: Strings.menu,
       offset: const Offset(0, 52),
@@ -349,6 +351,12 @@ class _AccountMenu extends StatelessWidget {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'team'), builder: (_) => const StaffScreen()));
         } else if (v == 'location') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'shop_location'), builder: (_) => const ShopLocationScreen()));
+        } else if (v == 'suggest' && suggestions != null) {
+          launchUrl(Uri.parse(suggestions), mode: LaunchMode.externalApplication).then((ok) {
+            if (!ok && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text(Strings.suggestionsFailed)));
+            }
+          });
         } else if (v == 'logout') {
           onSignOut();
         }
@@ -381,6 +389,11 @@ class _AccountMenu extends StatelessWidget {
           value: 'about',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.auto_stories_outlined), title: Text(Strings.aboutNameLink)),
         ),
+        if (suggestions != null)
+          const PopupMenuItem(
+            value: 'suggest',
+            child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.lightbulb_outline_rounded), title: Text(Strings.suggestions)),
+          ),
         const PopupMenuItem(
           value: 'logout',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.logout_rounded), title: Text(Strings.signOut)),

@@ -153,52 +153,57 @@ class DealTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return SoftCard(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (deal.isFeatured) ...[
-                  const Tag(Strings.sponsored, icon: Icons.bolt_rounded, color: DjassaColors.orangeDeep, background: DjassaColors.orangeTint),
-                  const SizedBox(height: 8),
-                ],
-                Text(deal.title, style: text.titleMedium),
-                const SizedBox(height: 4),
-                Text(dealOffer(deal.discountPercent, deal.price, deal.originalPrice),
-                    style: text.bodyMedium?.copyWith(color: DjassaColors.orangeDeep, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    // Flexible: this Row sits in an Expanded column next to a
-                    // TextButton whose own width is fixed, so the text here
-                    // must be able to shrink rather than push past the card's
-                    // edge — the bug a first pass at this row shipped with.
-                    Flexible(
-                      child: Text(
-                        '${Strings.endsOn} ${Strings.shortDate(deal.endsAt)}',
-                        style: text.bodySmall,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
+    return DealRibbonBanner(
+      ribbon: deal.ribbon,
+      // Bottom corner: the top-right holds "Terminer".
+      location: BannerLocation.bottomEnd,
+      child: SoftCard(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (deal.isFeatured) ...[
+                    const Tag(Strings.sponsored, icon: Icons.bolt_rounded, color: DjassaColors.orangeDeep, background: DjassaColors.orangeTint),
+                    const SizedBox(height: 8),
                   ],
-                ),
-              ],
+                  Text(deal.title, style: text.titleMedium),
+                  const SizedBox(height: 4),
+                  Text(dealOffer(deal.discountPercent, deal.price, deal.originalPrice),
+                      style: text.bodyMedium?.copyWith(color: DjassaColors.orangeDeep, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule_rounded, size: 14, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      // Flexible: this Row sits in an Expanded column next to a
+                      // TextButton whose own width is fixed, so the text here
+                      // must be able to shrink rather than push past the card's
+                      // edge — the bug a first pass at this row shipped with.
+                      Flexible(
+                        child: Text(
+                          '${Strings.endsOn} ${Strings.shortDate(deal.endsAt)}',
+                          style: text.bodySmall,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (canEnd)
-            TextButton(
-              onPressed: onEnd,
-              child: ending
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text(Strings.endDeal),
-            ),
-        ],
+            if (canEnd)
+              TextButton(
+                onPressed: onEnd,
+                child: ending
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Text(Strings.endDeal),
+              ),
+          ],
+        ),
       ),
     );
   }

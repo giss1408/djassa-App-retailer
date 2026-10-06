@@ -81,7 +81,15 @@ void main() {
     test('sends an end date in UTC, duration from now, and drops empty fields', () {
       final now = DateTime.utc(2026, 10, 1, 12);
       final json = const DealDraft(title: '  Garba  ', description: ' ', discountPercent: 20, duration: Duration(days: 3)).toJson(now);
-      expect(json, {'title': 'Garba', 'discount_percent': 20, 'ends_at': '2026-10-04T12:00:00.000Z'});
+      expect(json, {'title': 'Garba', 'discount_percent': 20, 'ribbon': 'bon_plan', 'ends_at': '2026-10-04T12:00:00.000Z'});
+    });
+
+    test('the chosen corner banner is sent, and read back from the server', () {
+      final json = const DealDraft(title: 'Flash', price: 500, duration: Duration(days: 1), ribbon: DealRibbon.flash)
+          .toJson(DateTime.utc(2026, 10, 1));
+      expect(json['ribbon'], 'flash');
+      expect(Deal.fromJson({'id': 1, 'title': 'x', 'ends_at': '2026-10-02T00:00:00', 'ribbon': 'promo'}).ribbon, DealRibbon.promo);
+      expect(Deal.fromJson({'id': 1, 'title': 'x', 'ends_at': '2026-10-02T00:00:00'}).ribbon, DealRibbon.bonPlan);
     });
   });
 

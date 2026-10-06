@@ -30,16 +30,25 @@ void main() {
   });
 
   group('the sale payload', () {
-    Sale sale(String? ref) => Sale(
+    Sale sale(String? ref, {bool consent = true}) => Sale(
           idempotencyKey: 'key-00000001',
           amount: Money.fromMajor(2500, 'XOF'),
           type: 'sale',
           recordedAt: DateTime.utc(2026, 10, 1, 12),
           customerRef: ref,
+          customerConsent: consent,
         );
 
-    test('carries the customer number when there is one', () {
-      expect(sale('+2250712345678').toApiJson()['customer_phone'], '+2250712345678');
+    test('carries the customer number and their consent when there is one', () {
+      final json = sale('+2250712345678').toApiJson();
+      expect(json['customer_phone'], '+2250712345678');
+      expect(json['customer_consent'], isTrue);
+    });
+
+    test('a number without consent (queued before the app asked) goes without the number', () {
+      final json = sale('+2250712345678', consent: false).toApiJson();
+      expect(json.containsKey('customer_phone'), isFalse);
+      expect(json.containsKey('customer_consent'), isFalse);
     });
 
     test('an anonymous sale sends no customer field', () {
@@ -79,7 +88,7 @@ void main() {
     tearDown(() async => closeDb());
 
     test('stores the points the server granted, so the merchant can tell the customer', () async {
-      await repo.recordSale(amount: Money.fromMajor(2500, 'XOF'), type: 'sale', customerRef: '+2250712345678');
+      await repo.recordSale(amount: Money.fromMajor(2500, 'XOF'), type: 'sale', customerRef: '+2250712345678', customerConsent: true);
       await repo.recordSale(amount: Money.fromMajor(1000, 'XOF'), type: 'sale');
       await sync.syncOnce();
 
@@ -128,6 +137,7 @@ void main() {
     final pending = await SaleDao(upgraded.db).pendingBatch();
     expect(pending.single.idempotencyKey, 'queued-before-upgrade');
     expect(pending.single.pointsAwarded, isNull);
+    expect(pending.single.customerConsent, isFalse, reason: 'v3 column defaults to no consent');
     // And the legacy free-text customer does not poison the send.
     expect(pending.single.toApiJson().containsKey('customer_phone'), isFalse);
     await upgraded.close();
