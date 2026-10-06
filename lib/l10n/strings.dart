@@ -66,6 +66,13 @@ class Strings {
 
   // Joining Djassa as a merchant
   static const becomePartner = 'Pas encore commercant Djassa ? Inscrivez votre commerce';
+  // Demo mode: the app without an account, nothing sent.
+  static const tryDemo = 'Essayer sans compte (demo)';
+  static const demoBadge = 'DEMO';
+  static const demoShopName = 'Maquis Demo';
+  static const demoBar = 'Mode demo : rien n\'est envoye ni enregistre.';
+  static const demoSignIn = 'Se connecter';
+  static const demoNeedsAccount = 'En demo, cette fonction est desactivee. Connectez-vous avec votre commerce pour l\'utiliser.';
   static const partnerTitle = 'Inscrire mon commerce';
   static const partnerIntro =
       'Laissez-nous vos informations : un agent Djassa vous appelle pour finaliser l\'inscription. Ce numero deviendra votre connexion a Djassa Pro.';

@@ -7,6 +7,7 @@ import 'core/config/env.dart';
 import 'core/monitoring/error_reporter.dart';
 import 'core/monitoring/usage_tracker.dart';
 import 'core/providers.dart';
+import 'features/demo/demo_mode.dart';
 import 'features/home_screen.dart';
 import 'features/sign_in_screen.dart';
 import 'ui/theme.dart';
@@ -23,15 +24,63 @@ void main() {
   // Ties usage to the merchant's shop when signed in (the pilot is measured
   // per merchant). Signed out, events still count, just not per shop.
   usage.tokenProvider = () => container.read(freshTokenProvider)();
-  runApp(UncontrolledProviderScope(container: container, child: const DjassaApp()));
+  runApp(AppHost(container: container, usage: usage));
   // Whatever an earlier session could not send goes now, once. One small
   // request, and only when there is something to send.
   unawaited(reporter.flush());
   unawaited(usage.start());
 }
 
+/// Runs the real app, or the demo in its own provider container.
+///
+/// Swapping the whole container (rather than overriding a few providers lower
+/// down) is what keeps the demo sealed: every route and dialog the demo opens
+/// reads demo wiring, and the real ledger and session are never touched.
+class AppHost extends StatefulWidget {
+  const AppHost({super.key, required this.container, required this.usage});
+
+  final ProviderContainer container;
+  final UsageTracker usage;
+
+  @override
+  State<AppHost> createState() => _AppHostState();
+}
+
+class _AppHostState extends State<AppHost> {
+  ProviderContainer? _demo;
+
+  void _start() {
+    widget.usage.track('demo_started');
+    setState(() => _demo = createDemoContainer(onExit: _stop));
+  }
+
+  void _stop() {
+    final demo = _demo;
+    setState(() => _demo = null);
+    // After the frame that stops using it.
+    WidgetsBinding.instance.addPostFrameCallback((_) => demo?.dispose());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final demo = _demo;
+    return DemoHost(
+      active: demo != null,
+      start: _start,
+      stop: _stop,
+      child: UncontrolledProviderScope(
+        key: ObjectKey(demo ?? widget.container),
+        container: demo ?? widget.container,
+        child: DjassaApp(demo: demo != null),
+      ),
+    );
+  }
+}
+
 class DjassaApp extends ConsumerWidget {
-  const DjassaApp({super.key});
+  const DjassaApp({super.key, this.demo = false});
+
+  final bool demo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,6 +89,7 @@ class DjassaApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       navigatorObservers: [ref.read(usageTrackerProvider).navigatorObserver],
       theme: djassaTheme(),
+      builder: demo ? (context, child) => DemoFrame(child: child!) : null,
       home: const _Root(),
     );
   }

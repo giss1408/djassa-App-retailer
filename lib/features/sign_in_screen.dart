@@ -4,6 +4,7 @@ import '../l10n/strings.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 import 'about_name_screen.dart';
+import 'demo/demo_mode.dart';
 import 'partner_request_screen.dart';
 import 'phone_sign_in_form.dart';
 
@@ -58,6 +59,14 @@ class SignInScreen extends StatelessWidget {
                   label: const Text(Strings.becomePartner, textAlign: TextAlign.center),
                 ),
                 const SizedBox(height: 8),
+                // Everything a merchant can do, on a pretend shop, before any
+                // account. Their real sales and shop stay behind sign-in.
+                if (DemoHost.maybeOf(context) case final host?)
+                  TextButton.icon(
+                    onPressed: host.start,
+                    icon: const Icon(Icons.play_circle_outline_rounded),
+                    label: const Text(Strings.tryDemo),
+                  ),
                 Center(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).push(
