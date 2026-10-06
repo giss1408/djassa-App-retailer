@@ -182,7 +182,7 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
   }
 }
 
-/// Old number gone: prove the new one, say who you are, wait for Djassa.
+/// Old number gone: prove the new one, say who you are, wait for Hossouko.
 class LostNumberScreen extends ConsumerStatefulWidget {
   const LostNumberScreen({super.key});
 

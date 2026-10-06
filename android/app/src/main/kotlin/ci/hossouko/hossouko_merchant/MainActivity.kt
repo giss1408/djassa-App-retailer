@@ -1,4 +1,4 @@
-package ci.djassa.djassa_merchant
+package ci.hossouko.hossouko_merchant
 
 import io.flutter.embedding.android.FlutterActivity
 

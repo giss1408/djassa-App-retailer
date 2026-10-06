@@ -100,7 +100,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 17, color: DjassaColors.muted),
+                  const Icon(Icons.info_outline_rounded, size: 17, color: HossoukoColors.muted),
                   const SizedBox(width: 8),
                   Expanded(child: Text(Strings.myDealsIntro, style: text.bodySmall)),
                 ],
@@ -115,7 +115,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   atLimit ? Strings.maxDealsReached : Strings.maxDealsHint,
-                  style: text.bodySmall?.copyWith(color: atLimit ? DjassaColors.orangeDeep : null),
+                  style: text.bodySmall?.copyWith(color: atLimit ? HossoukoColors.orangeDeep : null),
                 ),
                 const SizedBox(height: 24),
               ],
@@ -166,13 +166,13 @@ class DealTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (deal.isFeatured) ...[
-                    const Tag(Strings.sponsored, icon: Icons.bolt_rounded, color: DjassaColors.orangeDeep, background: DjassaColors.orangeTint),
+                    const Tag(Strings.sponsored, icon: Icons.bolt_rounded, color: HossoukoColors.orangeDeep, background: HossoukoColors.orangeTint),
                     const SizedBox(height: 8),
                   ],
                   Text(deal.title, style: text.titleMedium),
                   const SizedBox(height: 4),
                   Text(dealOffer(deal.discountPercent, deal.price, deal.originalPrice),
-                      style: text.bodyMedium?.copyWith(color: DjassaColors.orangeDeep, fontWeight: FontWeight.w700)),
+                      style: text.bodyMedium?.copyWith(color: HossoukoColors.orangeDeep, fontWeight: FontWeight.w700)),
                   const SizedBox(height: 2),
                   Row(
                     children: [

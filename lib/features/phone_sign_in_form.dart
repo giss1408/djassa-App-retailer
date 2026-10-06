@@ -23,7 +23,7 @@ class PhoneSignInForm extends ConsumerStatefulWidget {
 }
 
 class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
-  // Prefilled only in debug builds given DJASSA_DEV_PHONE. See Env.
+  // Prefilled only in debug builds given HOSSOUKO_DEV_PHONE. See Env.
   final _phone = TextEditingController(text: Env.devPhone);
   final _code = TextEditingController();
   bool _codeStep = false;

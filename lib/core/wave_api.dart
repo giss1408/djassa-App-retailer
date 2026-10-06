@@ -6,7 +6,7 @@ import 'net/api_client.dart';
 ///
 /// Points only (the default) needs just the webhook's signing secret, which
 /// cannot create or move a payment. The API key is optional and only enables
-/// paying the shop from inside the Djassa app.
+/// paying the shop from inside the Hossouko app.
 class WaveConnection {
   const WaveConnection({
     required this.connected,
@@ -19,7 +19,7 @@ class WaveConnection {
 
   final bool connected;
 
-  /// A key is connected: customers can pay the shop from the Djassa app.
+  /// A key is connected: customers can pay the shop from the Hossouko app.
   final bool paymentsEnabled;
 
   /// "…a1B2": enough to recognise which key is connected.

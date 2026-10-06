@@ -9,7 +9,7 @@ import '../l10n/strings.dart';
 import 'account_screen.dart' show ErrorLine;
 
 /// A merchant asks to join. The phone is proven by SMS code and becomes their
-/// Djassa Pro login once an agent has called and an admin approved; the shop
+/// Hossouko Pro login once an agent has called and an admin approved; the shop
 /// itself is created then, from what is typed here.
 class PartnerRequestScreen extends ConsumerStatefulWidget {
   const PartnerRequestScreen({super.key});

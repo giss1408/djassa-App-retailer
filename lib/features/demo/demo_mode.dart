@@ -33,7 +33,7 @@ ProviderContainer createDemoContainer({required VoidCallback onExit}) {
     }),
     freshTokenProvider.overrideWithValue(() async => 'demo'),
     apiClientProvider.overrideWith((ref) {
-      final client = ApiClient(inner: backend, tokenProvider: () async => 'demo', baseUrl: 'https://demo.djassa.invalid');
+      final client = ApiClient(inner: backend, tokenProvider: () async => 'demo', baseUrl: 'https://demo.hossouko.invalid');
       ref.onDispose(client.close);
       return client;
     }),
@@ -104,7 +104,7 @@ class DemoFrame extends StatelessWidget {
       children: [
         Expanded(child: MediaQuery.removePadding(context: context, removeBottom: true, child: child)),
         Material(
-          color: DjassaColors.ink,
+          color: HossoukoColors.ink,
           child: SafeArea(
             top: false,
             child: Padding(
@@ -113,7 +113,7 @@ class DemoFrame extends StatelessWidget {
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: DjassaColors.green, borderRadius: BorderRadius.circular(99)),
+                    decoration: BoxDecoration(color: HossoukoColors.green, borderRadius: BorderRadius.circular(99)),
                     child: const Text(Strings.demoBadge,
                         style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.8)),
                   ),
@@ -126,7 +126,7 @@ class DemoFrame extends StatelessWidget {
                     onPressed: host?.stop,
                     // The theme makes buttons full width; not in this row.
                     style: FilledButton.styleFrom(
-                      backgroundColor: DjassaColors.orange,
+                      backgroundColor: HossoukoColors.orange,
                       minimumSize: const Size(0, 40),
                       visualDensity: VisualDensity.compact,
                     ),

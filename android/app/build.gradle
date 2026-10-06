@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "ci.djassa.djassa_merchant"
+    namespace = "ci.hossouko.hossouko_merchant"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -32,7 +32,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "ci.djassa.djassa_merchant"
+        applicationId = "ci.hossouko.hossouko_merchant"
         // API 21 (Android 5.0) reaches 2014-era budget handsets, which are
         // primary devices in our markets, not edge cases.
         minSdk = 21

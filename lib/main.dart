@@ -71,24 +71,24 @@ class _AppHostState extends State<AppHost> {
       child: UncontrolledProviderScope(
         key: ObjectKey(demo ?? widget.container),
         container: demo ?? widget.container,
-        child: DjassaApp(demo: demo != null),
+        child: HossoukoApp(demo: demo != null),
       ),
     );
   }
 }
 
-class DjassaApp extends ConsumerWidget {
-  const DjassaApp({super.key, this.demo = false});
+class HossoukoApp extends ConsumerWidget {
+  const HossoukoApp({super.key, this.demo = false});
 
   final bool demo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Djassa Pro',
+      title: 'Hossouko Pro',
       debugShowCheckedModeBanner: false,
       navigatorObservers: [ref.read(usageTrackerProvider).navigatorObserver],
-      theme: djassaTheme(),
+      theme: hossoukoTheme(),
       builder: demo ? (context, child) => DemoFrame(child: child!) : null,
       home: const _Root(),
     );
@@ -157,7 +157,7 @@ class _Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DjassaColors.orangeDeep,
+      backgroundColor: HossoukoColors.orangeDeep,
       body: Center(
         child: Text('d', style: serifStyle(64, color: Colors.white, height: 0.9)),
       ),
@@ -187,17 +187,17 @@ class _StartupFailure extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SoftCard(
-                color: DjassaColors.sand,
+                color: HossoukoColors.sand,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: DjassaColors.danger),
+                    const Icon(Icons.error_outline_rounded, color: HossoukoColors.danger),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Djassa Pro', style: text.headlineSmall),
+                          Text('Hossouko Pro', style: text.headlineSmall),
                           const SizedBox(height: 8),
                           Text(
                             "Le telephone n'a pas pu ouvrir la base locale. "

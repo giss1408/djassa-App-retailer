@@ -113,7 +113,7 @@ class _CustomerPointsScreenState extends ConsumerState<CustomerPointsScreen> {
               Text(voucher.rewardTitle, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 12),
               Text(Strings.voucherCode, style: Theme.of(context).textTheme.labelMedium),
-              Text(voucher.code, style: serifStyle(34, color: DjassaColors.orangeDeep)),
+              Text(voucher.code, style: serifStyle(34, color: HossoukoColors.orangeDeep)),
               const SizedBox(height: 8),
               Text('${Strings.remainingPoints} : ${voucher.remainingPoints} ${Strings.pointsShort}'),
             ],
@@ -178,8 +178,8 @@ class _CustomerPointsScreenState extends ConsumerState<CustomerPointsScreen> {
             if (loyalty != null) ...[
               const SizedBox(height: 24),
               PatternedSurface(
-                gradient: DjassaColors.loyaltyGradient,
-                borderRadius: BorderRadius.circular(DjassaRadius.lg),
+                gradient: HossoukoColors.loyaltyGradient,
+                borderRadius: BorderRadius.circular(HossoukoRadius.lg),
                 patternOpacity: 0.07,
                 padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
                 child: Column(

@@ -1,4 +1,4 @@
-import 'package:djassa_merchant/core/config/env.dart';
+import 'package:hossouko_merchant/core/config/env.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

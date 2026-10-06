@@ -27,7 +27,7 @@ typedef SessionRefresher = Future<bool> Function();
 /// estimated, TLS not counted), so the pilot can report data used per user.
 typedef TrafficCallback = void Function(int sent, int received);
 
-/// The single path every byte to the Djassa API travels through.
+/// The single path every byte to the Hossouko API travels through.
 ///
 /// Responsibilities, all of them bandwidth- or security-driven:
 ///
@@ -72,7 +72,7 @@ class ApiClient {
       // Reuse the TLS session across calls: on 2G a fresh handshake costs
       // more than the request it carries.
       ..idleTimeout = const Duration(seconds: 30)
-      ..userAgent = 'djassa-merchant';
+      ..userAgent = 'hossouko-merchant';
     return IOClient(httpClient);
   }
 

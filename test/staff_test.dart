@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:djassa_merchant/core/auth/token_store.dart';
-import 'package:djassa_merchant/core/net/api_client.dart';
-import 'package:djassa_merchant/core/providers.dart';
-import 'package:djassa_merchant/core/staff_api.dart';
-import 'package:djassa_merchant/features/staff_screen.dart';
-import 'package:djassa_merchant/l10n/strings.dart';
-import 'package:djassa_merchant/ui/theme.dart';
+import 'package:hossouko_merchant/core/auth/token_store.dart';
+import 'package:hossouko_merchant/core/net/api_client.dart';
+import 'package:hossouko_merchant/core/providers.dart';
+import 'package:hossouko_merchant/core/staff_api.dart';
+import 'package:hossouko_merchant/features/staff_screen.dart';
+import 'package:hossouko_merchant/l10n/strings.dart';
+import 'package:hossouko_merchant/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,7 +51,7 @@ Future<void> _pump(WidgetTester tester, _StaffServer server) async {
   addTearDown(tester.view.reset);
   await tester.pumpWidget(ProviderScope(
     overrides: [staffApiProvider.overrideWithValue(api)],
-    child: MaterialApp(theme: djassaTheme(), home: const StaffScreen()),
+    child: MaterialApp(theme: hossoukoTheme(), home: const StaffScreen()),
   ));
   await tester.pumpAndSettle();
 }

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:djassa_merchant/core/net/api_client.dart';
-import 'package:djassa_merchant/core/payment_api.dart';
+import 'package:hossouko_merchant/core/net/api_client.dart';
+import 'package:hossouko_merchant/core/payment_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -18,7 +18,7 @@ void main() {
           sent.add(request);
           return respond(request);
         }),
-        tokenProvider: () async => FakeDjassaServer.validJwt(),
+        tokenProvider: () async => FakeHossoukoServer.validJwt(),
         baseUrl: 'https://api.test.invalid',
       ));
 
@@ -28,7 +28,7 @@ void main() {
   Map<String, Object?> request({String status = 'open', int? points, String? wallet}) => {
         'id': 42,
         'code': 'K7Q2M9XW4P',
-        'qr_payload': 'djassa://pay/K7Q2M9XW4P',
+        'qr_payload': 'hossouko://pay/K7Q2M9XW4P',
         'amount': 2500,
         'status': status,
         'venue_name': 'Maquis Chez Awa',
@@ -47,7 +47,7 @@ void main() {
     expect(sent.single.url.path, '/api/merchant/payment-requests');
     expect(jsonDecode(sent.single.body), {'amount': 2500});
     expect(r.isOpen, isTrue);
-    expect(r.qrPayload, 'djassa://pay/K7Q2M9XW4P');
+    expect(r.qrPayload, 'hossouko://pay/K7Q2M9XW4P');
     expect(r.expiresAt, DateTime.utc(2026, 9, 30, 18, 10));
   });
 
@@ -78,10 +78,10 @@ void main() {
           'venue_id': 10,
           'name': 'Maquis Chez Awa',
           'pay_code': 'B4NJ8R2T6Z',
-          'qr_payload': 'djassa://pay/B4NJ8R2T6Z',
+          'qr_payload': 'hossouko://pay/B4NJ8R2T6Z',
         })).fixedCode();
     expect(sent.single.url.path, '/api/merchant/pay-code');
-    expect(code.qrPayload, 'djassa://pay/B4NJ8R2T6Z');
+    expect(code.qrPayload, 'hossouko://pay/B4NJ8R2T6Z');
   });
 
   test('amounts outside the server limits are caught on the phone', () {

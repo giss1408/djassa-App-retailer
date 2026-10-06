@@ -11,7 +11,7 @@ class AppDatabase {
 
   final Database db;
 
-  static const _fileName = 'djassa.db';
+  static const _fileName = 'hossouko.db';
 
   /// Bump on every schema change and add a matching branch in [_migrate].
   static const int schemaVersion = 3;
@@ -96,8 +96,8 @@ class AppDatabase {
       await db.execute('ALTER TABLE sales ADD COLUMN points_awarded INTEGER');
     }
     if (from < 3) {
-      // v3: the customer agreed, at the counter, that Djassa keeps their
-      // number for points (docs/Reglementation/ARTCI.md in djassa-BE). Rows
+      // v3: the customer agreed, at the counter, that Hossouko keeps their
+      // number for points (docs/Reglementation/ARTCI.md in hossouko-BE). Rows
       // queued before default to 0: sent without the number, not refused.
       await db.execute('ALTER TABLE sales ADD COLUMN customer_consent INTEGER NOT NULL DEFAULT 0');
     }

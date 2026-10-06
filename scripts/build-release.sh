@@ -2,7 +2,7 @@
 # Build the merchant APKs for distribution.
 #
 # Usage: scripts/build-release.sh <https api base> [extra flutter build args]
-#   e.g. scripts/build-release.sh https://djassa-api-xxxx.onrender.com --build-name=0.1.0 --build-number=7
+#   e.g. scripts/build-release.sh https://hossouko-api-xxxx.onrender.com --build-name=0.1.0 --build-number=7
 #
 # Produces one APK per ARM ABI plus a universal APK for sideloading, with Dart
 # obfuscation on and the symbol map kept in build/symbols/ so a crash report
@@ -46,8 +46,8 @@ APP_VERSION="$BUILD_NAME+$BUILD_NUMBER"
 
 flutter build apk --release \
   --obfuscate --split-debug-info="build/symbols/$APP_VERSION" \
-  --dart-define=DJASSA_API_BASE="$API_BASE" \
-  --dart-define=DJASSA_APP_VERSION="$APP_VERSION" \
+  --dart-define=HOSSOUKO_API_BASE="$API_BASE" \
+  --dart-define=HOSSOUKO_APP_VERSION="$APP_VERSION" \
   "$@"
 
 echo

@@ -7,47 +7,47 @@
 ///
 /// Release build:
 ///   flutter build apk --release \
-///     --dart-define=DJASSA_API_BASE=https://api.djassa.ci
+///     --dart-define=HOSSOUKO_API_BASE=https://api.hossouko.ci
 ///
 /// Local backend from the Android emulator:
-///   flutter run --dart-define=DJASSA_API_BASE=http://10.0.2.2:8000
+///   flutter run --dart-define=HOSSOUKO_API_BASE=http://10.0.2.2:8000
 library;
 
 class Env {
   const Env._();
 
-  /// Base URL of the Djassa API, with no trailing slash and no `/api` suffix.
+  /// Base URL of the Hossouko API, with no trailing slash and no `/api` suffix.
   /// The default points at the emulator loopback so a fresh checkout runs
   /// against a local backend without arguments; it is useless in production
   /// and `assertHttpsInRelease` refuses it in a release build.
   static const String apiBase = String.fromEnvironment(
-    'DJASSA_API_BASE',
+    'HOSSOUKO_API_BASE',
     defaultValue: 'http://10.0.2.2:8000',
   );
 
   /// Sign-in prefill for development, e.g.
-  ///   --dart-define=DJASSA_DEV_PHONE=0712345678
+  ///   --dart-define=HOSSOUKO_DEV_PHONE=0712345678
   /// Empty unless passed, and ignored in a release build, so no number can
   /// ship in an APK by accident. Locally the backend's console sender with
   /// OTP_DEV_ECHO=1 returns the code too, so no SIM is needed.
-  static const String _devPhone = String.fromEnvironment('DJASSA_DEV_PHONE');
+  static const String _devPhone = String.fromEnvironment('HOSSOUKO_DEV_PHONE');
 
   static String get devPhone => isRelease ? '' : _devPhone;
 
   /// Reported with each error so a crash maps to the build that shipped it.
   /// Keep in step with `version:` in pubspec.yaml; the release script passes
-  /// it as --dart-define=DJASSA_APP_VERSION=<version>.
-  static const String appVersion = String.fromEnvironment('DJASSA_APP_VERSION', defaultValue: '0.1.0+1');
+  /// it as --dart-define=HOSSOUKO_APP_VERSION=<version>.
+  static const String appVersion = String.fromEnvironment('HOSSOUKO_APP_VERSION', defaultValue: '0.1.0+1');
 
   /// Debug builds print errors instead of reporting them, unless asked with
-  /// --dart-define=DJASSA_REPORT_ERRORS=true (to test the pipeline locally).
-  static const bool reportErrors = isRelease || bool.fromEnvironment('DJASSA_REPORT_ERRORS');
+  /// --dart-define=HOSSOUKO_REPORT_ERRORS=true (to test the pipeline locally).
+  static const bool reportErrors = isRelease || bool.fromEnvironment('HOSSOUKO_REPORT_ERRORS');
 
   /// Pilot only: the end-of-day "how many sales today?" question, the
   /// denominator of the share of sales recorded. Remove once that share is
   /// high enough to make the question moot (planning W4-3); turn off sooner
-  /// with --dart-define=DJASSA_PILOT_DAILY_REPORT=false.
-  static const bool pilotDailyReport = bool.fromEnvironment('DJASSA_PILOT_DAILY_REPORT', defaultValue: true);
+  /// with --dart-define=HOSSOUKO_PILOT_DAILY_REPORT=false.
+  static const bool pilotDailyReport = bool.fromEnvironment('HOSSOUKO_PILOT_DAILY_REPORT', defaultValue: true);
 
   /// Wall-clock budget for a single request. Deliberately generous: a 2G
   /// round trip in a market can take several seconds, and failing early just
@@ -77,8 +77,8 @@ class Env {
     final uri = Uri.tryParse(apiBase);
     if (uri == null || !uri.isScheme('https') || uri.host.isEmpty) {
       throw StateError(
-        'Release builds require an https DJASSA_API_BASE. '
-        'Rebuild with --dart-define=DJASSA_API_BASE=https://<host>',
+        'Release builds require an https HOSSOUKO_API_BASE. '
+        'Rebuild with --dart-define=HOSSOUKO_API_BASE=https://<host>',
       );
     }
   }

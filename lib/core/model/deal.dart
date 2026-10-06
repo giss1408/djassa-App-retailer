@@ -1,4 +1,4 @@
-/// A "bon plan": an offer the merchant publishes to customers of the Djassa
+/// A "bon plan": an offer the merchant publishes to customers of the Hossouko
 /// app for a limited time. Deals need the network (they exist to be seen by
 /// others), so unlike sales there is no offline queue for them.
 class Deal {
@@ -39,7 +39,7 @@ class Deal {
   /// The corner banner customers see on the deal's image.
   final DealRibbon ribbon;
 
-  /// Promoted by Djassa (paid placement). The merchant cannot set this.
+  /// Promoted by Hossouko (paid placement). The merchant cannot set this.
   final bool isFeatured;
 }
 

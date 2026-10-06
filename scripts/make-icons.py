@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws Djassa Pro's Android icons: the Djassa mark with "pro" under it.
+"""Draws Hossouko Pro's Android icons: the Hossouko mark with "pro" under it.
 
     python3 scripts/make-icons.py     (needs rsvg-convert and fontTools)
 
@@ -27,7 +27,7 @@ from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "android/app/src/main/res"
-MARK = ROOT / "scripts/icons/djassa-mark.svg"
+MARK = ROOT / "scripts/icons/hossouko-mark.svg"
 FONT = ROOT / "assets/fonts/InstrumentSerif-Italic.ttf"
 
 PAPER, GREEN = "#f5f1e8", "#234b39"
@@ -104,7 +104,7 @@ def main() -> None:
             render(foreground, RES / f"mipmap-{density}/ic_launcher_foreground.png", round(108 * k), Path(tmp))
             render(legacy, RES / f"mipmap-{density}/ic_launcher.png", round(48 * k), Path(tmp))
             render(splash, RES / f"drawable-{density}/launch_logo.png", round(112 * k), Path(tmp))
-    print("Wrote Djassa Pro icons for", ", ".join(DENSITIES))
+    print("Wrote Hossouko Pro icons for", ", ".join(DENSITIES))
 
 
 if __name__ == "__main__":

@@ -12,13 +12,13 @@ import '../ui/widgets.dart';
 /// Connect the merchant's OWN Wave Business account (pilot option B).
 ///
 /// **Points only, the default.** A webhook in the merchant's Wave portal tells
-/// Djassa about every payment to their ordinary Wave QR, and the payer earns
-/// points. Djassa keeps only the webhook's signing secret, which can verify
+/// Hossouko about every payment to their ordinary Wave QR, and the payer earns
+/// points. Hossouko keeps only the webhook's signing secret, which can verify
 /// Wave's messages but cannot create or move a payment. Customers change
 /// nothing.
 ///
 /// **In-app payment, optional.** An API key with "Checkout API" access also
-/// lets customers pay the shop from the Djassa app. Kept folded away: most
+/// lets customers pay the shop from the Hossouko app. Kept folded away: most
 /// merchants never need it, and it is the only secret here that can create a
 /// payment.
 class WaveConnectScreen extends ConsumerStatefulWidget {
@@ -179,7 +179,7 @@ class _WaveConnectScreenState extends ConsumerState<WaveConnectScreen> {
                 ],
                 if (_error != null) ...[
                   const SizedBox(height: 14),
-                  Text(_error!, style: const TextStyle(color: DjassaColors.danger, fontWeight: FontWeight.w600)),
+                  Text(_error!, style: const TextStyle(color: HossoukoColors.danger, fontWeight: FontWeight.w600)),
                 ],
               ],
             ),
@@ -199,7 +199,7 @@ class _Status extends StatelessWidget {
     return SoftCard(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(on ? Icons.check_circle_rounded : Icons.pending_outlined, color: on ? DjassaColors.green : DjassaColors.muted),
+          Icon(on ? Icons.check_circle_rounded : Icons.pending_outlined, color: on ? HossoukoColors.green : HossoukoColors.muted),
           const SizedBox(width: 8),
           Expanded(child: Text(on ? Strings.wavePointsOn : Strings.wavePointsOff, style: text.titleSmall)),
         ]),
@@ -269,11 +269,11 @@ class _ScopeWarning extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: const Color(0xFFFDE4E4),
-        borderRadius: BorderRadius.circular(DjassaRadius.md),
-        border: Border.all(color: DjassaColors.danger),
+        borderRadius: BorderRadius.circular(HossoukoRadius.md),
+        border: Border.all(color: HossoukoColors.danger),
       ),
       child: const Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(Icons.warning_amber_rounded, color: DjassaColors.danger),
+        Icon(Icons.warning_amber_rounded, color: HossoukoColors.danger),
         SizedBox(width: 10),
         Expanded(
           child: Text(Strings.waveScopeWarning,
@@ -293,7 +293,7 @@ class _Note extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Icon(icon, size: 18, color: DjassaColors.muted),
+      Icon(icon, size: 18, color: HossoukoColors.muted),
       const SizedBox(width: 8),
       Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
     ]);

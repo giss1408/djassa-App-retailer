@@ -1,8 +1,8 @@
-# Djassa — merchant app
+# Hossouko — merchant app
 
 Flutter app for merchants: record a sale on a cheap Android phone, even with no
 signal, and sync when there is one. Talks to the FastAPI backend in
-[`../djassa-BE`](../djassa-BE).
+[`../hossouko-BE`](../hossouko-BE).
 
 Two constraints shape every decision, and they are not negotiable:
 
@@ -17,10 +17,10 @@ a network call. It records why each trade was made.
 Start the backend first:
 
 ```bash
-cd ../djassa-BE/backend-api
+cd ../hossouko-BE/backend-api
 docker compose -f docker-compose.dev.yml up -d db redis
-export DJASSA_SECRET_KEY=dev-only-not-a-real-secret
-export DATABASE_URL=postgresql+asyncpg://djassa:djassa@127.0.0.1:5432/djassa
+export HOSSOUKO_SECRET_KEY=dev-only-not-a-real-secret
+export DATABASE_URL=postgresql+asyncpg://hossouko:hossouko@127.0.0.1:5432/hossouko
 alembic -c alembic.ini upgrade head
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
@@ -29,7 +29,7 @@ Then the app. `10.0.2.2` is the host machine as seen from the Android emulator;
 use your LAN IP for a physical device:
 
 ```bash
-flutter run --dart-define=DJASSA_API_BASE=http://10.0.2.2:8000
+flutter run --dart-define=HOSSOUKO_API_BASE=http://10.0.2.2:8000
 ```
 
 The backend's CORS default allows `http://localhost:3000` only, which does not
@@ -43,7 +43,7 @@ Signed APKs are published as GitHub Releases by
 tag is pushed (`scripts/create-signing-key.sh` once, then
 `git tag v0.1.0 && git push origin v0.1.0`). Full procedure, including the free
 backend on Render + Neon and Firebase App Distribution:
-[`../djassa-BE/docs/technical/DEPLOY-TEST.md`](../djassa-BE/docs/technical/DEPLOY-TEST.md).
+[`../hossouko-BE/docs/technical/DEPLOY-TEST.md`](../hossouko-BE/docs/technical/DEPLOY-TEST.md).
 
 ## Build for distribution
 

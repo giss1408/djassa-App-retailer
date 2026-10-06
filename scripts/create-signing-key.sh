@@ -15,9 +15,9 @@
 # Never commit the .jks, the password or the secrets file.
 set -euo pipefail
 
-ALIAS="djassa-merchant"
-OUT="${HOME}/djassa-merchant-release.jks"
-SECRETS="${HOME}/djassa-merchant-github-secrets.txt"
+ALIAS="hossouko-merchant"
+OUT="${HOME}/hossouko-merchant-release.jks"
+SECRETS="${HOME}/hossouko-merchant-github-secrets.txt"
 
 if [ -e "$OUT" ]; then
   echo "error: $OUT already exists. Reuse it (creating a new key breaks updates for testers)," >&2
@@ -35,7 +35,7 @@ PASS="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32 || true)"
 keytool -genkeypair -keystore "$OUT" -alias "$ALIAS" \
   -keyalg RSA -keysize 4096 -validity 10000 \
   -storepass "$PASS" -keypass "$PASS" \
-  -dname "CN=Djassa marchand, O=Djassa, L=Abidjan, C=CI" >/dev/null 2>&1
+  -dname "CN=Hossouko marchand, O=Hossouko, L=Abidjan, C=CI" >/dev/null 2>&1
 
 # Prove the password opens the new key, exactly as the release workflow will.
 keytool -list -keystore "$OUT" -storepass "$PASS" -alias "$ALIAS" >/dev/null 2>&1 \
@@ -45,7 +45,7 @@ chmod 600 "$OUT"
 B64="$(base64 < "$OUT" | tr -d '\n')"
 ( umask 077
   {
-    echo "# GitHub → djassa repository → Settings → Secrets and variables → Actions."
+    echo "# GitHub → hossouko repository → Settings → Secrets and variables → Actions."
     echo "# Copy each value after the '=' (nothing else). Delete this file afterwards."
     echo "ANDROID_KEYSTORE_PASSWORD=$PASS"
     echo "ANDROID_KEY_PASSWORD=$PASS"
@@ -57,9 +57,9 @@ echo "Created $OUT and checked that its password opens it."
 echo "GitHub secrets written to $SECRETS (readable only by you)."
 
 if command -v pass >/dev/null 2>&1; then
-  printf '%s\n' "$B64" | pass insert -m -f "android/djassa-merchant-jks" >/dev/null
-  printf '%s\n' "$PASS" | pass insert -m -f "android/djassa-merchant-password" >/dev/null
-  echo "Backed up in pass: android/djassa-merchant-jks and android/djassa-merchant-password."
+  printf '%s\n' "$B64" | pass insert -m -f "android/hossouko-merchant-jks" >/dev/null
+  printf '%s\n' "$PASS" | pass insert -m -f "android/hossouko-merchant-password" >/dev/null
+  echo "Backed up in pass: android/hossouko-merchant-jks and android/hossouko-merchant-password."
 else
   echo "Back up $OUT and the password in your password manager now."
 fi

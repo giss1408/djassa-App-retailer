@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:djassa_merchant/core/monitoring/usage_tracker.dart';
-import 'package:djassa_merchant/core/net/api_client.dart';
+import 'package:hossouko_merchant/core/monitoring/usage_tracker.dart';
+import 'package:hossouko_merchant/core/net/api_client.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;

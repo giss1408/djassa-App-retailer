@@ -5,14 +5,14 @@
 #
 # The APKs get FIXED names, so these links always serve the newest release and
 # can be shared once on WhatsApp (the site's /app page uses them):
-#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-arm64.apk
-#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-armv7.apk
-#   https://github.com/<owner>/<repo>/releases/latest/download/djassa-marchand-universel.apk
+#   https://github.com/<owner>/<repo>/releases/latest/download/hossouko-marchand-arm64.apk
+#   https://github.com/<owner>/<repo>/releases/latest/download/hossouko-marchand-armv7.apk
+#   https://github.com/<owner>/<repo>/releases/latest/download/hossouko-marchand-universel.apk
 #
 # One-time setup (repository Settings → Secrets and variables → Actions):
 #   Secrets  ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD,
 #            ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD   (scripts/create-signing-key.sh)
-#   Variable DJASSA_API_BASE  REQUIRED: your API address, e.g. https://djassa-api-xxxx.onrender.com
+#   Variable HOSSOUKO_API_BASE  REQUIRED: your API address, e.g. https://hossouko-api-xxxx.onrender.com
 #   Firebase App Distribution (optional, for the field pilot):
 #   Secrets  FIREBASE_APP_ID, FIREBASE_SERVICE_ACCOUNT_JSON
 #   Variable FIREBASE_TESTER_GROUPS  optional; defaults to "pilote".
@@ -28,11 +28,11 @@ permissions:
   contents: write
 
 env:
-  APP: "djassa-marchand"
+  APP: "hossouko-marchand"
   # Your API's own address (Render shows it under the service name). No
   # default on purpose: Render names are global, and a guessed address can
   # belong to someone else's service.
-  API_BASE: ${{ vars.DJASSA_API_BASE }}
+  API_BASE: ${{ vars.HOSSOUKO_API_BASE }}
   FLUTTER_VERSION: "3.24.2"
 
 jobs:
@@ -61,7 +61,7 @@ jobs:
         run: |
           case "$API_BASE" in
             https://*) echo "Building against $API_BASE" ;;
-            *) echo "::error::Set the repository variable DJASSA_API_BASE to your API's https address (Settings → Secrets and variables → Actions → Variables)."; exit 1 ;;
+            *) echo "::error::Set the repository variable HOSSOUKO_API_BASE to your API's https address (Settings → Secrets and variables → Actions → Variables)."; exit 1 ;;
           esac
           code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 120 "$API_BASE/health" || true)
           echo "Health check: HTTP $code"

@@ -152,9 +152,9 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
                 decoration: BoxDecoration(
-                  color: DjassaColors.surface,
-                  borderRadius: BorderRadius.circular(DjassaRadius.lg),
-                  border: Border.all(color: DjassaColors.line),
+                  color: HossoukoColors.surface,
+                  borderRadius: BorderRadius.circular(HossoukoRadius.lg),
+                  border: Border.all(color: HossoukoColors.line),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -190,7 +190,7 @@ class _RecordSaleScreenState extends ConsumerState<RecordSaleScreen> {
                     // sale is recorded.
                     if (parsed != null) ...[
                       const SizedBox(height: 4),
-                      Text(formatMoney(parsed), style: text.bodyMedium?.copyWith(color: DjassaColors.muted)),
+                      Text(formatMoney(parsed), style: text.bodyMedium?.copyWith(color: HossoukoColors.muted)),
                     ],
                   ],
                 ),

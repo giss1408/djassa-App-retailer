@@ -29,7 +29,7 @@ adb reverse "tcp:$PORT" "tcp:$PORT"
 #
 # The sign-in form is prefilled with 0700000002, the seeded sample merchant
 # (app/seed.py, DEV_MERCHANT_PHONE). Run the backend with OTP_DEV_ECHO=1 and
-# the SMS code is filled in too. Override with DJASSA_DEV_PHONE.
+# the SMS code is filled in too. Override with HOSSOUKO_DEV_PHONE.
 exec flutter run \
-  --dart-define=DJASSA_API_BASE="http://localhost:$PORT" \
-  --dart-define=DJASSA_DEV_PHONE="${DJASSA_DEV_PHONE:-0700000002}"
+  --dart-define=HOSSOUKO_API_BASE="http://localhost:$PORT" \
+  --dart-define=HOSSOUKO_DEV_PHONE="${HOSSOUKO_DEV_PHONE:-0700000002}"

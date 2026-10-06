@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:djassa_merchant/core/data/database.dart';
-import 'package:djassa_merchant/core/data/sale_dao.dart';
-import 'package:djassa_merchant/core/data/sale_repository.dart';
-import 'package:djassa_merchant/core/data/sync_service.dart';
-import 'package:djassa_merchant/core/model/money.dart';
-import 'package:djassa_merchant/core/model/phone.dart';
-import 'package:djassa_merchant/core/model/sale.dart';
-import 'package:djassa_merchant/core/net/api_client.dart';
+import 'package:hossouko_merchant/core/data/database.dart';
+import 'package:hossouko_merchant/core/data/sale_dao.dart';
+import 'package:hossouko_merchant/core/data/sale_repository.dart';
+import 'package:hossouko_merchant/core/data/sync_service.dart';
+import 'package:hossouko_merchant/core/model/money.dart';
+import 'package:hossouko_merchant/core/model/phone.dart';
+import 'package:hossouko_merchant/core/model/sale.dart';
+import 'package:hossouko_merchant/core/net/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -61,21 +61,21 @@ void main() {
   });
 
   group('syncing', () {
-    late FakeDjassaServer server;
+    late FakeHossoukoServer server;
     late SaleDao dao;
     late SyncService sync;
     late SaleRepository repo;
     late Future<void> Function() closeDb;
 
     setUp(() async {
-      server = FakeDjassaServer();
+      server = FakeHossoukoServer();
       final db = await openTestDatabase();
       closeDb = db.close;
       dao = SaleDao(db.db);
       sync = SyncService(
         client: ApiClient(
           inner: server.client(),
-          tokenProvider: () async => FakeDjassaServer.validJwt(),
+          tokenProvider: () async => FakeHossoukoServer.validJwt(),
           baseUrl: 'https://api.test.invalid',
         ),
         dao: dao,
@@ -108,7 +108,7 @@ void main() {
   test('upgrading from v1 keeps an unsynced sale and adds the points column', () async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    final path = '${Directory.systemTemp.createTempSync('djassa_v1_').path}/djassa.db';
+    final path = '${Directory.systemTemp.createTempSync('hossouko_v1_').path}/hossouko.db';
 
     // The v1 schema, as shipped: no points column.
     final v1 = await databaseFactory.openDatabase(path,

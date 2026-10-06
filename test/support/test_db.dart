@@ -1,4 +1,4 @@
-import 'package:djassa_merchant/core/data/database.dart';
+import 'package:hossouko_merchant/core/data/database.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 /// Opens the real schema in memory.

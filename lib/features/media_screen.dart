@@ -172,7 +172,7 @@ class _MediaScreenState extends ConsumerState<MediaScreen> {
             ],
             if (_error != null) ...[
               const SizedBox(height: 14),
-              Text(_error!, style: const TextStyle(color: DjassaColors.danger, fontWeight: FontWeight.w600)),
+              Text(_error!, style: const TextStyle(color: HossoukoColors.danger, fontWeight: FontWeight.w600)),
             ],
             const SizedBox(height: 20),
             if (_loading)
@@ -223,7 +223,7 @@ class _Tile extends StatelessWidget {
       'failed' => Padding(
           padding: const EdgeInsets.all(6),
           child: Text('${Strings.mediaFailed} : ${media.error ?? ''}',
-              style: const TextStyle(color: DjassaColors.danger, fontSize: 11), maxLines: 4, overflow: TextOverflow.ellipsis),
+              style: const TextStyle(color: HossoukoColors.danger, fontSize: 11), maxLines: 4, overflow: TextOverflow.ellipsis),
         ),
       _ => const Padding(
           padding: EdgeInsets.all(6),
@@ -231,7 +231,7 @@ class _Tile extends StatelessWidget {
         ),
     };
     return ClipRRect(
-      borderRadius: BorderRadius.circular(DjassaRadius.md),
+      borderRadius: BorderRadius.circular(HossoukoRadius.md),
       child: Stack(fit: StackFit.expand, children: [
         ColoredBox(color: const Color(0xFFF1ECE4), child: Center(child: body)),
         if (media.isVideo && media.status == 'ready')

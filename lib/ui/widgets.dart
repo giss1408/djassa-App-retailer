@@ -4,7 +4,7 @@ import '../core/model/deal.dart';
 import '../l10n/strings.dart';
 import 'theme.dart';
 
-/// Shared presentational pieces, mirroring djassa-App-user/lib/ui/widgets.dart
+/// Shared presentational pieces, mirroring hossouko-App-user/lib/ui/widgets.dart
 /// so both apps read as one product. Only what the merchant screens actually
 /// use is here — the customer app's venue cards, wallet swatches and deal
 /// carousels have no counterpart in this app and are not copied in.
@@ -20,7 +20,7 @@ class GradientHeader extends StatelessWidget {
     this.leading,
     this.trailing,
     this.child,
-    this.gradient = DjassaColors.headerGradient,
+    this.gradient = HossoukoColors.headerGradient,
     this.bottomPadding = 22,
   });
 
@@ -37,7 +37,7 @@ class GradientHeader extends StatelessWidget {
     final top = MediaQuery.paddingOf(context).top;
     return PatternedSurface(
       gradient: gradient,
-      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(DjassaRadius.xl)),
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(HossoukoRadius.xl)),
       padding: EdgeInsets.fromLTRB(20, top + 18, 20, bottomPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,7 +69,7 @@ class GradientHeader extends StatelessWidget {
   }
 }
 
-/// A gradient surface carrying the Djassa wax-print texture. The pattern is
+/// A gradient surface carrying the Hossouko wax-print texture. The pattern is
 /// static and painted once behind a [RepaintBoundary], so it costs nothing
 /// while scrolling — a real cost on the low-end GPUs this app targets, not
 /// just the customer app's.
@@ -110,10 +110,10 @@ class PatternedSurface extends StatelessWidget {
   }
 }
 
-/// Djassa's texture: rows of concentric rings and diamonds, the geometry of
-/// the wax prints sold in every djassa. Thin white strokes at low opacity so
+/// Hossouko's texture: rows of concentric rings and diamonds, the geometry of
+/// the wax prints sold in every hossouko. Thin white strokes at low opacity so
 /// it reads as fabric, not decoration, and never fights the text on top.
-/// Copied from djassa-App-user rather than re-derived, so the pattern is
+/// Copied from hossouko-App-user rather than re-derived, so the pattern is
 /// pixel-identical across both apps.
 class WaxPatternPainter extends CustomPainter {
   const WaxPatternPainter({this.opacity = 0.09, this.color = Colors.white, this.cell = 44});
@@ -185,9 +185,9 @@ class SectionHeader extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(actionLabel!, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: DjassaColors.orangeDeep)),
+                  Text(actionLabel!, style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700, color: HossoukoColors.orangeDeep)),
                   const SizedBox(width: 2),
-                  const Icon(Icons.chevron_right_rounded, size: 18, color: DjassaColors.orangeDeep),
+                  const Icon(Icons.chevron_right_rounded, size: 18, color: HossoukoColors.orangeDeep),
                 ]),
               ),
             ),
@@ -209,10 +209,10 @@ class SoftCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: color ?? DjassaColors.surface,
+      color: color ?? HossoukoColors.surface,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(DjassaRadius.lg),
-        side: const BorderSide(color: DjassaColors.line),
+        borderRadius: BorderRadius.circular(HossoukoRadius.lg),
+        side: const BorderSide(color: HossoukoColors.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
@@ -223,7 +223,7 @@ class SoftCard extends StatelessWidget {
 /// Small rounded label. Meaning is carried by the words, never colour alone —
 /// the rule the sale list already followed before this app had any styling.
 class Tag extends StatelessWidget {
-  const Tag(this.label, {super.key, this.icon, this.color = DjassaColors.inkSoft, this.background = DjassaColors.sand});
+  const Tag(this.label, {super.key, this.icon, this.color = HossoukoColors.inkSoft, this.background = HossoukoColors.sand});
 
   final String label;
   final IconData? icon;
@@ -241,7 +241,7 @@ class Tag extends StatelessWidget {
           if (icon != null) ...[Icon(icon, size: 14, color: color), const SizedBox(width: 4)],
           // Flexible rather than a bare Text: "min" only sizes this row to its
           // *preferred* width, so a long label (the merchant app's "Mis en
-          // avant par Djassa" is more than twice the customer app's
+          // avant par Hossouko" is more than twice the customer app's
           // "Sponsorisé") still overflows if the card offering it is narrow.
           // This lets it ellipsize instead of pushing past the pill's edge.
           Flexible(
@@ -278,8 +278,8 @@ class EmptyState extends StatelessWidget {
           Container(
             width: 72,
             height: 72,
-            decoration: const BoxDecoration(color: DjassaColors.sand, shape: BoxShape.circle),
-            child: Icon(icon, size: 34, color: DjassaColors.orangeDeep),
+            decoration: const BoxDecoration(color: HossoukoColors.sand, shape: BoxShape.circle),
+            child: Icon(icon, size: 34, color: HossoukoColors.orangeDeep),
           ),
           const SizedBox(height: 16),
           Text(title, style: text.titleMedium, textAlign: TextAlign.center),
@@ -370,7 +370,7 @@ class DealRibbonBanner extends StatelessWidget {
     super.key,
     required this.ribbon,
     required this.child,
-    this.radius = DjassaRadius.lg,
+    this.radius = HossoukoRadius.lg,
     this.location = BannerLocation.topEnd,
   });
 
@@ -382,9 +382,9 @@ class DealRibbonBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color, ink) = switch (ribbon) {
-      DealRibbon.bonPlan => (Strings.ribbonBonPlan, DjassaColors.green, Colors.white),
-      DealRibbon.flash => (Strings.ribbonFlash, DjassaColors.danger, Colors.white),
-      DealRibbon.promo => (Strings.ribbonPromo, const Color(0xFFFFC83D), DjassaColors.ink),
+      DealRibbon.bonPlan => (Strings.ribbonBonPlan, HossoukoColors.green, Colors.white),
+      DealRibbon.flash => (Strings.ribbonFlash, HossoukoColors.danger, Colors.white),
+      DealRibbon.promo => (Strings.ribbonPromo, const Color(0xFFFFC83D), HossoukoColors.ink),
     };
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),

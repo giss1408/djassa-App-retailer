@@ -4,13 +4,11 @@ import '../l10n/strings.dart';
 import '../ui/theme.dart';
 import '../ui/widgets.dart';
 
-/// Explains the word "djassa", laid out like a dictionary entry.
+/// Presents the name Hossouko and its slogan, laid out like a dictionary entry.
 ///
-/// Most merchants in Abidjan know the word; the screen is for everyone else who
-/// holds the phone (a new hire, a relative, a pilot partner) and for the
-/// merchant who wonders why an app carries a street name. Same layout as the
-/// customer app's about-name screen, so the explanation reads identically
-/// wherever a reader meets it.
+/// For the merchant and anyone else who holds the phone (a new hire, a
+/// relative, a pilot partner). Same layout as the customer app's about-name
+/// screen, so the explanation reads identically wherever a reader meets it.
 class AboutNameScreen extends StatelessWidget {
   const AboutNameScreen({super.key});
 
@@ -26,19 +24,19 @@ class AboutNameScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(22),
             decoration: BoxDecoration(
-              color: DjassaColors.surface,
-              borderRadius: BorderRadius.circular(DjassaRadius.lg),
-              border: const Border(left: BorderSide(color: DjassaColors.orange, width: 4)),
-              boxShadow: djassaShadow,
+              color: HossoukoColors.surface,
+              borderRadius: BorderRadius.circular(HossoukoRadius.lg),
+              border: const Border(left: BorderSide(color: HossoukoColors.orange, width: 4)),
+              boxShadow: hossoukoShadow,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('djassa', style: text.displaySmall?.copyWith(fontStyle: FontStyle.italic, fontSize: 52)),
+                Text('hossouko', style: text.displaySmall?.copyWith(fontStyle: FontStyle.italic, fontSize: 52)),
                 const SizedBox(height: 6),
-                Text(Strings.aboutNameGrammar, style: text.bodyMedium?.copyWith(color: DjassaColors.muted)),
+                Text(Strings.aboutNameGrammar, style: text.bodyMedium?.copyWith(color: HossoukoColors.muted)),
                 const SizedBox(height: 4),
-                Text(Strings.aboutNameOrigin.toUpperCase(), style: text.labelSmall?.copyWith(color: DjassaColors.orangeDeep)),
+                Text(Strings.aboutNameOrigin.toUpperCase(), style: text.labelSmall?.copyWith(color: HossoukoColors.orangeDeep)),
               ],
             ),
           ),
@@ -53,8 +51,8 @@ class AboutNameScreen extends StatelessWidget {
                     width: 28,
                     height: 28,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(color: DjassaColors.orangeTint, shape: BoxShape.circle),
-                    child: Text('${i + 1}', style: const TextStyle(fontWeight: FontWeight.w800, color: DjassaColors.orangeDeep)),
+                    decoration: const BoxDecoration(color: HossoukoColors.orangeTint, shape: BoxShape.circle),
+                    child: Text('${i + 1}', style: const TextStyle(fontWeight: FontWeight.w800, color: HossoukoColors.orangeDeep)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(child: Text(sense, style: text.bodyLarge)),
@@ -63,11 +61,11 @@ class AboutNameScreen extends StatelessWidget {
             ),
           const SizedBox(height: 6),
           SoftCard(
-            color: DjassaColors.sand,
+            color: HossoukoColors.sand,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.auto_awesome_rounded, color: DjassaColors.orangeDeep),
+                const Icon(Icons.auto_awesome_rounded, color: HossoukoColors.orangeDeep),
                 const SizedBox(width: 12),
                 Expanded(child: Text(Strings.aboutNameWhy, style: text.bodyMedium?.copyWith(fontStyle: FontStyle.italic))),
               ],

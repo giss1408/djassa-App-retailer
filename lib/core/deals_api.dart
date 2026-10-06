@@ -1,7 +1,7 @@
 import 'model/deal.dart';
 import 'net/api_client.dart';
 
-/// The merchant's own deals ("bons plans") on the Djassa customer app.
+/// The merchant's own deals ("bons plans") on the Hossouko customer app.
 class DealsApi {
   DealsApi(this._client);
 

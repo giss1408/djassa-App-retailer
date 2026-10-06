@@ -93,7 +93,7 @@ class Sale {
   /// so the customer earns this venue's points on the sale.
   final String? customerRef;
 
-  /// The merchant asked and the customer agreed that Djassa keeps their
+  /// The merchant asked and the customer agreed that Hossouko keeps their
   /// number for points. Without it the number is not sent (see [toApiJson]).
   final bool customerConsent;
 
