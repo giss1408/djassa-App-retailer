@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/config/env.dart';
 import '../core/data/sync_service.dart';
+import '../core/layaway_api.dart';
 import '../core/model/money.dart';
 import '../core/model/sale.dart';
 import '../core/providers.dart';
@@ -15,6 +16,7 @@ import 'account_screen.dart';
 import 'collect_payment_screen.dart';
 import 'customer_points_screen.dart';
 import 'deals_screen.dart';
+import 'layaway_screen.dart';
 import 'media_screen.dart';
 import 'record_sale_screen.dart';
 import 'shop_location_screen.dart';
@@ -53,10 +55,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _syncing = false;
   String? _notice;
 
+  /// Null until known, and when the shop does not offer layaway: the button
+  /// only appears where an admin switched it on.
+  LayawaySettings? _layaway;
+
   @override
   void initState() {
     super.initState();
     _load();
+    _loadLayaway();
+  }
+
+  Future<void> _loadLayaway() async {
+    try {
+      final settings = await ref.read(layawayApiProvider).settings();
+      if (mounted && settings.enabled) setState(() => _layaway = settings);
+    } catch (_) {
+      // Offline or an older server: no button, nothing else changes.
+    }
   }
 
   Future<void> _load() async {
@@ -277,6 +293,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ],
                   ),
+                  if (_layaway != null) ...[
+                    const SizedBox(height: 12),
+                    _QuickAction(
+                      icon: Icons.inventory_2_rounded,
+                      label: Strings.layawayTitle,
+                      color: DjassaColors.orangeDeep,
+                      background: DjassaColors.orangeTint,
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          settings: const RouteSettings(name: 'layaway'), builder: (_) => LayawayScreen(settings: _layaway!))),
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   const SectionHeader(Strings.recentSales),
                   if (_recent.isEmpty && !_loading)

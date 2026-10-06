@@ -377,6 +377,49 @@ class Strings {
     return '$h:$m';
   }
 
+  // "Payer en plusieurs fois" (layaway). Never "credit": the customer pays
+  // first and nobody lends anything.
+  static const layaway = 'Plusieurs fois';
+  static const layawayTitle = 'Payer en plusieurs fois';
+  static const layawayIntro =
+      'Le client paie un produit en plusieurs fois. Vous gardez l\'argent et '
+      'vous lui remettez le produit quand le prix est atteint.';
+  static const layawayNone = 'Aucun paiement en plusieurs fois';
+  static const layawayNoneHint = 'Ouvrez-en un quand un client veut mettre un produit de cote.';
+  static const layawayNew = 'Nouveau';
+  static const layawayItem = 'Produit';
+  static const layawayItemHint = 'Ex : Refrigerateur 90 L';
+  static const layawayPrice = 'Prix total (F)';
+  static const layawayFirst = 'Premier versement (F)';
+  static const layawayFirstHint = 'Ce que le client paie aujourd\'hui';
+  static const layawayDueBy = 'A payer avant le';
+  static const layawayTerms = 'A lire au client';
+  static const layawayAgree = 'Le client a ecoute et accepte ces conditions';
+  static const layawayOpen = 'Ouvrir';
+  static const layawayOpening = 'Ouverture...';
+  static const layawayPaid = 'Paye';
+  static const layawayRemaining = 'Reste';
+  static const layawayOverdue = 'Date depassee';
+  static const layawayReady = 'Paye : a remettre';
+  static const layawayDelivered = 'Remis';
+  static const layawayCancelled = 'Annule';
+  static const layawayAddPayment = 'Ajouter un versement';
+  static const layawayPaymentAmount = 'Montant du versement (F)';
+  static const layawayHandOver = 'Remettre le produit';
+  static const layawayHandOverHint = 'Le client repart avec le produit. La vente est enregistree.';
+  static const layawayCancel = 'Annuler le paiement';
+  static const layawayCancelReason = 'Pourquoi ?';
+  static const layawayRefunded = 'Rendu au client (F)';
+  static const layawayPayments = 'Versements';
+  static const layawayNeedsConnection = 'Il faut du reseau pour ce paiement. Reessayez dans un instant.';
+  static const layawayPriceTooHigh = 'Prix maximum :';
+  static const layawayInvalidAmount = 'Entrez un montant';
+  static const layawayItemMissing = 'Nommez le produit';
+  static const layawayFirstMissing = 'Entrez le premier versement';
+
+  /// The end dates a merchant can pick, capped by the server's maximum.
+  static const layawayDurations = <String, int>{'1 mois': 30, '2 mois': 61, '3 mois': 91, '6 mois': 183};
+
   // What "djassa" means. Accents dropped, as everywhere in this file.
   static const aboutNameLink = 'Que veut dire djassa ?';
   static const aboutNameTitle = 'Le mot djassa';
