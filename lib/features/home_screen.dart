@@ -392,7 +392,7 @@ class _AccountMenu extends ConsumerWidget {
         if (suggestions != null)
           const PopupMenuItem(
             value: 'suggest',
-            child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.lightbulb_outline_rounded), title: Text(Strings.suggestions)),
+            child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.help_outline_rounded), title: Text(Strings.suggestions)),
           ),
         const PopupMenuItem(
           value: 'logout',

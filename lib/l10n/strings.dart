@@ -355,7 +355,7 @@ class Strings {
   static const ribbonPromo = 'PROMO';
   static const ribbonChoices = {'bon_plan': 'Bon plan', 'flash': 'Promo flash', 'promo': 'Sticker promo'};
   // Suggestions to the Djassa team on WhatsApp: free for shops.
-  static const suggestions = 'Suggerer une idee';
+  static const suggestions = 'Aide';
   static const suggestionsFailed = 'WhatsApp n\'a pas pu s\'ouvrir.';
   static const dealDescription = 'Details (optionnel)';
   static const dealDescriptionHint = 'Ex : le midi en semaine, dans la limite des stocks';
