@@ -167,6 +167,15 @@ jobs:
           echo "ARMV7_MB=$(du -m dist/$APP-armv7.apk | cut -f1)" >> "$GITHUB_ENV"
           echo "UNIVERSAL_MB=$(du -m dist/$APP-universel.apk | cut -f1)" >> "$GITHUB_ENV"
 
+      # The Google Play bundle, signed with the same key as the APKs. Kept with
+      # the run for upload in the Play Console (fidelia-BE docs/technical/PLAY-STORE.md), never
+      # attached to the public release.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: play-bundle-${{ steps.version.outputs.name }}-${{ steps.version.outputs.number }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
       # The obfuscation map: needed to read a crash report from the field.
       # Kept with the run, never attached to the public release.
       - uses: actions/upload-artifact@v4
