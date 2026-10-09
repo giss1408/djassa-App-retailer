@@ -10,6 +10,7 @@ import 'deals_api.dart';
 import 'location_api.dart';
 import 'media_api.dart';
 import 'wave_api.dart';
+import 'layaway_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
 import 'staff_api.dart';
@@ -83,6 +84,7 @@ final waveApiProvider = Provider<WaveApi>((ref) => WaveApi(ref.watch(apiClientPr
 
 final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
 final staffApiProvider = Provider<StaffApi>((ref) => StaffApi(ref.watch(apiClientProvider)));
+final layawayApiProvider = Provider<LayawayApi>((ref) => LayawayApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {
   // Depends on the database being open; the UI gates on [databaseProvider]
