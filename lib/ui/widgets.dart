@@ -398,3 +398,47 @@ class DealRibbonBanner extends StatelessWidget {
     );
   }
 }
+
+
+/// The Fidelia mark: the logo's geometric F, whose middle bar ends in an
+/// orange point (fidelia-brand/make_logo.py, drawn on its 100 grid). With
+/// [tile] it sits on the brand-green rounded square, as on the app icon.
+class FideliaMark extends StatelessWidget {
+  const FideliaMark({super.key, this.size = 58, this.tile = true});
+
+  final double size;
+  final bool tile;
+
+  @override
+  Widget build(BuildContext context) =>
+      SizedBox.square(dimension: size, child: CustomPaint(painter: _FideliaMarkPainter(tile: tile)));
+}
+
+class _FideliaMarkPainter extends CustomPainter {
+  const _FideliaMarkPainter({required this.tile});
+
+  final bool tile;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.scale(size.width / 100);
+    if (tile) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(const Rect.fromLTWH(0, 0, 100, 100), const Radius.circular(24)),
+        Paint()..color = FideliaColors.green,
+      );
+    }
+    final letter = Paint()..color = tile ? FideliaColors.paper : FideliaColors.green;
+    for (final bar in const [
+      Rect.fromLTWH(31, 24, 11, 52),
+      Rect.fromLTWH(31, 24, 40, 11),
+      Rect.fromLTWH(31, 45, 26, 10),
+    ]) {
+      canvas.drawRRect(RRect.fromRectAndRadius(bar, const Radius.circular(1.5)), letter);
+    }
+    canvas.drawCircle(const Offset(66, 50), 5.5, Paint()..color = FideliaColors.orange);
+  }
+
+  @override
+  bool shouldRepaint(_FideliaMarkPainter oldDelegate) => oldDelegate.tile != tile;
+}

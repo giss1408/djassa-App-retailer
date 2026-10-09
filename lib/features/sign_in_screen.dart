@@ -32,13 +32,7 @@ class SignInScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
-                  alignment: Alignment.center,
-                  child: Text('d', style: serifStyle(44, color: FideliaColors.orangeDeep, height: 0.9)),
-                ),
+                const FideliaMark(size: 58),
                 const SizedBox(height: 22),
                 Text(Strings.signInTitle, style: serifStyle(42, color: Colors.white)),
                 const SizedBox(height: 8),

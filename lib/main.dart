@@ -156,11 +156,10 @@ class _Splash extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: FideliaColors.orangeDeep,
-      body: Center(
-        child: Text('d', style: serifStyle(64, color: Colors.white, height: 0.9)),
-      ),
+    // Continues the system splash: the mark on paper.
+    return const Scaffold(
+      backgroundColor: FideliaColors.paper,
+      body: Center(child: FideliaMark(size: 112)),
     );
   }
 }

@@ -208,7 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ],
                           ),
                         ),
-                        _AccountMenu(initial: name?[0] ?? 'D', isOwner: session.isOwner, onSignOut: _confirmSignOut),
+                        _AccountMenu(initial: name?[0] ?? 'F', isOwner: session.isOwner, onSignOut: _confirmSignOut),
                       ],
                     ),
                   ),
