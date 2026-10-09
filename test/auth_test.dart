@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hossouko_merchant/core/auth/auth_repository.dart';
-import 'package:hossouko_merchant/core/auth/token_store.dart';
-import 'package:hossouko_merchant/core/monitoring/error_reporter.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
-import 'package:hossouko_merchant/core/net/api_exception.dart';
+import 'package:fidelia_merchant/core/auth/auth_repository.dart';
+import 'package:fidelia_merchant/core/auth/token_store.dart';
+import 'package:fidelia_merchant/core/monitoring/error_reporter.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/net/api_exception.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -142,7 +142,7 @@ void main() {
   });
 
   test('sign-out revokes on the server and wipes the device', () async {
-    await store.save(token: FakeHossoukoServer.validJwt(), refreshToken: 'refresh-1', username: 'x');
+    await store.save(token: FakeFideliaServer.validJwt(), refreshToken: 'refresh-1', username: 'x');
     respond = (_) => http.Response('', 204);
     await auth.signOut();
     expect(sent.single.url.path, '/api/auth/logout');
@@ -175,7 +175,7 @@ void main() {
 
     test('a refusal arrives in the server\'s words', () async {
       await store.save(token: 'access', refreshToken: 'r', username: 'x');
-      respond = (_) => json({'detail': 'Ce numero a deja un compte Hossouko.'}, 409);
+      respond = (_) => json({'detail': 'Ce numero a deja un compte Fidelia.'}, 409);
       await expectLater(
         auth.requestNumberChange('0511223344'),
         throwsA(isA<AccountActionException>().having((e) => e.message, 'message', startsWith('Ce numero'))),
@@ -216,7 +216,7 @@ void main() {
   group('ErrorReporter', () {
     late Directory dir;
 
-    setUp(() async => dir = await Directory.systemTemp.createTemp('hossouko-errors-'));
+    setUp(() async => dir = await Directory.systemTemp.createTemp('fidelia-errors-'));
     tearDown(() => dir.delete(recursive: true));
 
     ErrorReporter reporter(http.Client inner) =>
@@ -228,7 +228,7 @@ void main() {
         reports.add(jsonDecode(request.body) as Map<String, Object?>);
         return http.Response('{"accepted":1}', 202);
       }));
-      final stack = StackTrace.fromString('#0      SyncService.flush (package:hossouko_merchant/core/data/sync_service.dart:88:5)\n');
+      final stack = StackTrace.fromString('#0      SyncService.flush (package:fidelia_merchant/core/data/sync_service.dart:88:5)\n');
       for (var i = 0; i < 3; i++) {
         r.record(StateError('sale for +2250700000002 of 150000 failed'), stack);
       }

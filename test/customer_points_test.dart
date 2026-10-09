@@ -1,14 +1,14 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:hossouko_merchant/core/data/database.dart';
-import 'package:hossouko_merchant/core/data/sale_dao.dart';
-import 'package:hossouko_merchant/core/data/sale_repository.dart';
-import 'package:hossouko_merchant/core/data/sync_service.dart';
-import 'package:hossouko_merchant/core/model/money.dart';
-import 'package:hossouko_merchant/core/model/phone.dart';
-import 'package:hossouko_merchant/core/model/sale.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/data/database.dart';
+import 'package:fidelia_merchant/core/data/sale_dao.dart';
+import 'package:fidelia_merchant/core/data/sale_repository.dart';
+import 'package:fidelia_merchant/core/data/sync_service.dart';
+import 'package:fidelia_merchant/core/model/money.dart';
+import 'package:fidelia_merchant/core/model/phone.dart';
+import 'package:fidelia_merchant/core/model/sale.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -61,21 +61,21 @@ void main() {
   });
 
   group('syncing', () {
-    late FakeHossoukoServer server;
+    late FakeFideliaServer server;
     late SaleDao dao;
     late SyncService sync;
     late SaleRepository repo;
     late Future<void> Function() closeDb;
 
     setUp(() async {
-      server = FakeHossoukoServer();
+      server = FakeFideliaServer();
       final db = await openTestDatabase();
       closeDb = db.close;
       dao = SaleDao(db.db);
       sync = SyncService(
         client: ApiClient(
           inner: server.client(),
-          tokenProvider: () async => FakeHossoukoServer.validJwt(),
+          tokenProvider: () async => FakeFideliaServer.validJwt(),
           baseUrl: 'https://api.test.invalid',
         ),
         dao: dao,
@@ -108,7 +108,7 @@ void main() {
   test('upgrading from v1 keeps an unsynced sale and adds the points column', () async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-    final path = '${Directory.systemTemp.createTempSync('hossouko_v1_').path}/hossouko.db';
+    final path = '${Directory.systemTemp.createTempSync('fidelia_v1_').path}/fidelia.db';
 
     // The v1 schema, as shipped: no points column.
     final v1 = await databaseFactory.openDatabase(path,

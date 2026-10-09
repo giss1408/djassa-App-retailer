@@ -196,7 +196,7 @@ class _ShopLocationScreenState extends ConsumerState<ShopLocationScreen> {
                   children: [
                     Icon(
                       saved?.isSet == true ? Icons.where_to_vote_rounded : Icons.location_off_outlined,
-                      color: saved?.isSet == true ? HossoukoColors.success : HossoukoColors.muted,
+                      color: saved?.isSet == true ? FideliaColors.success : FideliaColors.muted,
                       size: 30,
                     ),
                     const SizedBox(width: 14),

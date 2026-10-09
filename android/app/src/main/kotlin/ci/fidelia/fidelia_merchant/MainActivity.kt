@@ -1,4 +1,4 @@
-package ci.hossouko.hossouko_merchant
+package ci.fidelia.fidelia_merchant
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,6 +1,6 @@
 /// Customer phone numbers, as a merchant types them at the counter.
 ///
-/// Mirrors the backend's rule (`hossouko-BE/backend-api/app/core/phone.py`):
+/// Mirrors the backend's rule (`fidelia-BE/backend-api/app/core/phone.py`):
 /// loyalty points are keyed on the number, so "07 12 34 56 78", "0712345678"
 /// and "+225 07 12 34 56 78" must all become the same `+2250712345678`, and
 /// anything that is not an Ivorian number is refused on the phone — before the

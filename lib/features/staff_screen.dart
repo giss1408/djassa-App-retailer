@@ -90,7 +90,7 @@ class _StaffScreenState extends ConsumerState<StaffScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 17, color: HossoukoColors.muted),
+                  const Icon(Icons.info_outline_rounded, size: 17, color: FideliaColors.muted),
                   const SizedBox(width: 8),
                   Expanded(child: Text(Strings.teamIntro, style: text.bodySmall)),
                 ],
@@ -133,7 +133,7 @@ class _CashierTile extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       child: Row(
         children: [
-          const Icon(Icons.badge_outlined, color: HossoukoColors.green),
+          const Icon(Icons.badge_outlined, color: FideliaColors.green),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -218,7 +218,7 @@ class _AddCashierDialogState extends ConsumerState<_AddCashierDialog> {
           Text(Strings.addCashierHint, style: text.bodySmall),
           if (_error != null) ...[
             const SizedBox(height: 8),
-            Text(_error!, style: text.bodySmall?.copyWith(color: HossoukoColors.danger)),
+            Text(_error!, style: text.bodySmall?.copyWith(color: FideliaColors.danger)),
           ],
         ],
       ),

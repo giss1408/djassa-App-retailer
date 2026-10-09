@@ -184,7 +184,7 @@ class SessionNotifier extends Notifier<SessionState> {
 final sessionProvider =
     NotifierProvider<SessionNotifier, SessionState>(SessionNotifier.new);
 
-/// The Hossouko team's WhatsApp link for suggestions: free for shops, so it is
+/// The Fidelia team's WhatsApp link for suggestions: free for shops, so it is
 /// there as soon as the server has a number set. Null keeps the menu entry
 /// hidden, including when offline.
 final suggestionsLinkProvider = FutureProvider.autoDispose<String?>((ref) async {

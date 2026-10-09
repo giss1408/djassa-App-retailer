@@ -21,7 +21,7 @@ class PaymentRequest {
   /// The code under the QR, for a customer whose camera cannot scan.
   final String code;
 
-  /// The exact text in the QR (`hossouko://pay/<code>`), as the server built it.
+  /// The exact text in the QR (`fidelia://pay/<code>`), as the server built it.
   final String qrPayload;
   final int amount;
   final String status;

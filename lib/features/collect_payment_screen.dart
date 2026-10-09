@@ -15,8 +15,8 @@ import '../ui/theme.dart';
 import 'fixed_qr_screen.dart';
 
 /// Getting paid by QR: the merchant types the amount, the customer scans the
-/// QR with the Hossouko app and pays from their own wallet, straight to the
-/// merchant's (Hossouko never holds the money). The paid sale is recorded by the
+/// QR with the Fidelia app and pays from their own wallet, straight to the
+/// merchant's (Fidelia never holds the money). The paid sale is recorded by the
 /// server as a provider-confirmed event, and the customer earns points.
 ///
 /// Unlike recording a cash sale, this needs a connection: the request lives
@@ -202,7 +202,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
       ),
       if (parsed != null) ...[
         const SizedBox(height: 4),
-        Text(formatMoney(Money.fromMinor(parsed, 'XOF')), style: text.bodyMedium?.copyWith(color: HossoukoColors.muted)),
+        Text(formatMoney(Money.fromMinor(parsed, 'XOF')), style: text.bodyMedium?.copyWith(color: FideliaColors.muted)),
       ],
       const SizedBox(height: 24),
       FilledButton.icon(
@@ -214,7 +214,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.lock_outline_rounded, size: 16, color: HossoukoColors.muted),
+          const Icon(Icons.lock_outline_rounded, size: 16, color: FideliaColors.muted),
           const SizedBox(width: 6),
           Expanded(child: Text(Strings.moneyGoesToYou, style: text.bodySmall)),
         ],
@@ -229,7 +229,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
     if (r.isPaid) {
       return [
         const SizedBox(height: 24),
-        const Icon(Icons.check_circle_rounded, size: 88, color: HossoukoColors.success),
+        const Icon(Icons.check_circle_rounded, size: 88, color: FideliaColors.success),
         const SizedBox(height: 12),
         Text(Strings.paid, textAlign: TextAlign.center, style: text.headlineSmall),
         Text(amount, textAlign: TextAlign.center, style: serifStyle(44)),
@@ -239,7 +239,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
           const SizedBox(height: 8),
           Text('+${r.pointsAwarded} ${Strings.customerEarned}',
               textAlign: TextAlign.center,
-              style: text.titleMedium?.copyWith(color: HossoukoColors.green, fontWeight: FontWeight.w700)),
+              style: text.titleMedium?.copyWith(color: FideliaColors.green, fontWeight: FontWeight.w700)),
         ],
         const SizedBox(height: 28),
         FilledButton(onPressed: _reset, child: const Text(Strings.newCollect)),
@@ -249,7 +249,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
     if (!r.isOpen) {
       return [
         const SizedBox(height: 24),
-        const Icon(Icons.timer_off_outlined, size: 64, color: HossoukoColors.muted),
+        const Icon(Icons.timer_off_outlined, size: 64, color: FideliaColors.muted),
         const SizedBox(height: 12),
         Text(r.status == 'expired' ? Strings.qrExpired : Strings.qrCancelled,
             textAlign: TextAlign.center, style: text.titleMedium),
@@ -269,7 +269,7 @@ class _CollectPaymentScreenState extends ConsumerState<CollectPaymentScreen> {
       Center(
         child: Container(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(HossoukoRadius.lg)),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FideliaRadius.lg)),
           // Black on white, large quiet zone: what cheap cameras read best.
           child: QrImageView(data: r.qrPayload, size: 240, backgroundColor: Colors.white),
         ),

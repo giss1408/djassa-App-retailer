@@ -1,6 +1,6 @@
 import 'net/api_client.dart';
 
-/// Someone the owner lets work the shop from Hossouko Pro (`app/api/staff.py`).
+/// Someone the owner lets work the shop from Fidelia Pro (`app/api/staff.py`).
 class StaffMember {
   const StaffMember({required this.id, required this.phoneMasked, this.name, this.lastLoginAt});
 
@@ -34,7 +34,7 @@ class StaffApi {
     return [for (final m in list) StaffMember.fromJson(m! as Map<String, Object?>)];
   }
 
-  /// Adds a cashier by phone number. They get an SMS and sign in to Hossouko Pro
+  /// Adds a cashier by phone number. They get an SMS and sign in to Fidelia Pro
   /// with that number.
   Future<StaffMember> add({required String phone, String? name}) async => StaffMember.fromJson(
         await _client.postJson('/api/merchant/staff', body: {

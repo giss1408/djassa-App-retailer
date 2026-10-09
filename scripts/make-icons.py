@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
-"""Draws Hossouko Pro's Android icons: the Hossouko mark with "pro" under it.
+"""Draws Fidelia Pro's Android icons: the Fidelia mark with "pro" under it.
 
     python3 scripts/make-icons.py     (needs rsvg-convert and fontTools)
 
-"pro" is set in Instrument Serif italic (assets/fonts) and turned into
-outlines, so the result does not depend on the fonts installed. It sits in a
-green pill: paper text that reads on the green icon and on the paper splash
-screen alike, and on any wallpaper: the icons have no tile behind them (the
-adaptive icon's background layer is transparent). Everything stays inside the
-circle a launcher keeps when it crops the adaptive icon (61% of the canvas),
-which Android 12+ also uses as the splash icon.
+The mark is the logo's geometric F with its orange point (fidelia-brand,
+make_logo.py), in paper on the brand green. "pro" is set in Instrument Serif
+italic (assets/fonts) and turned into outlines, so the result does not depend
+on the fonts installed; it sits in an orange pill under the F.
+
+The adaptive icon's background layer is the green (@color/fidelia_green), so
+each launcher cuts the tile to its own shape; the foreground holds only the F,
+the point and the pill, inside the circle a launcher keeps when it crops (61%
+of the canvas), which Android 12+ also uses as the splash icon.
 
 Writes, for each density: mipmap-*/ic_launcher_foreground.png (adaptive icon),
-mipmap-*/ic_launcher.png (pre-Android 8 launchers, no tile) and drawable-*/launch_logo.png
-(splash before Android 12).
+mipmap-*/ic_launcher.png (pre-Android 8 launchers: the full green tile) and
+drawable-*/launch_logo.png (splash before Android 12: the tile on paper).
 """
 
-import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -27,61 +28,75 @@ from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "android/app/src/main/res"
-MARK = ROOT / "scripts/icons/hossouko-mark.svg"
 FONT = ROOT / "assets/fonts/InstrumentSerif-Italic.ttf"
 
-PAPER, GREEN = "#f5f1e8", "#234b39"
+# Set to None for an icon without a label under the F.
+LABEL = "pro"
+
+PAPER, GREEN, GREEN_DARK, ORANGE = "#f5f1e8", "#234b39", "#173427", "#e65e32"
 DENSITIES = {"mdpi": 1, "hdpi": 1.5, "xhdpi": 2, "xxhdpi": 3, "xxxhdpi": 4}
 
 
-def mark_body() -> str:
-    """The mark's drawing, without its <svg> wrapper (a 1024 x 1024 canvas)."""
-    svg = MARK.read_text()
-    return re.sub(r"^.*?<svg[^>]*>|</svg>\s*$", "", svg, flags=re.S)
+def letter(cx: float, cy: float, scale: float) -> str:
+    """The F and its point, drawn on the logo's 100 grid, centred on (cx, cy)."""
+    # The F with its point spans x 31..71.5 and y 24..76 on that grid.
+    tx, ty = cx - 51.25 * scale, cy - 50 * scale
+    return (
+        f'<g transform="translate({tx:.1f} {ty:.1f}) scale({scale})">'
+        f'<rect x="31" y="24" width="11" height="52" rx="1.5" fill="{PAPER}"/>'
+        f'<rect x="31" y="24" width="40" height="11" rx="1.5" fill="{PAPER}"/>'
+        f'<rect x="31" y="45" width="26" height="10" rx="1.5" fill="{PAPER}"/>'
+        f'<circle cx="66" cy="50" r="5.5" fill="{ORANGE}"/>'
+        "</g>"
+    )
 
 
-def word(text: str, cap_height: float) -> tuple[str, float, float]:
-    """`text` as one SVG path, scaled so its x-height is `cap_height`.
+def word(text: str, x_height: float) -> tuple[str, float, float]:
+    """`text` as one SVG path, scaled so its x-height is `x_height`.
     Returns the path, its width and its height, origin at the top left."""
     font = TTFont(FONT)
     glyphs, cmap = font.getGlyphSet(), font.getBestCmap()
-    x_height = font["OS/2"].sxHeight
-    scale = cap_height / x_height
+    font_x_height = font["OS/2"].sxHeight
+    scale = x_height / font_x_height
     pen = SVGPathPen(glyphs)
     x = 0
     for ch in text:
         name = cmap[ord(ch)]
         # Font units have y going up; flip, and put the x-height line at y=0.
-        glyphs[name].draw(TransformPen(pen, (scale, 0, 0, -scale, x * scale, x_height * scale)))
+        glyphs[name].draw(TransformPen(pen, (scale, 0, 0, -scale, x * scale, font_x_height * scale)))
         x += glyphs[name].width
-    # "p" drops below the baseline by the font's descender.
     descent = -font["hhea"].descent * scale
-    return pen.getCommands(), x * scale, cap_height + descent
+    return pen.getCommands(), x * scale, x_height + descent
 
 
 def composition() -> str:
-    """Mark and pill on a transparent 1024 canvas, inside the safe circle."""
-    path, w, h = word("pro", 92)
-    pill_h, pad = 150, 52
+    """The F (and the label's pill) on a transparent 1024 canvas, inside the safe circle."""
+    if not LABEL:
+        return letter(512, 512, 6.2)
+    path, w, _ = word(LABEL, 78)
+    pill_h, pad = 128, 46
     pill_w = w + 2 * pad
-    pill_x, pill_y = 512 - pill_w / 2, 640
-    # The x-height sits centred in the pill; the descender hangs into the
-    # lower padding, as it would on a line of text.
+    pill_x, pill_y = 512 - pill_w / 2, 600
     text_x = 512 - w / 2
-    text_y = pill_y + (pill_h - 92) / 2 - 12
+    text_y = pill_y + (pill_h - 78) / 2 - 18
     return (
-        # The mark, scaled to 46% and raised so the pill fits below it.
-        f'<g transform="translate(512 408) scale(0.46) translate(-512 -512)">{mark_body()}</g>'
-        f'<rect x="{pill_x:.1f}" y="{pill_y}" width="{pill_w:.1f}" height="{pill_h}" rx="{pill_h / 2}" fill="{GREEN}"/>'
-        f'<path transform="translate({text_x:.1f} {text_y:.1f})" fill="{PAPER}" d="{path}"/>'
+        letter(512, 425, 5.0)
+        + f'<rect x="{pill_x:.1f}" y="{pill_y}" width="{pill_w:.1f}" height="{pill_h}" rx="{pill_h / 2}" fill="{ORANGE}"/>'
+        + f'<path transform="translate({text_x:.1f} {text_y:.1f})" fill="{PAPER}" d="{path}"/>'
     )
 
 
-def svg(body: str, background: str = "") -> str:
+def tile() -> str:
+    """The logo's green tile, filling the canvas."""
     return (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">'
-        f"{background}{body}</svg>"
+        '<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="{GREEN}"/><stop offset="1" stop-color="{GREEN_DARK}"/>'
+        '</linearGradient></defs><rect width="1024" height="1024" rx="246" fill="url(#g)"/>'
     )
+
+
+def svg(body: str) -> str:
+    return f'<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">{body}</svg>'
 
 
 def render(source: str, out: Path, size: int, tmp: Path) -> None:
@@ -94,17 +109,15 @@ def main() -> None:
     art = composition()
     # Adaptive foreground: 108 dp, the launcher supplies the green background.
     foreground = svg(art)
-    # Legacy launchers: no mask to crop for, so enlarge the art. No tile
-    # behind it, as on the adaptive icon.
-    legacy = svg(f'<g transform="translate(512 512) scale(1.4) translate(-512 -512)">{art}</g>')
-    # Splash before Android 12: on paper, centred by launch_background.xml.
-    splash = svg(f'<g transform="translate(512 512) scale(1.5) translate(-512 -512)">{art}</g>')
+    # Legacy launchers and the old splash: no mask, so draw the tile and
+    # enlarge the art to fill it as the logo does.
+    tiled = svg(tile() + f'<g transform="translate(512 512) scale(1.45) translate(-512 -512)">{art}</g>')
     with tempfile.TemporaryDirectory() as tmp:
         for density, k in DENSITIES.items():
             render(foreground, RES / f"mipmap-{density}/ic_launcher_foreground.png", round(108 * k), Path(tmp))
-            render(legacy, RES / f"mipmap-{density}/ic_launcher.png", round(48 * k), Path(tmp))
-            render(splash, RES / f"drawable-{density}/launch_logo.png", round(112 * k), Path(tmp))
-    print("Wrote Hossouko Pro icons for", ", ".join(DENSITIES))
+            render(tiled, RES / f"mipmap-{density}/ic_launcher.png", round(48 * k), Path(tmp))
+            render(tiled, RES / f"drawable-{density}/launch_logo.png", round(112 * k), Path(tmp))
+    print("Wrote Fidelia icons for", ", ".join(DENSITIES))
 
 
 if __name__ == "__main__":

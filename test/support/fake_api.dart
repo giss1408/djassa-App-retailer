@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
-/// A stand-in for the Hossouko backend that reproduces the behaviour the offline
+/// A stand-in for the Fidelia backend that reproduces the behaviour the offline
 /// queue depends on — above all, idempotency-key deduplication.
 ///
 /// Modelled on `app/api/sales.py`: a key already seen returns the original sale
 /// event with status `already_processed` instead of creating a second one. The
 /// venue is never taken from the request — the real endpoint derives it from the
 /// token, so a body carrying one would be a bug this fake must not hide.
-class FakeHossoukoServer {
-  FakeHossoukoServer();
+class FakeFideliaServer {
+  FakeFideliaServer();
 
   /// idempotency_key -> the transaction id assigned the first time.
   final Map<String, int> _byKey = {};

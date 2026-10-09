@@ -21,9 +21,9 @@ class Strings {
   const Strings._();
 
   // Sign-in
-  // "Hossouko Pro": the merchant app, told apart from the customer app
-  // ("Hossouko") on a phone that has both.
-  static const signInTitle = 'Hossouko Pro';
+  // "Fidelia Pro": the merchant app, told apart from the customer app
+  // ("Fidelia") on a phone that has both.
+  static const signInTitle = 'Fidelia Pro';
   static const signInSubtitle = 'Espace marchand';
   static const signInPhoneLabel = 'Numero de telephone';
   static const signInPhoneHint = '07 12 34 56 78';
@@ -55,7 +55,7 @@ class Strings {
   static const signOutOthersDone = 'Les autres telephones sont deconnectes.';
   static const lostNumber = 'Numero perdu ?';
   static const lostNumberTitle = 'Recuperer mon commerce';
-  static const lostNumberIntro = 'Votre ancien numero ne marche plus ? Verifiez votre nouveau numero, puis dites-nous qui vous etes. Hossouko vous appelle et transfere votre commerce.';
+  static const lostNumberIntro = 'Votre ancien numero ne marche plus ? Verifiez votre nouveau numero, puis dites-nous qui vous etes. Fidelia vous appelle et transfere votre commerce.';
   static const oldPhone = 'Ancien numero';
   static const recoveryDetails = 'Pour vous reconnaitre';
   static const recoveryDetailsHint = 'Nom du commerce, quartier, votre nom...';
@@ -64,8 +64,8 @@ class Strings {
   static const backToSignIn = 'Retour a la connexion';
   static const continueLabel = 'Continuer';
 
-  // Joining Hossouko as a merchant
-  static const becomePartner = 'Pas encore commercant Hossouko ? Inscrivez votre commerce';
+  // Joining Fidelia as a merchant
+  static const becomePartner = 'Pas encore commercant Fidelia ? Inscrivez votre commerce';
   // Demo mode: the app without an account, nothing sent.
   static const tryDemo = 'Essayer sans compte (demo)';
   static const demoBadge = 'DEMO';
@@ -75,7 +75,7 @@ class Strings {
   static const demoNeedsAccount = 'En demo, cette fonction est desactivee. Connectez-vous avec votre commerce pour l\'utiliser.';
   static const partnerTitle = 'Inscrire mon commerce';
   static const partnerIntro =
-      'Laissez-nous vos informations : un agent Hossouko vous appelle pour finaliser l\'inscription. Ce numero deviendra votre connexion a Hossouko Pro.';
+      'Laissez-nous vos informations : un agent Fidelia vous appelle pour finaliser l\'inscription. Ce numero deviendra votre connexion a Fidelia Pro.';
   static const partnerPhone = 'Votre numero';
   static const partnerContactName = 'Votre nom';
   static const partnerShopName = 'Nom du commerce';
@@ -138,8 +138,8 @@ class Strings {
   static const customerEarnsHint = 'Avec son numero, le client gagne des points chez vous.';
   static const customerPhoneInvalid = 'Numero invalide : 10 chiffres, par ex. 07 12 34 56 78.';
   // Asked aloud at the counter, ticked by the merchant (Law 2013-450, art. 14).
-  static const customerConsent = "Le client accepte que Hossouko garde son numero pour ses points";
-  static const customerConsentHint = 'Demandez-lui. Il pourra retirer son accord dans l\'app Hossouko.';
+  static const customerConsent = "Le client accepte que Fidelia garde son numero pour ses points";
+  static const customerConsentHint = 'Demandez-lui. Il pourra retirer son accord dans l\'app Fidelia.';
   static const customerConsentRequired = 'Demandez au client son accord et cochez la case, ou laissez le numero vide.';
   static const pointsShort = 'pts';
   static const save = 'Enregistrer';
@@ -156,13 +156,13 @@ class Strings {
   static const retry = 'Reessayer';
   static const loadFailed = 'Impossible de charger. Verifiez votre connexion.';
 
-  // Getting paid by QR: the customer scans with the Hossouko app and pays from
+  // Getting paid by QR: the customer scans with the Fidelia app and pays from
   // their own wallet, straight to the merchant's.
   static const collect = 'Encaisser';
   static const collectIntro = 'Entrez le montant, puis montrez le QR code au client.';
   static const showQr = 'Afficher le QR code';
   static const creatingQr = 'Creation du QR code...';
-  static const scanToPay = 'Le client scanne ce QR code avec l\'application Hossouko';
+  static const scanToPay = 'Le client scanne ce QR code avec l\'application Fidelia';
   static const orTypeCode = 'ou tape le code';
   static const expiresIn = 'Expire dans';
   static const waitingForPayment = 'En attente du paiement...';
@@ -176,7 +176,7 @@ class Strings {
   static const qrCancelled = 'QR code annule.';
   static const amountRange = 'Montant entre 100 F et 2 000 000 F.';
   static const paymentNeedsConnection = 'Connexion necessaire pour encaisser par QR code.';
-  static const moneyGoesToYou = 'L\'argent va directement sur votre portefeuille mobile money. Hossouko ne le garde jamais.';
+  static const moneyGoesToYou = 'L\'argent va directement sur votre portefeuille mobile money. Fidelia ne le garde jamais.';
   static const fixedQr = 'Mon QR code fixe';
   static const fixedQrIntro =
       'A imprimer et coller au comptoir. Le client le scanne et tape lui-meme le montant.';
@@ -186,7 +186,7 @@ class Strings {
   static const shopLocation = 'Position du commerce';
   static const shopLocationIntro =
       'Enregistrez la position de votre commerce : vos clients auront l\'itineraire '
-      'jusqu\'a vous dans l\'application Hossouko.';
+      'jusqu\'a vous dans l\'application Fidelia.';
   static const shopLocationSet = 'Position enregistree';
   static const shopLocationNotSet = 'Pas encore de position';
   static const shopLocationNotSetHint = 'Vos clients ne voient que l\'adresse ecrite, souvent imprecise.';
@@ -203,7 +203,7 @@ class Strings {
   static const mediaMenu = 'Photos et videos';
   static const mediaTitle = 'Photos et videos';
   static const mediaIntro =
-      'Montrez votre commerce : 10 photos et 3 videos de 60 secondes maximum. Hossouko les allege pour que vos clients les voient meme avec peu de credit.';
+      'Montrez votre commerce : 10 photos et 3 videos de 60 secondes maximum. Fidelia les allege pour que vos clients les voient meme avec peu de credit.';
   static const mediaAddPhoto = 'Ajouter une photo';
   static const mediaTakePhoto = 'Prendre une photo';
   static const mediaAddVideo = 'Ajouter une video';
@@ -229,7 +229,7 @@ class Strings {
   static const team = 'Mon equipe';
   static const teamIntro = 'Vos caissiers enregistrent les ventes, encaissent et donnent les points, chacun sur son telephone. Wave, bons plans, photos et position restent a vous.';
   static const addCashier = 'Ajouter un caissier';
-  static const addCashierHint = 'Il recoit un SMS et se connecte a Hossouko Pro avec ce numero.';
+  static const addCashierHint = 'Il recoit un SMS et se connecte a Fidelia Pro avec ce numero.';
   static const cashierPhone = 'Numero du caissier';
   static const cashierName = 'Prenom (facultatif)';
   static const cashierPhoneNeeded = 'Entrez le numero du caissier';
@@ -248,7 +248,7 @@ class Strings {
   static const cashierBadge = 'Caissier';
   static const waveTitle = 'Wave';
   static const waveIntro =
-      'Reliez votre compte Wave Business : chaque client qui paie votre QR Wave habituel gagne ses points Hossouko automatiquement. Vos clients ne changent rien. Hossouko ne touche jamais l\'argent.';
+      'Reliez votre compte Wave Business : chaque client qui paie votre QR Wave habituel gagne ses points Fidelia automatiquement. Vos clients ne changent rien. Fidelia ne touche jamais l\'argent.';
   static const waveStart = 'Commencer';
   static const waveSteps = [
     'Ouvrez business.wave.com sur un ordinateur ou un telephone, section Developpeur, puis Webhooks.',
@@ -267,10 +267,10 @@ class Strings {
       'Le secret de signature sert seulement a verifier que les messages viennent de Wave. Il ne permet ni de creer ni de deplacer un paiement.';
   static const waveReplaceSecret = 'Changer le secret';
 
-  // Optional: paying the shop from inside the Hossouko app.
-  static const wavePayTitle = 'Paiement dans l\'app Hossouko (facultatif)';
+  // Optional: paying the shop from inside the Fidelia app.
+  static const wavePayTitle = 'Paiement dans l\'app Fidelia (facultatif)';
   static const wavePayIntro =
-      'Sans cela, vos clients paient votre QR Wave comme d\'habitude et gagnent leurs points. Avec, ils peuvent aussi payer depuis l\'app Hossouko. Il faut alors une cle API Wave.';
+      'Sans cela, vos clients paient votre QR Wave comme d\'habitude et gagnent leurs points. Avec, ils peuvent aussi payer depuis l\'app Fidelia. Il faut alors une cle API Wave.';
   static const wavePaySteps = [
     'Dans business.wave.com, section Developpeur, Cles API : creez une cle en cochant UNIQUEMENT "Checkout API".',
     'Dans votre webhook Wave, cochez aussi checkout.session.completed et checkout.session.payment_failed.',
@@ -282,11 +282,11 @@ class Strings {
   static const waveKeyMissing = 'Collez la cle API Wave complete.';
   static const wavePayOn = 'Paiement dans l\'app actif, cle';
   static const wavePaySafety =
-      'La cle permet de creer des paiements vers votre compte, pas de retirer de l\'argent. Elle est chiffree chez Hossouko et vous pouvez la revoquer a tout moment dans Wave.';
+      'La cle permet de creer des paiements vers votre compte, pas de retirer de l\'argent. Elle est chiffree chez Fidelia et vous pouvez la revoquer a tout moment dans Wave.';
   static const waveDisconnect = 'Deconnecter Wave';
   static const waveDisconnectQuestion = 'Deconnecter Wave ?';
   static const waveDisconnectHint =
-      'Hossouko oubliera le secret et la cle. Supprimez aussi le webhook et revoquez la cle dans le portail Wave Business.';
+      'Fidelia oubliera le secret et la cle. Supprimez aussi le webhook et revoquez la cle dans le portail Wave Business.';
   static const copy = 'Copier';
   static const copied = 'Copie';
   static const locating = 'Recherche de la position...';
@@ -296,7 +296,7 @@ class Strings {
   static const retryLocate = 'Reessayer';
   static const locationSaved = 'Position enregistree. Vos clients ont maintenant l\'itineraire.';
   static const locationServiceOff = 'La localisation est desactivee. Activez-la dans les parametres du telephone.';
-  static const locationDenied = 'Hossouko n\'a pas l\'autorisation d\'utiliser la position.';
+  static const locationDenied = 'Fidelia n\'a pas l\'autorisation d\'utiliser la position.';
   static const openSettings = 'Ouvrir les parametres';
   static const locationTooVague =
       'Position trop imprecise. Approchez-vous d\'une porte ou d\'une fenetre, puis reessayez.';
@@ -324,10 +324,10 @@ class Strings {
   static const pointsNeedConnection = 'Connexion necessaire pour voir les points du client.';
   static const notEnoughPoints = 'Pas assez de points pour cette recompense.';
 
-  // Deals ("bons plans") shown to customers in the Hossouko app.
+  // Deals ("bons plans") shown to customers in the Fidelia app.
   static const myDeals = 'Mes bons plans';
   static const myDealsIntro =
-      'Vos offres apparaissent dans l\'application client Hossouko, '
+      'Vos offres apparaissent dans l\'application client Fidelia, '
       'dans Bons plans et sur la page de votre commerce.';
   static const newDeal = 'Nouveau bon plan';
   static const noDeals = 'Aucun bon plan en cours.';
@@ -341,7 +341,7 @@ class Strings {
   static const cancel = 'Annuler';
   static const dealEnded = 'Bon plan termine.';
   static const dealPublished = 'Bon plan publie.';
-  static const sponsored = 'Mis en avant par Hossouko';
+  static const sponsored = 'Mis en avant par Fidelia';
   static const endsOn = 'Jusqu\'au';
   static const maxDealsHint = 'Maximum 5 bons plans en meme temps.';
   static const maxDealsReached = 'Vous avez deja 5 bons plans en cours.';
@@ -362,7 +362,7 @@ class Strings {
   static const ribbonFlash = 'FLASH';
   static const ribbonPromo = 'PROMO';
   static const ribbonChoices = {'bon_plan': 'Bon plan', 'flash': 'Promo flash', 'promo': 'Sticker promo'};
-  // Suggestions to the Hossouko team on WhatsApp: free for shops.
+  // Suggestions to the Fidelia team on WhatsApp: free for shops.
   static const suggestions = 'Aide';
   static const suggestionsFailed = 'WhatsApp n\'a pas pu s\'ouvrir.';
   static const dealDescription = 'Details (optionnel)';
@@ -441,9 +441,9 @@ class Strings {
   static const layawayDurations = <String, int>{'1 mois': 30, '2 mois': 61, '3 mois': 91, '6 mois': 183};
 
   // About the name: built on the slogan. Accents dropped, as everywhere in this file.
-  static const aboutNameLink = 'Pourquoi Hossouko ?';
-  static const aboutNameTitle = 'Le nom Hossouko';
-  static const aboutNameGrammar = '"La fidelite, ca rapporte"';
+  static const aboutNameLink = 'Pourquoi Fidelia ?';
+  static const aboutNameTitle = 'Le nom Fidelia';
+  static const aboutNameGrammar = '"La fidelite, ca compte"';
   static const aboutNameOrigin = 'Notre promesse';
   static const aboutNameSense1 =
       'Pour vos clients : chaque achat chez vous leur rapporte des points. '
@@ -453,8 +453,8 @@ class Strings {
       'appartient, une preuve de votre activite que vous pouvez montrer, '
       'avec votre accord, a un partenaire financier.';
   static const aboutNameWhy =
-      'La fidelite de vos clients rapporte, et votre fidelite a l\'application '
-      'aussi : votre activite est bien reelle, Hossouko en garde la preuve.';
+      'Fidelia vient de "fidelite". La fidelite de vos clients compte, et chaque '
+      'vente aussi : votre activite est bien reelle, Fidelia en garde la preuve.';
 
   /// Sale categories. Kept short because the backend caps `type` at 32 chars
   /// and a merchant should not be typing a category at the counter.

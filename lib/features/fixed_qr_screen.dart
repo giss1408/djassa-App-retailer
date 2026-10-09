@@ -62,7 +62,7 @@ class _FixedQrScreenState extends ConsumerState<FixedQrScreen> {
               Center(
                 child: Container(
                   padding: const EdgeInsets.all(18),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(HossoukoRadius.lg)),
+                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(FideliaRadius.lg)),
                   child: Column(
                     children: [
                       Text(code.name, style: serifStyle(26, color: Colors.black)),
@@ -72,7 +72,7 @@ class _FixedQrScreenState extends ConsumerState<FixedQrScreen> {
                       Text(code.code,
                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: 4, color: Colors.black)),
                       const SizedBox(height: 4),
-                      const Text('Hossouko', style: TextStyle(fontSize: 13, color: Colors.black54)),
+                      const Text('Fidelia', style: TextStyle(fontSize: 13, color: Colors.black54)),
                     ],
                   ),
                 ),

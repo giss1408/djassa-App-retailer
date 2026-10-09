@@ -7,47 +7,47 @@
 ///
 /// Release build:
 ///   flutter build apk --release \
-///     --dart-define=HOSSOUKO_API_BASE=https://api.hossouko.ci
+///     --dart-define=FIDELIA_API_BASE=https://api.fidelia.ci
 ///
 /// Local backend from the Android emulator:
-///   flutter run --dart-define=HOSSOUKO_API_BASE=http://10.0.2.2:8000
+///   flutter run --dart-define=FIDELIA_API_BASE=http://10.0.2.2:8000
 library;
 
 class Env {
   const Env._();
 
-  /// Base URL of the Hossouko API, with no trailing slash and no `/api` suffix.
+  /// Base URL of the Fidelia API, with no trailing slash and no `/api` suffix.
   /// The default points at the emulator loopback so a fresh checkout runs
   /// against a local backend without arguments; it is useless in production
   /// and `assertHttpsInRelease` refuses it in a release build.
   static const String apiBase = String.fromEnvironment(
-    'HOSSOUKO_API_BASE',
+    'FIDELIA_API_BASE',
     defaultValue: 'http://10.0.2.2:8000',
   );
 
   /// Sign-in prefill for development, e.g.
-  ///   --dart-define=HOSSOUKO_DEV_PHONE=0712345678
+  ///   --dart-define=FIDELIA_DEV_PHONE=0712345678
   /// Empty unless passed, and ignored in a release build, so no number can
   /// ship in an APK by accident. Locally the backend's console sender with
   /// OTP_DEV_ECHO=1 returns the code too, so no SIM is needed.
-  static const String _devPhone = String.fromEnvironment('HOSSOUKO_DEV_PHONE');
+  static const String _devPhone = String.fromEnvironment('FIDELIA_DEV_PHONE');
 
   static String get devPhone => isRelease ? '' : _devPhone;
 
   /// Reported with each error so a crash maps to the build that shipped it.
   /// Keep in step with `version:` in pubspec.yaml; the release script passes
-  /// it as --dart-define=HOSSOUKO_APP_VERSION=<version>.
-  static const String appVersion = String.fromEnvironment('HOSSOUKO_APP_VERSION', defaultValue: '0.1.0+1');
+  /// it as --dart-define=FIDELIA_APP_VERSION=<version>.
+  static const String appVersion = String.fromEnvironment('FIDELIA_APP_VERSION', defaultValue: '0.1.0+1');
 
   /// Debug builds print errors instead of reporting them, unless asked with
-  /// --dart-define=HOSSOUKO_REPORT_ERRORS=true (to test the pipeline locally).
-  static const bool reportErrors = isRelease || bool.fromEnvironment('HOSSOUKO_REPORT_ERRORS');
+  /// --dart-define=FIDELIA_REPORT_ERRORS=true (to test the pipeline locally).
+  static const bool reportErrors = isRelease || bool.fromEnvironment('FIDELIA_REPORT_ERRORS');
 
   /// Pilot only: the end-of-day "how many sales today?" question, the
   /// denominator of the share of sales recorded. Remove once that share is
   /// high enough to make the question moot (planning W4-3); turn off sooner
-  /// with --dart-define=HOSSOUKO_PILOT_DAILY_REPORT=false.
-  static const bool pilotDailyReport = bool.fromEnvironment('HOSSOUKO_PILOT_DAILY_REPORT', defaultValue: true);
+  /// with --dart-define=FIDELIA_PILOT_DAILY_REPORT=false.
+  static const bool pilotDailyReport = bool.fromEnvironment('FIDELIA_PILOT_DAILY_REPORT', defaultValue: true);
 
   /// Wall-clock budget for a single request. Deliberately generous: a 2G
   /// round trip in a market can take several seconds, and failing early just
@@ -77,8 +77,8 @@ class Env {
     final uri = Uri.tryParse(apiBase);
     if (uri == null || !uri.isScheme('https') || uri.host.isEmpty) {
       throw StateError(
-        'Release builds require an https HOSSOUKO_API_BASE. '
-        'Rebuild with --dart-define=HOSSOUKO_API_BASE=https://<host>',
+        'Release builds require an https FIDELIA_API_BASE. '
+        'Rebuild with --dart-define=FIDELIA_API_BASE=https://<host>',
       );
     }
   }

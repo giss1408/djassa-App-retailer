@@ -1,14 +1,14 @@
 import 'dart:convert';
 
-import 'package:hossouko_merchant/core/data/database.dart';
-import 'package:hossouko_merchant/core/model/deal.dart';
-import 'package:hossouko_merchant/core/monitoring/usage_tracker.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
-import 'package:hossouko_merchant/core/providers.dart';
-import 'package:hossouko_merchant/features/demo/demo_backend.dart';
-import 'package:hossouko_merchant/features/home_screen.dart';
-import 'package:hossouko_merchant/l10n/strings.dart';
-import 'package:hossouko_merchant/main.dart';
+import 'package:fidelia_merchant/core/data/database.dart';
+import 'package:fidelia_merchant/core/model/deal.dart';
+import 'package:fidelia_merchant/core/monitoring/usage_tracker.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/providers.dart';
+import 'package:fidelia_merchant/features/demo/demo_backend.dart';
+import 'package:fidelia_merchant/features/home_screen.dart';
+import 'package:fidelia_merchant/l10n/strings.dart';
+import 'package:fidelia_merchant/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -18,7 +18,7 @@ import 'package:http/testing.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future<(int, Object?)> _call(http.Client c, String method, String path, [Object? body]) async {
-  final request = http.Request(method, Uri.parse('https://demo.hossouko.invalid$path'));
+  final request = http.Request(method, Uri.parse('https://demo.fidelia.invalid$path'));
   if (body != null) request.body = jsonEncode(body);
   final response = await http.Response.fromStream(await c.send(request));
   return (response.statusCode, response.body.isEmpty ? null : jsonDecode(response.body));

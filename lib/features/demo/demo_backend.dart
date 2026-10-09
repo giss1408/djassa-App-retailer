@@ -4,11 +4,11 @@ import 'package:http/http.dart' as http;
 
 import '../../l10n/strings.dart';
 
-/// A pretend Hossouko server, inside the app, for the demo mode.
+/// A pretend Fidelia server, inside the app, for the demo mode.
 ///
 /// The demo runs the real screens against this instead of the network, so a
 /// merchant can try everything before having an account and nothing they do
-/// reaches Hossouko. It answers what a merchant can safely play with (sales,
+/// reaches Fidelia. It answers what a merchant can safely play with (sales,
 /// points at the counter, offers) from memory, and refuses, in French, what
 /// only makes sense with a real shop: payment QR codes, Wave, photos, the
 /// team, the shop's position.

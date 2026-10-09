@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:hossouko_merchant/core/media_api.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/media_api.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -18,7 +18,7 @@ void main() {
   });
 
   test('an upload is one multipart request with the file and its type', () async {
-    final dir = await Directory.systemTemp.createTemp('hossouko-upload-');
+    final dir = await Directory.systemTemp.createTemp('fidelia-upload-');
     addTearDown(() => dir.delete(recursive: true));
     final file = File('${dir.path}/shop.jpg')..writeAsBytesSync(List.filled(2048, 7));
     late http.BaseRequest seen;
@@ -33,7 +33,7 @@ void main() {
           headers: {'content-type': 'application/json'},
         );
       }),
-      tokenProvider: () async => FakeHossoukoServer.validJwt(),
+      tokenProvider: () async => FakeFideliaServer.validJwt(),
       baseUrl: 'https://api.test.invalid',
     ));
 

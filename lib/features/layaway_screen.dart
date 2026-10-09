@@ -279,7 +279,7 @@ class _LayawayPlanScreenState extends ConsumerState<LayawayPlanScreen> {
                 children: [
                   Text(p.customer ?? '', style: text.labelMedium),
                   const SizedBox(height: 8),
-                  Text('${_f(p.paid)} / ${_f(p.price)}', style: serifStyle(26, color: HossoukoColors.orangeDeep)),
+                  Text('${_f(p.paid)} / ${_f(p.price)}', style: serifStyle(26, color: FideliaColors.orangeDeep)),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(value: p.progress, minHeight: 8),
                   const SizedBox(height: 8),

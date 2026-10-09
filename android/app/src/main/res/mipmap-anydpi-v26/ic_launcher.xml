@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Hossouko Pro: the Hossouko mark with "pro" under it, with no tile behind it:
-     the background layer is transparent, so the launcher shows the mark on the
-     wallpaper. Everything sits inside the launcher's safe circle, so its crop
-     (circle, squircle...) cuts nothing. Drawn by scripts/make-icons.py. -->
+<!-- The Fidelia mark: the F and its orange point on the brand green. The
+     launcher cuts the green to its own shape (circle, squircle...); the F sits
+     inside its safe circle, so the crop cuts nothing. Drawn by
+     scripts/make-icons.py. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@android:color/transparent" />
+    <background android:drawable="@color/fidelia_green" />
     <foreground android:drawable="@mipmap/ic_launcher_foreground" />
 </adaptive-icon>

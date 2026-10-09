@@ -1,12 +1,12 @@
-# Hossouko merchant app — architecture
+# Fidelia merchant app — architecture
 
-Flutter app for the [Hossouko](../hossouko-BE) backend. One audience: the **merchant**.
+Flutter app for the [Fidelia](../fidelia-BE) backend. One audience: the **merchant**.
 It records sales on a cheap Android phone with unreliable connectivity, and
 syncs when there is signal.
 
 ## Why one app
 
-`../hossouko-BE/docs/business/CONCEPT.md` sets the boundary:
+`../fidelia-BE/docs/business/CONCEPT.md` sets the boundary:
 
 > Customers also need a simple way to earn benefits from repeat purchases
 > **without installing a heavy application** [...] SMS, WhatsApp, QR codes,
@@ -15,7 +15,7 @@ syncs when there is signal.
 
 So the customer never installs anything. They identify at the counter with a QR
 code or a phone number, on the merchant's device. A customer-facing points
-lookup, if it ships, belongs in the existing web site (`../hossouko-FE`) where it
+lookup, if it ships, belongs in the existing web site (`../fidelia-FE`) where it
 weighs a few KB — not as a second Flutter binary that costs an order of
 magnitude more over 2G.
 
@@ -33,13 +33,13 @@ rewrite.
 `/api/payments` in the backend **initiates** a payment and returns a
 `checkout_url`; the money moves inside Orange Money, Wave, or MTN MoMo. There is
 no wallet model, no balance endpoint, and no user-to-user transfer in
-`../hossouko-BE/backend-api/app/models.py`. The only working adapter today is
+`../fidelia-BE/backend-api/app/models.py`. The only working adapter today is
 `SandboxPaymentProvider`, which returns `https://sandbox.invalid/` URLs; a live
 provider name resolves to `ConfiguredProviderUnavailable` and raises.
 
 That is deliberate. From the concept doc:
 
-> Hossouko should facilitate access to financial services. It should not present
+> Fidelia should facilitate access to financial services. It should not present
 > itself as a bank, hold customer deposits, or lend directly unless the required
 > regulatory status exists.
 
@@ -209,7 +209,7 @@ Checked against the running backend, not just read from the source:
 
 ## Backend facts that shape the client
 
-Read from `../hossouko-BE/backend-api` as of this writing:
+Read from `../fidelia-BE/backend-api` as of this writing:
 
 - **Sign-in is phone + SMS code** (`app/api/auth.py`). `POST /api/auth/otp/request`
   sends a 6-digit code; `/api/auth/otp/verify` with `app: "merchant"` returns a
@@ -241,9 +241,9 @@ Read from `../hossouko-BE/backend-api` as of this writing:
 
 ```bash
 # Local backend, Android emulator
-flutter run --dart-define=HOSSOUKO_API_BASE=http://10.0.2.2:8000
+flutter run --dart-define=FIDELIA_API_BASE=http://10.0.2.2:8000
 
 # Release, per-ABI
 flutter build apk --release --split-per-abi \
-  --dart-define=HOSSOUKO_API_BASE=https://api.hossouko.ci
+  --dart-define=FIDELIA_API_BASE=https://api.fidelia.ci
 ```

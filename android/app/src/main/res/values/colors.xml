@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Hossouko paper, the brand's cream background (hossouko-Web tokens.css). -->
-    <color name="hossouko_paper">#F5F1E8</color>
+    <!-- Fidelia paper, the brand's cream background (fidelia-Web tokens.css). -->
+    <color name="fidelia_paper">#F5F1E8</color>
+    <!-- The logo's green tile: the adaptive icon's background layer. -->
+    <color name="fidelia_green">#234B39</color>
 </resources>

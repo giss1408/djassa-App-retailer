@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:hossouko_merchant/core/deals_api.dart';
-import 'package:hossouko_merchant/core/model/deal.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
-import 'package:hossouko_merchant/core/providers.dart';
-import 'package:hossouko_merchant/features/deals_screen.dart';
-import 'package:hossouko_merchant/features/new_deal_screen.dart';
-import 'package:hossouko_merchant/l10n/strings.dart';
-import 'package:hossouko_merchant/ui/theme.dart';
+import 'package:fidelia_merchant/core/deals_api.dart';
+import 'package:fidelia_merchant/core/model/deal.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/providers.dart';
+import 'package:fidelia_merchant/features/deals_screen.dart';
+import 'package:fidelia_merchant/features/new_deal_screen.dart';
+import 'package:fidelia_merchant/l10n/strings.dart';
+import 'package:fidelia_merchant/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,7 +55,7 @@ Future<void> _pump(WidgetTester tester, _DealsServer server, Widget home) async 
   addTearDown(tester.view.reset);
   await tester.pumpWidget(ProviderScope(
     overrides: [dealsApiProvider.overrideWithValue(api)],
-    child: MaterialApp(theme: hossoukoTheme(), home: home),
+    child: MaterialApp(theme: fideliaTheme(), home: home),
   ));
   await tester.pumpAndSettle();
 }

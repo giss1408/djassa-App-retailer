@@ -26,7 +26,7 @@ class SignInScreen extends StatelessWidget {
           // apps' first screen reads as one product before a merchant ever
           // sees the rest of either.
           PatternedSurface(
-            gradient: HossoukoColors.headerGradient,
+            gradient: FideliaColors.headerGradient,
             borderRadius: const BorderRadius.vertical(bottom: Radius.circular(36)),
             padding: EdgeInsets.fromLTRB(28, top + 44, 28, 40),
             child: Column(
@@ -37,7 +37,7 @@ class SignInScreen extends StatelessWidget {
                   height: 58,
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18)),
                   alignment: Alignment.center,
-                  child: Text('d', style: serifStyle(44, color: HossoukoColors.orangeDeep, height: 0.9)),
+                  child: Text('d', style: serifStyle(44, color: FideliaColors.orangeDeep, height: 0.9)),
                 ),
                 const SizedBox(height: 22),
                 Text(Strings.signInTitle, style: serifStyle(42, color: Colors.white)),

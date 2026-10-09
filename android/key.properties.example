@@ -3,11 +3,11 @@
 # Generate a keystore (keep the .jks and these passwords in a password manager
 # or secret store; losing them means you can never update the app again):
 #
-#   keytool -genkey -v -keystore ~/hossouko-release.jks \
-#     -keyalg RSA -keysize 4096 -validity 10000 -alias hossouko
+#   keytool -genkey -v -keystore ~/fidelia-release.jks \
+#     -keyalg RSA -keysize 4096 -validity 10000 -alias fidelia
 #
 storePassword=
 keyPassword=
-keyAlias=hossouko
+keyAlias=fidelia
 # Absolute path, outside the repository.
-storeFile=/absolute/path/to/hossouko-release.jks
+storeFile=/absolute/path/to/fidelia-release.jks

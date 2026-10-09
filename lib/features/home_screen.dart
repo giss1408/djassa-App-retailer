@@ -187,8 +187,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 54),
                   child: PatternedSurface(
-                    gradient: HossoukoColors.headerGradient,
-                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(HossoukoRadius.xl + 4)),
+                    gradient: FideliaColors.headerGradient,
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(FideliaRadius.xl + 4)),
                     padding: EdgeInsets.fromLTRB(20, MediaQuery.paddingOf(context).top + 14, 12, 84),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   style: TextStyle(
                                       color: Colors.white.withOpacity(0.8), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 1.4)),
                               const SizedBox(height: 2),
-                              Text(name ?? 'Hossouko', style: serifStyle(36, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
+                              Text(name ?? 'Fidelia', style: serifStyle(36, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
                               const SizedBox(height: 4),
                               Text(session.isOwner ? Strings.homeTagline : Strings.cashierBadge,
                                   style: TextStyle(color: Colors.white.withOpacity(0.88), fontSize: 13.5)),
@@ -238,7 +238,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 10),
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_outline_rounded, size: 16, color: HossoukoColors.success),
+                        const Icon(Icons.check_circle_outline_rounded, size: 16, color: FideliaColors.success),
                         const SizedBox(width: 6),
                         Expanded(child: Text(_notice!, style: text.bodySmall)),
                       ],
@@ -252,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           icon: Icons.point_of_sale_rounded,
                           label: Strings.recordSale,
                           color: Colors.white,
-                          background: HossoukoColors.orangeDeep,
+                          background: FideliaColors.orangeDeep,
                           onTap: _openRecordSale,
                         ),
                       ),
@@ -264,7 +264,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           icon: Icons.qr_code_2_rounded,
                           label: Strings.collect,
                           color: Colors.white,
-                          background: HossoukoColors.green,
+                          background: FideliaColors.green,
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'collect_payment'), builder: (_) => const CollectPaymentScreen())),
                         ),
                       ),
@@ -277,8 +277,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: _QuickAction(
                           icon: Icons.local_offer_rounded,
                           label: Strings.myDeals,
-                          color: HossoukoColors.orangeDeep,
-                          background: HossoukoColors.orangeTint,
+                          color: FideliaColors.orangeDeep,
+                          background: FideliaColors.orangeTint,
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'deals'), builder: (_) => DealsScreen(readOnly: !session.isOwner))),
                         ),
                       ),
@@ -287,8 +287,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: _QuickAction(
                           icon: Icons.stars_rounded,
                           label: Strings.customerPoints,
-                          color: HossoukoColors.green,
-                          background: HossoukoColors.greenTint,
+                          color: FideliaColors.green,
+                          background: FideliaColors.greenTint,
                           onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'customer_points'), builder: (_) => const CustomerPointsScreen())),
                         ),
                       ),
@@ -299,8 +299,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     _QuickAction(
                       icon: Icons.inventory_2_rounded,
                       label: Strings.layawayTitle,
-                      color: HossoukoColors.orangeDeep,
-                      background: HossoukoColors.orangeTint,
+                      color: FideliaColors.orangeDeep,
+                      background: FideliaColors.orangeTint,
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(
                           settings: const RouteSettings(name: 'layaway'), builder: (_) => LayawayScreen(settings: _layaway!))),
                     ),
@@ -364,7 +364,7 @@ class _AccountMenu extends ConsumerWidget {
     return PopupMenuButton<String>(
       tooltip: Strings.menu,
       offset: const Offset(0, 52),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(HossoukoRadius.md)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(FideliaRadius.md)),
       onSelected: (v) {
         if (v == 'media') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'media'), builder: (_) => const MediaScreen()));
@@ -452,9 +452,9 @@ class _TodayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PatternedSurface(
-      gradient: HossoukoColors.loyaltyGradient,
-      borderRadius: BorderRadius.circular(HossoukoRadius.lg),
-      boxShadow: hossoukoShadowStrong,
+      gradient: FideliaColors.loyaltyGradient,
+      borderRadius: BorderRadius.circular(FideliaRadius.lg),
+      boxShadow: fideliaShadowStrong,
       patternOpacity: 0.07,
       padding: const EdgeInsets.fromLTRB(20, 16, 16, 16),
       child: Row(
@@ -504,7 +504,7 @@ class _QueueBanner extends StatelessWidget {
     if (pending == 0 && rejected == 0) {
       return Row(
         children: [
-          const Icon(Icons.check_circle_rounded, size: 18, color: HossoukoColors.success),
+          const Icon(Icons.check_circle_rounded, size: 18, color: FideliaColors.success),
           const SizedBox(width: 8),
           Text(Strings.allSent, style: text.bodyMedium),
         ],
@@ -512,13 +512,13 @@ class _QueueBanner extends StatelessWidget {
     }
 
     return SoftCard(
-      color: rejected > 0 ? const Color(0xFFFDE4E4) : HossoukoColors.sand,
+      color: rejected > 0 ? const Color(0xFFFDE4E4) : FideliaColors.sand,
       padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       child: Row(
         children: [
           Icon(
             rejected > 0 ? Icons.error_outline_rounded : Icons.cloud_upload_outlined,
-            color: rejected > 0 ? HossoukoColors.danger : HossoukoColors.orangeDeep,
+            color: rejected > 0 ? FideliaColors.danger : FideliaColors.orangeDeep,
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -528,7 +528,7 @@ class _QueueBanner extends StatelessWidget {
                 if (pending > 0) Text(pending == 1 ? Strings.waitingToSendOne : '$pending ${Strings.waitingToSend}', style: text.bodyMedium),
                 if (rejected > 0)
                   Text(rejected == 1 ? Strings.needsAttentionOne : '$rejected ${Strings.needsAttention}',
-                      style: text.bodySmall?.copyWith(color: HossoukoColors.danger)),
+                      style: text.bodySmall?.copyWith(color: FideliaColors.danger)),
               ],
             ),
           ),
@@ -558,10 +558,10 @@ class _QuickAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: background,
-      borderRadius: BorderRadius.circular(HossoukoRadius.md),
+      borderRadius: BorderRadius.circular(FideliaRadius.md),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(HossoukoRadius.md),
+        borderRadius: BorderRadius.circular(FideliaRadius.md),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16),
           child: Column(
@@ -597,9 +597,9 @@ class _SaleRow extends StatelessWidget {
     // merchant may be colour-blind, and a cheap screen in sunlight washes
     // hues out anyway.
     final (label, color, icon) = switch (sale.syncState) {
-      SaleSyncState.synced => (Strings.stateSynced, HossoukoColors.muted, Icons.check_rounded),
-      SaleSyncState.pending => (Strings.statePending, HossoukoColors.ink, Icons.schedule_rounded),
-      SaleSyncState.rejected => (Strings.stateRejected, HossoukoColors.danger, Icons.error_outline_rounded),
+      SaleSyncState.synced => (Strings.stateSynced, FideliaColors.muted, Icons.check_rounded),
+      SaleSyncState.pending => (Strings.statePending, FideliaColors.ink, Icons.schedule_rounded),
+      SaleSyncState.rejected => (Strings.stateRejected, FideliaColors.danger, Icons.error_outline_rounded),
     };
 
     return Padding(
@@ -625,7 +625,7 @@ class _SaleRow extends StatelessWidget {
                 // Shown so the merchant can tell the customer what they earned.
                 if ((sale.pointsAwarded ?? 0) > 0)
                   Text('+${sale.pointsAwarded} ${Strings.pointsShort}',
-                      style: text.bodySmall?.copyWith(color: HossoukoColors.green, fontWeight: FontWeight.w700)),
+                      style: text.bodySmall?.copyWith(color: FideliaColors.green, fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -650,7 +650,7 @@ class _DailyReportCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return SoftCard(
-      color: HossoukoColors.sand,
+      color: FideliaColors.sand,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

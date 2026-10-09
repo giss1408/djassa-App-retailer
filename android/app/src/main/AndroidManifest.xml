@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- The app talks to the Hossouko API and nothing else. No contacts, no
+    <!-- The app talks to the Fidelia API and nothing else. No contacts, no
          storage, no phone state: a merchant tool does not need them, and
          every permission we skip is one less consent to explain. -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -13,7 +13,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
-        android:label="Hossouko Pro"
+        android:label="Fidelia Pro"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:networkSecurityConfig="@xml/network_security_config"

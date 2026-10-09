@@ -197,7 +197,7 @@ class _NewDealScreenState extends ConsumerState<NewDealScreen> {
               const SizedBox(height: 24),
               Row(
                 children: [
-                  const Icon(Icons.visibility_outlined, size: 16, color: HossoukoColors.muted),
+                  const Icon(Icons.visibility_outlined, size: 16, color: FideliaColors.muted),
                   const SizedBox(width: 6),
                   // Flexible: at labelMedium's weight-700 15sp (the merchant
                   // theme's floor, wider than the customer app's 13sp), this
@@ -253,14 +253,14 @@ class _Preview extends StatelessWidget {
         child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: HossoukoColors.surface,
-          border: Border.all(color: HossoukoColors.orangeTint, width: 1.5),
-          borderRadius: BorderRadius.circular(HossoukoRadius.lg),
+          color: FideliaColors.surface,
+          border: Border.all(color: FideliaColors.orangeTint, width: 1.5),
+          borderRadius: BorderRadius.circular(FideliaRadius.lg),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(offer.isEmpty ? '...' : offer, style: serifStyle(30, color: HossoukoColors.orangeDeep)),
+            Text(offer.isEmpty ? '...' : offer, style: serifStyle(30, color: FideliaColors.orangeDeep)),
             const SizedBox(height: 4),
             Text(draft.title.trim().isEmpty ? Strings.dealTitleHint : draft.title.trim(), style: text.titleMedium),
             if (draft.description != null && draft.description!.trim().isNotEmpty) ...[

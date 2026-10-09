@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:hossouko_merchant/core/data/sale_dao.dart';
-import 'package:hossouko_merchant/core/data/sale_repository.dart';
-import 'package:hossouko_merchant/core/data/sync_service.dart';
-import 'package:hossouko_merchant/core/model/money.dart';
-import 'package:hossouko_merchant/core/model/sale.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/data/sale_dao.dart';
+import 'package:fidelia_merchant/core/data/sale_repository.dart';
+import 'package:fidelia_merchant/core/data/sync_service.dart';
+import 'package:fidelia_merchant/core/model/money.dart';
+import 'package:fidelia_merchant/core/model/sale.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
@@ -25,21 +25,21 @@ Future<void> _waitUntilDue(SaleDao dao) async {
 }
 
 void main() {
-  late FakeHossoukoServer server;
+  late FakeFideliaServer server;
   late SaleDao dao;
   late SyncService sync;
   late SaleRepository repo;
   late Future<void> Function() closeDb;
 
   setUp(() async {
-    server = FakeHossoukoServer();
+    server = FakeFideliaServer();
     final db = await openTestDatabase();
     closeDb = db.close;
     dao = SaleDao(db.db);
 
     final client = ApiClient(
       inner: server.client(),
-      tokenProvider: () async => FakeHossoukoServer.validJwt(),
+      tokenProvider: () async => FakeFideliaServer.validJwt(),
       baseUrl: 'https://api.test.invalid',
     );
     sync = SyncService(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:hossouko_merchant/core/net/api_client.dart';
-import 'package:hossouko_merchant/core/wave_api.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/wave_api.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -18,7 +18,7 @@ void main() {
           sent.add(request);
           return http.Response(jsonEncode(reply), 200, headers: {'content-type': 'application/json'});
         }),
-        tokenProvider: () async => FakeHossoukoServer.validJwt(),
+        tokenProvider: () async => FakeFideliaServer.validJwt(),
         baseUrl: 'https://api.test.invalid',
       ));
 

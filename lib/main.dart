@@ -71,24 +71,24 @@ class _AppHostState extends State<AppHost> {
       child: UncontrolledProviderScope(
         key: ObjectKey(demo ?? widget.container),
         container: demo ?? widget.container,
-        child: HossoukoApp(demo: demo != null),
+        child: FideliaApp(demo: demo != null),
       ),
     );
   }
 }
 
-class HossoukoApp extends ConsumerWidget {
-  const HossoukoApp({super.key, this.demo = false});
+class FideliaApp extends ConsumerWidget {
+  const FideliaApp({super.key, this.demo = false});
 
   final bool demo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'Hossouko Pro',
+      title: 'Fidelia Pro',
       debugShowCheckedModeBanner: false,
       navigatorObservers: [ref.read(usageTrackerProvider).navigatorObserver],
-      theme: hossoukoTheme(),
+      theme: fideliaTheme(),
       builder: demo ? (context, child) => DemoFrame(child: child!) : null,
       home: const _Root(),
     );
@@ -157,7 +157,7 @@ class _Splash extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: HossoukoColors.orangeDeep,
+      backgroundColor: FideliaColors.orangeDeep,
       body: Center(
         child: Text('d', style: serifStyle(64, color: Colors.white, height: 0.9)),
       ),
@@ -187,17 +187,17 @@ class _StartupFailure extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SoftCard(
-                color: HossoukoColors.sand,
+                color: FideliaColors.sand,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.error_outline_rounded, color: HossoukoColors.danger),
+                    const Icon(Icons.error_outline_rounded, color: FideliaColors.danger),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hossouko Pro', style: text.headlineSmall),
+                          Text('Fidelia Pro', style: text.headlineSmall),
                           const SizedBox(height: 8),
                           Text(
                             "Le telephone n'a pas pu ouvrir la base locale. "

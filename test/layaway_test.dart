@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:hossouko_merchant/core/layaway_api.dart';
-import 'package:hossouko_merchant/core/net/api_client.dart';
-import 'package:hossouko_merchant/core/providers.dart';
-import 'package:hossouko_merchant/features/layaway_screen.dart';
-import 'package:hossouko_merchant/l10n/strings.dart';
-import 'package:hossouko_merchant/ui/theme.dart';
+import 'package:fidelia_merchant/core/layaway_api.dart';
+import 'package:fidelia_merchant/core/net/api_client.dart';
+import 'package:fidelia_merchant/core/providers.dart';
+import 'package:fidelia_merchant/features/layaway_screen.dart';
+import 'package:fidelia_merchant/l10n/strings.dart';
+import 'package:fidelia_merchant/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,7 +18,7 @@ const _settings = LayawaySettings(
   maxDays: 183,
   maxPrice: 1000000,
   termsVersion: 'tranches-2026-10',
-  terms: 'Vous payez {item} au prix de {price} F, avant le {due_by}. L\'argent va au commerce, pas a Hossouko.',
+  terms: 'Vous payez {item} au prix de {price} F, avant le {due_by}. L\'argent va au commerce, pas a Fidelia.',
 );
 
 Map<String, Object?> _plan({String status = 'open', int paid = 30000, List<int>? installments}) => {
@@ -79,7 +79,7 @@ Future<void> _pump(WidgetTester tester, _Server server, Widget screen) async {
   addTearDown(tester.view.reset);
   await tester.pumpWidget(ProviderScope(
     overrides: [layawayApiProvider.overrideWithValue(api)],
-    child: MaterialApp(theme: hossoukoTheme(), home: screen),
+    child: MaterialApp(theme: fideliaTheme(), home: screen),
   ));
   await tester.pumpAndSettle();
 }
