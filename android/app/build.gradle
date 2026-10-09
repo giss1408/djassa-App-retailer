@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "ci.fidelia.fidelia_merchant"
+    namespace = "com.regisse.fidelia.pro"
     // Google Play requires targetSdk 36 (Android 16) for new apps and updates
     // since 31 August 2026; Flutter 3.24's defaults are 34.
     compileSdk = 36
@@ -34,7 +34,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "ci.fidelia.fidelia_merchant"
+        applicationId = "com.regisse.fidelia.pro"
         // API 21 (Android 5.0) reaches 2014-era budget handsets, which are
         // primary devices in our markets, not edge cases.
         minSdk = 21
