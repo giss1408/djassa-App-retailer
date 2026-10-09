@@ -53,6 +53,13 @@ class Strings {
   static const signOutOthersHint = 'Telephone perdu ou vole : il perd l\'acces dans l\'heure. Les ventes de ce telephone-ci restent.';
   static const signOutOthersConfirm = 'Deconnecter tous les autres telephones ?';
   static const signOutOthersDone = 'Les autres telephones sont deconnectes.';
+  static const deleteAccount = 'Supprimer mon compte';
+  static const deleteAccountHint = 'Demande a l\'equipe Fidelia, qui s\'occupe aussi du commerce.';
+  static const deleteAccountConfirm = 'Demander la suppression de votre compte ?';
+  static const deleteAccountWarning =
+      'L\'equipe Fidelia vous contacte, regle la suite du commerce avec vous, puis supprime votre compte et votre numero sous 30 jours.';
+  static const deleteAccountAction = 'Envoyer la demande';
+  static const deleteAccountSent = 'Demande envoyee';
   static const lostNumber = 'Numero perdu ?';
   static const lostNumberTitle = 'Recuperer mon commerce';
   static const lostNumberIntro = 'Votre ancien numero ne marche plus ? Verifiez votre nouveau numero, puis dites-nous qui vous etes. Fidelia vous appelle et transfere votre commerce.';

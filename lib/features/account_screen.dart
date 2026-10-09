@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/auth/auth_repository.dart';
 import '../core/config/env.dart';
 import '../core/providers.dart';
+import '../core/net/api_exception.dart';
 import '../l10n/strings.dart';
 
 /// The account is a phone number: show it, move it, and cut off other phones.
@@ -44,6 +45,41 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// A shop's account is not deleted on the spot: its sales are the shop's
+  /// records, so the team settles the shop first (fidelia-BE app/api/account.py).
+  Future<void> _requestDeletion() async {
+    final sure = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(Strings.deleteAccountConfirm),
+        content: const Text(Strings.deleteAccountWarning),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text(Strings.cancel)),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: const Text(Strings.deleteAccountAction)),
+        ],
+      ),
+    );
+    if (sure != true || !mounted) return;
+    setState(() => _busy = true);
+    String message;
+    try {
+      final body = await ref.read(apiClientProvider).postJson('/api/account/deletion-request', body: const {});
+      message = body['message'] as String? ?? Strings.deleteAccountSent;
+    } on ApiException catch (error) {
+      message = error.message;
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text(Strings.deleteAccountSent),
+        content: Text(message),
+        actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final username = ref.watch(sessionProvider).username ?? '';
@@ -71,6 +107,14 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             subtitle: const Text(Strings.signOutOthersHint),
             enabled: !_busy,
             onTap: _signOutOthers,
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.delete_forever_outlined, color: Theme.of(context).colorScheme.error),
+            title: Text(Strings.deleteAccount, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            subtitle: const Text(Strings.deleteAccountHint),
+            enabled: !_busy,
+            onTap: _requestDeletion,
           ),
         ],
       ),
