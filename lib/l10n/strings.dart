@@ -353,6 +353,25 @@ class Strings {
   static const maxDealsHint = 'Maximum 5 bons plans en meme temps.';
   static const maxDealsReached = 'Vous avez deja 5 bons plans en cours.';
 
+  // Customers who came with a deal seen in the customer app.
+  static const dealUsesTitle = '7 derniers jours';
+  static String dealUses(int uses) => uses == 1 ? '1 client venu avec un bon plan' : '$uses clients venus avec un bon plan';
+  static String dealUsesNew(int count) => count == 1 ? 'dont 1 nouveau client' : 'dont $count nouveaux clients';
+  static const dealUsesNone =
+      'Quand un client vient avec un bon plan vu dans l\'application, '
+      'appuyez sur « Client venu » sous ce bon plan.';
+  static const customerCame = 'Client venu';
+  static String customerCameTitle(String deal) => 'Client venu avec « $deal »';
+  static const firstVisitQuestion = 'Est-ce sa premiere visite chez vous ?';
+  static const firstVisitYes = 'Oui, nouveau client';
+  static const firstVisitNo = 'Non, deja venu';
+  static const customerCameRecorded = 'Enregistre. Merci !';
+  static const newCustomerRecorded = 'Nouveau client enregistre !';
+  // The push alert announcing a deal to customers.
+  static const alertSent = 'Alerte envoyee aux clients du quartier';
+  static const alertSkippedRecent = 'Pas d\'alerte : une seule par jour';
+  static const alertFailed = 'Alerte non envoyee';
+
   // New deal
   static const dealTitle = 'Titre de l\'offre';
   static const dealTitleHint = 'Ex : Poulet braise + attieke';

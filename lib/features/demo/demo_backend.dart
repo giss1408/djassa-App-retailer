@@ -27,6 +27,8 @@ class DemoBackend extends http.BaseClient {
   final DateTime Function() _clock;
   final _deals = <Map<String, Object?>>[];
   final _points = <String, int>{};
+  // "Client venu" taps, by key: true for a new customer.
+  final _uses = <String, bool>{};
   int _nextId = 1;
 
   static const _regular = '+2250712345678';
@@ -63,6 +65,13 @@ class DemoBackend extends http.BaseClient {
     switch ((method, path)) {
       case ('GET', '/api/merchant/deals'):
         return (200, _deals);
+      case ('GET', '/api/merchant/deals/uses/summary'):
+        return (200, {
+          'days': 7,
+          'uses': _uses.length,
+          'new_customers': _uses.values.where((isNew) => isNew).length,
+          'by_deal': <Object?>[],
+        });
       case ('POST', '/api/merchant/deals'):
         final deal = {...map.cast<String, Object?>(), 'id': _nextId++, 'is_featured': false};
         _deals.insert(0, deal);
@@ -88,6 +97,11 @@ class DemoBackend extends http.BaseClient {
         return (200, {'available': false});
       case ('POST', '/api/auth/logout'):
         return (200, <String, Object?>{});
+    }
+    final use = RegExp(r'^/api/merchant/deals/(\d+)/uses$').firstMatch(path);
+    if (method == 'POST' && use != null) {
+      _uses.putIfAbsent('${map['idempotency_key']}', () => map['new_customer'] == true);
+      return (201, {'id': _uses.length, 'deal_id': int.parse(use.group(1)!), 'new_customer': map['new_customer'], 'created_at': _wire(_clock())});
     }
     final end = RegExp(r'^/api/merchant/deals/(\d+)$').firstMatch(path);
     if (method == 'DELETE' && end != null) {

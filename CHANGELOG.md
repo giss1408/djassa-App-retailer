@@ -5,6 +5,16 @@ tags (`vX.Y.Z`); each one builds signed APKs (GitHub Releases) and, from
 v0.2.0, the bundle for Google Play. The app was called **Djassa Pro** up to
 v0.1.12, briefly **Hossouko Pro**, and is **Fidelia Pro** from v0.2.0.
 
+## Unreleased
+
+- **Client venu**: under each deal, record a customer who came with it from
+  the customer app, and say whether they are new. The owner and cashiers can
+  both do it; a retry after a dropped connection counts once.
+- **This week's count** at the top of Mes bons plans: customers who came with
+  a deal, and how many were new.
+- Each deal says whether customers were alerted ("Alerte envoyée aux clients
+  du quartier", or "une seule par jour").
+
 ## v0.2.0 — 2026-10-09
 
 First version prepared for Google Play.

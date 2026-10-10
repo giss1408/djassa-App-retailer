@@ -21,6 +21,14 @@ class _DealsServer {
   var nextId = 1;
   bool offline = false;
 
+  /// "Client venu" taps the server kept, by key: true for a new customer.
+  final uses = <String, bool>{};
+  final useKeys = <String>[];
+
+  /// Keeps the next tap but loses the answer, like a connection dropping
+  /// just after the server committed.
+  bool dropNextUseAnswer = false;
+
   http.Client client() => MockClient((request) async {
         if (offline) throw http.ClientException('offline');
         final path = request.url.path;
@@ -38,6 +46,23 @@ class _DealsServer {
           };
           deals.add(deal);
           return http.Response(jsonEncode(deal), 201, headers: {'content-type': 'application/json'});
+        }
+        if (request.method == 'GET' && path == '/api/merchant/deals/uses/summary') {
+          final summary = {'days': 7, 'uses': uses.length, 'new_customers': uses.values.where((n) => n).length, 'by_deal': []};
+          return http.Response(jsonEncode(summary), 200, headers: {'content-type': 'application/json'});
+        }
+        final use = RegExp(r'^/api/merchant/deals/(\d+)/uses$').firstMatch(path);
+        if (request.method == 'POST' && use != null) {
+          final body = jsonDecode(request.body) as Map<String, Object?>;
+          final key = body['idempotency_key']! as String;
+          useKeys.add(key);
+          uses.putIfAbsent(key, () => body['new_customer']! as bool);
+          if (dropNextUseAnswer) {
+            dropNextUseAnswer = false;
+            throw http.ClientException('connection dropped');
+          }
+          final out = {'id': uses.length, 'deal_id': int.parse(use.group(1)!), 'new_customer': uses[key], 'created_at': '2026-10-10T10:00:00'};
+          return http.Response(jsonEncode(out), 201, headers: {'content-type': 'application/json'});
         }
         final end = RegExp(r'^/api/merchant/deals/(\d+)$').firstMatch(path);
         if (request.method == 'DELETE' && end != null) {
@@ -162,5 +187,80 @@ void main() {
     await tester.tap(find.text(Strings.retry));
     await tester.pumpAndSettle();
     expect(find.text(Strings.noDeals), findsOneWidget);
+  });
+
+  group('Client venu', () {
+    Map<String, Object?> garba({String? alert}) =>
+        {'id': 7, 'title': 'Garba a 1000 F', 'price': 1000, 'ends_at': '2026-12-01T00:00:00', 'alert_status': alert};
+
+    testWidgets('records a new customer and updates the week count', (tester) async {
+      final server = _DealsServer()..deals.add(garba());
+      await _pump(tester, server, const DealsScreen());
+      expect(find.text(Strings.dealUsesNone), findsOneWidget);
+
+      await tester.tap(find.text(Strings.customerCame));
+      await tester.pumpAndSettle();
+      expect(find.text(Strings.firstVisitQuestion), findsOneWidget);
+      await tester.tap(find.text(Strings.firstVisitYes));
+      await tester.pumpAndSettle();
+
+      expect(server.uses.values, [true]);
+      expect(find.text(Strings.newCustomerRecorded), findsOneWidget);
+      expect(find.text(Strings.dealUses(1)), findsOneWidget);
+      expect(find.text(Strings.dealUsesNew(1)), findsOneWidget);
+    });
+
+    testWidgets('closing the question records nothing', (tester) async {
+      final server = _DealsServer()..deals.add(garba());
+      await _pump(tester, server, const DealsScreen());
+
+      await tester.tap(find.text(Strings.customerCame));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(20, 20)); // outside the sheet
+      await tester.pumpAndSettle();
+
+      expect(server.useKeys, isEmpty);
+    });
+
+    testWidgets('a retry after a lost answer reuses the key, so the visit counts once', (tester) async {
+      final server = _DealsServer()
+        ..deals.add(garba())
+        ..dropNextUseAnswer = true;
+      await _pump(tester, server, const DealsScreen());
+
+      for (var attempt = 0; attempt < 2; attempt++) {
+        await tester.tap(find.text(Strings.customerCame));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(Strings.firstVisitNo));
+        await tester.pumpAndSettle();
+      }
+
+      expect(server.useKeys, hasLength(2));
+      expect(server.useKeys.toSet(), hasLength(1), reason: 'same key both times');
+      expect(server.uses, hasLength(1));
+      expect(find.text(Strings.dealUses(1)), findsOneWidget);
+    });
+
+    testWidgets('a cashier records customers too', (tester) async {
+      final server = _DealsServer()..deals.add(garba());
+      await _pump(tester, server, const DealsScreen(readOnly: true));
+
+      await tester.tap(find.text(Strings.customerCame));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(Strings.firstVisitNo));
+      await tester.pumpAndSettle();
+
+      expect(server.uses.values, [false]);
+    });
+
+    testWidgets('says whether customers were alerted', (tester) async {
+      final server = _DealsServer()
+        ..deals.add(garba(alert: 'sent'))
+        ..deals.add({...garba(alert: 'skipped_recent'), 'id': 8, 'title': 'Alloco offert'});
+      await _pump(tester, server, const DealsScreen());
+
+      expect(find.text(Strings.alertSent), findsOneWidget);
+      expect(find.text(Strings.alertSkippedRecent), findsOneWidget);
+    });
   });
 }

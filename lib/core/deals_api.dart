@@ -17,4 +17,13 @@ class DealsApi {
 
   /// Ends a deal now. Customers stop seeing it immediately.
   Future<void> end(int id) => _client.delete('/api/merchant/deals/$id');
+
+  /// A customer came to the counter with this deal. [key] is made once per
+  /// tap, so retrying after a dropped connection records one visit, not two.
+  Future<void> recordUse(int dealId, {required bool newCustomer, required String key}) =>
+      _client.postJson('/api/merchant/deals/$dealId/uses', body: {'idempotency_key': key, 'new_customer': newCustomer});
+
+  /// Customers who came with a deal over the last 7 days, and how many were new.
+  Future<DealUseSummary> useSummary() async =>
+      DealUseSummary.fromJson(await _client.getJson('/api/merchant/deals/uses/summary'));
 }

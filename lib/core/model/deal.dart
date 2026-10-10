@@ -12,6 +12,7 @@ class Deal {
     this.price,
     this.originalPrice,
     this.ribbon = DealRibbon.bonPlan,
+    this.alertStatus,
   });
 
   factory Deal.fromJson(Map<String, Object?> json) => Deal(
@@ -24,6 +25,7 @@ class Deal {
         ribbon: DealRibbon.fromWire(json['ribbon'] as String?),
         endsAt: _parseUtc(json['ends_at'] as String),
         isFeatured: json['is_featured'] as bool? ?? false,
+        alertStatus: json['alert_status'] as String?,
       );
 
   final int id;
@@ -41,6 +43,27 @@ class Deal {
 
   /// Promoted by Fidelia (paid placement). The merchant cannot set this.
   final bool isFeatured;
+
+  /// What happened to the push alert announcing this deal to customers:
+  /// `sent`, `skipped_recent` (one alert per shop per day), `skipped_future`,
+  /// `skipped_sample`, `failed`, or null while it is being sent.
+  final String? alertStatus;
+}
+
+/// Customers who came to the counter with one of the shop's deals: what the
+/// customer app brought, over the last [days].
+class DealUseSummary {
+  const DealUseSummary({required this.days, required this.uses, required this.newCustomers});
+
+  factory DealUseSummary.fromJson(Map<String, Object?> json) => DealUseSummary(
+        days: json['days'] as int,
+        uses: json['uses'] as int,
+        newCustomers: json['new_customers'] as int,
+      );
+
+  final int days;
+  final int uses;
+  final int newCustomers;
 }
 
 /// What the merchant is about to publish.
