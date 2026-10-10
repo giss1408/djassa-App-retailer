@@ -14,6 +14,10 @@ v0.1.12, briefly **Hossouko Pro**, and is **Fidelia Pro** from v0.2.0.
   a deal, and how many were new.
 - Each deal says whether customers were alerted ("Alerte envoyée aux clients
   du quartier", or "une seule par jour").
+- **Network errors in French**: timeouts, no connection, secure-connection
+  failures, server unavailable, refused requests and unexpected responses now
+  show a French message saying what to do. Signing in with an empty number
+  asks for the number instead of showing "The request was refused".
 
 ## v0.2.0 — 2026-10-09
 
