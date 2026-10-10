@@ -27,6 +27,7 @@ class Strings {
   static const signInSubtitle = 'Espace marchand';
   static const signInPhoneLabel = 'Numero de telephone';
   static const signInPhoneHint = '07 12 34 56 78';
+  static const signInPhoneMissing = 'Entrez votre numero de telephone.';
   static const signInPhoneHelper = 'Votre numero de gerant ou de caissier. Code par SMS.';
   static const signInSendCode = 'Recevoir le code';
   static const signInCodeSentTo = 'Code envoye par SMS au';

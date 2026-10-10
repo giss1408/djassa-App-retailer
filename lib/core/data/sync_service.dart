@@ -162,7 +162,7 @@ class SyncService {
 
     final results = response['results'];
     if (results is! List) {
-      const error = MalformedResponseException('Sync response had no results');
+      const error = MalformedResponseException('Reponse inattendue du serveur. Reessayez.');
       await _backOffAll(batch, error.message);
       return SyncOutcome(
         remaining: await _dao.pendingCount(),
@@ -202,7 +202,7 @@ class SyncService {
           final reason = entry['error'];
           await _dao.markRejected(
             localId: sale!.localId!,
-            error: reason is String ? reason : 'The server refused this sale',
+            error: reason is String ? reason : 'Le serveur a refuse cette vente',
           );
           rejected++;
         default:

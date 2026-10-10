@@ -43,6 +43,10 @@ class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
 
   Future<void> _requestCode() async {
     if (_busy) return;
+    if (_phone.text.trim().isEmpty) {
+      setState(() => _error = Strings.signInPhoneMissing);
+      return;
+    }
     setState(() {
       _busy = true;
       _error = null;

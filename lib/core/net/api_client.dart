@@ -114,7 +114,7 @@ class ApiClient {
       authenticated: authenticated,
     );
     if (body is! List) {
-      throw const MalformedResponseException('Expected a JSON array');
+      throw const MalformedResponseException('Reponse inattendue du serveur. Reessayez.');
     }
     return body;
   }
@@ -151,7 +151,7 @@ class ApiClient {
   /// PUT a JSON body, returning a decoded JSON list.
   Future<List<Object?>> putJsonList(String path, {Object? body}) async {
     final decoded = await _send('PUT', path, jsonBody: body, authenticated: true);
-    if (decoded is! List) throw const MalformedResponseException('Expected a JSON array');
+    if (decoded is! List) throw const MalformedResponseException('Reponse inattendue du serveur. Reessayez.');
     return decoded;
   }
 
@@ -170,7 +170,7 @@ class ApiClient {
     bool isRetry = false,
   }) async {
     final token = await _tokenProvider();
-    if (token == null || token.isEmpty) throw const UnauthorizedException('Not signed in');
+    if (token == null || token.isEmpty) throw const UnauthorizedException('Connectez-vous pour continuer.');
     final request = http.MultipartRequest('POST', Uri.parse('$_baseUrl$path'))
       ..headers['Authorization'] = 'Bearer $token'
       ..headers['Accept'] = 'application/json'
@@ -183,9 +183,9 @@ class ApiClient {
     } on TimeoutException {
       throw const NetworkException('L\'envoi a pris trop de temps');
     } on SocketException {
-      throw const NetworkException('No connection to the server');
+      throw const NetworkException('Pas de connexion au serveur. Verifiez votre connexion internet.');
     } on HandshakeException {
-      throw const NetworkException('Could not establish a secure connection');
+      throw const NetworkException('Connexion securisee impossible. Verifiez la date et l\'heure du telephone.');
     } on http.ClientException catch (error) {
       throw NetworkException(error.message);
     }
@@ -198,7 +198,7 @@ class ApiClient {
 
   Map<String, Object?> _asObject(Object? body) {
     if (body is! Map<String, Object?>) {
-      throw const MalformedResponseException('Expected a JSON object');
+      throw const MalformedResponseException('Reponse inattendue du serveur. Reessayez.');
     }
     return body;
   }
@@ -225,7 +225,7 @@ class ApiClient {
     if (authenticated) {
       final token = await _tokenProvider();
       if (token == null || token.isEmpty) {
-        throw const UnauthorizedException('Not signed in');
+        throw const UnauthorizedException('Connectez-vous pour continuer.');
       }
       request.headers['Authorization'] = 'Bearer $token';
     }
@@ -246,14 +246,14 @@ class ApiClient {
       response = await http.Response.fromStream(streamed)
           .timeout(Env.requestTimeout, onTimeout: _onTimeout);
     } on TimeoutException {
-      throw const NetworkException('The request timed out');
+      throw const NetworkException('Le serveur met trop de temps a repondre. Reessayez.');
     } on SocketException {
       // No route, DNS failure, connection refused or reset.
-      throw const NetworkException('No connection to the server');
+      throw const NetworkException('Pas de connexion au serveur. Verifiez votre connexion internet.');
     } on HandshakeException {
       // A failed TLS handshake can mean interception, not just a bad cert.
       // Never downgrade or retry over cleartext in response to this.
-      throw const NetworkException('Could not establish a secure connection');
+      throw const NetworkException('Connexion securisee impossible. Verifiez la date et l\'heure du telephone.');
     } on http.ClientException catch (error) {
       throw NetworkException(error.message);
     }
@@ -311,7 +311,7 @@ class ApiClient {
     }
 
     if (status >= 500) {
-      throw ServerErrorException(status, 'The server could not be reached');
+      throw ServerErrorException(status, 'Le serveur est indisponible. Reessayez dans un instant.');
     }
 
     // 4xx: surface FastAPI's `detail` so the UI can explain the refusal,
@@ -327,7 +327,7 @@ class ApiClient {
     }
     throw ClientErrorException(
       status,
-      detail is String ? detail : 'The request was refused',
+      detail is String ? detail : 'La demande a ete refusee. Verifiez les informations saisies.',
       detail: detail,
     );
   }
@@ -339,7 +339,7 @@ class ApiClient {
     try {
       return jsonDecode(utf8.decode(response.bodyBytes));
     } on FormatException {
-      throw const MalformedResponseException('The response was not valid JSON');
+      throw const MalformedResponseException('Reponse inattendue du serveur. Reessayez.');
     }
   }
 }
