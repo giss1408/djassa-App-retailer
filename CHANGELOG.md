@@ -5,7 +5,7 @@ tags (`vX.Y.Z`); each one builds signed APKs (GitHub Releases) and, from
 v0.2.0, the bundle for Google Play. The app was called **Djassa Pro** up to
 v0.1.12, briefly **Hossouko Pro**, and is **Fidelia Pro** from v0.2.0.
 
-## Unreleased
+## v0.2.1 — 2026-10-22
 
 - **Client venu**: under each deal, record a customer who came with it from
   the customer app, and say whether they are new. The owner and cashiers can

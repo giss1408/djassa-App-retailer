@@ -1,1 +1,4 @@
 Première version sur Google Play.
+
+- Client venu : enregistrez les clients venus avec un bon plan, et le compte de la semaine.
+- Messages d’erreur réseau en français, avec quoi faire.
