@@ -5,6 +5,16 @@ tags (`vX.Y.Z`); each one builds signed APKs (GitHub Releases) and, from
 v0.2.0, the bundle for Google Play. The app was called **Djassa Pro** up to
 v0.1.12, briefly **Hossouko Pro**, and is **Fidelia Pro** from v0.2.0.
 
+## v0.2.2 — 2026-10-24
+
+- **Sign in with a password**: phone number and password replace the SMS
+  code. A first or forgotten password is asked of the team, which sends a
+  temporary one on WhatsApp; it must be changed at the next sign-in.
+- Number changes are confirmed with the password and a WhatsApp code; partner
+  requests no longer need a code.
+- Adding a cashier says the team sends their password on WhatsApp (no SMS).
+- Says so when the number is not on WhatsApp.
+
 ## v0.2.1 — 2026-10-22
 
 - **Client venu**: under each deal, record a customer who came with it from
