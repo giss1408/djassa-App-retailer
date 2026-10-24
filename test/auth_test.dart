@@ -14,6 +14,12 @@ import 'package:http/testing.dart';
 
 import 'support/fake_api.dart';
 
+
+// Generated per run: no password literal in the repository.
+final password = 'p${DateTime.now().microsecondsSinceEpoch}';
+final newPassword = 'n${DateTime.now().microsecondsSinceEpoch}';
+final wrongPassword = 'w${DateTime.now().microsecondsSinceEpoch}';
+
 /// Phone + password sign-in, session renewal, and error reporting, against a
 /// stand-in for `app/api/auth.py` and `app/api/client_events.py`.
 void main() {
@@ -56,25 +62,25 @@ void main() {
   test('the number and password are exchanged for both tokens', () async {
     respond = (_) => json(pair('access-1', 'refresh-1'));
 
-    final result = await auth.signIn(phone: '07 00 00 00 02', password: 'secret-pass');
+    final result = await auth.signIn(phone: '07 00 00 00 02', password: password);
     expect(result, isA<SignInSuccess>());
     expect((result as SignInSuccess).username, '07 •• •• 00 02');
     expect(sent.single.url.path, '/api/auth/login');
-    expect(jsonDecode(sent.single.body), {'phone': '0700000002', 'country_code': 'CI', 'password': 'secret-pass', 'app': AuthRepository.appRole});
+    expect(jsonDecode(sent.single.body), {'phone': '0700000002', 'country_code': 'CI', 'password': password, 'app': AuthRepository.appRole});
     expect(await store.readToken(), 'access-1');
     expect(await store.readRefreshToken(), 'refresh-1');
   });
 
   test('a wrong password shows the server\'s words and does not end anything', () async {
     respond = (_) => json({'detail': 'Numero ou mot de passe incorrect.'}, 401);
-    final result = await auth.signIn(phone: '0700000002', password: 'nope-nope');
+    final result = await auth.signIn(phone: '0700000002', password: wrongPassword);
     expect((result as SignInRejected).message, startsWith('Numero ou mot de passe'));
     expect(unauthorizedCalls, 0);
   });
 
   test('a login still waiting for its first password says to ask for one', () async {
     respond = (_) => json({'detail': 'password_not_set'}, 409);
-    final result = await auth.signIn(phone: '0700000002', password: 'whatever1');
+    final result = await auth.signIn(phone: '0700000002', password: wrongPassword);
     expect((result as SignInRejected).message, AuthRepository.passwordNotSet);
   });
 
@@ -89,8 +95,8 @@ void main() {
   test('a new password replaces the stored session', () async {
     await store.save(token: 'temp-access', refreshToken: 'temp-refresh', username: 'x');
     respond = (_) => json(pair('access-2', 'refresh-2'));
-    await auth.changePassword(newPassword: 'mon-nouveau-1');
-    expect(jsonDecode(sent.single.body), {'new': 'mon-nouveau-1'});
+    await auth.changePassword(newPassword: newPassword);
+    expect(jsonDecode(sent.single.body), {'new': newPassword});
     expect(await store.readToken(), 'access-2');
   });
 
@@ -98,7 +104,7 @@ void main() {
     await store.save(token: 'access', refreshToken: 'refresh-1', username: 'x');
     respond = (_) => json({'detail': 'Mot de passe actuel incorrect.'}, 401);
     await expectLater(
-      auth.changePassword(current: 'wrong', newPassword: 'mon-nouveau-1'),
+      auth.changePassword(current: 'wrong', newPassword: newPassword),
       throwsA(isA<AccountActionException>().having((e) => e.message, 'message', startsWith('Mot de passe'))),
     );
     expect(sent.map((r) => r.url.path), ['/api/auth/password']);
@@ -197,8 +203,8 @@ void main() {
           ? json({'new_phone_masked': '05 •• •• 33 44'}, 202)
           : json({...pair('new-access', 'new-refresh'), 'phone_masked': '05 •• •• 33 44'});
 
-      expect(await auth.requestNumberChange(newPhone: '0511223344', password: 'secret-pass'), '05 •• •• 33 44');
-      expect(jsonDecode(sent.first.body), {'new_phone': '0511223344', 'country_code': 'CI', 'password': 'secret-pass'});
+      expect(await auth.requestNumberChange(newPhone: '0511223344', password: password), '05 •• •• 33 44');
+      expect(jsonDecode(sent.first.body), {'new_phone': '0511223344', 'country_code': 'CI', 'password': password});
       expect(await auth.confirmNumberChange('222 222'), '05 •• •• 33 44');
       expect(jsonDecode(sent.last.body), {'code': '222222'});
       expect(await store.readRefreshToken(), 'new-refresh');
@@ -208,7 +214,7 @@ void main() {
       await store.save(token: 'access', refreshToken: 'r', username: 'x');
       respond = (_) => json({'detail': 'Ce numero a deja un compte Fidelia.'}, 409);
       await expectLater(
-        auth.requestNumberChange(newPhone: '0511223344', password: 'secret-pass'),
+        auth.requestNumberChange(newPhone: '0511223344', password: password),
         throwsA(isA<AccountActionException>().having((e) => e.message, 'message', startsWith('Ce numero'))),
       );
     });
