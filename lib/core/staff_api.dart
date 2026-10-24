@@ -34,8 +34,8 @@ class StaffApi {
     return [for (final m in list) StaffMember.fromJson(m! as Map<String, Object?>)];
   }
 
-  /// Adds a cashier by phone number. They get an SMS and sign in to Fidelia Pro
-  /// with that number.
+  /// Adds a cashier by phone number. They sign in to Fidelia Pro with that
+  /// number and a temporary password the team sends on WhatsApp.
   Future<StaffMember> add({required String phone, String? name}) async => StaffMember.fromJson(
         await _client.postJson('/api/merchant/staff', body: {
           'phone': phone,

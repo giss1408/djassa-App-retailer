@@ -266,7 +266,7 @@ class Strings {
   static const team = 'Mon equipe';
   static const teamIntro = 'Vos caissiers enregistrent les ventes, encaissent et donnent les points, chacun sur son telephone. Wave, bons plans, photos et position restent a vous.';
   static const addCashier = 'Ajouter un caissier';
-  static const addCashierHint = 'Il recoit un SMS et se connecte a Fidelia Pro avec ce numero.';
+  static const addCashierHint = 'Il se connecte a Fidelia Pro avec ce numero. L\'equipe Fidelia lui envoie son mot de passe sur WhatsApp.';
   static const cashierPhone = 'Numero du caissier';
   static const cashierName = 'Prenom (facultatif)';
   static const cashierPhoneNeeded = 'Entrez le numero du caissier';

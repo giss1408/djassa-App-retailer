@@ -8,7 +8,7 @@ import 'demo/demo_mode.dart';
 import 'partner_request_screen.dart';
 import 'phone_sign_in_form.dart';
 
-/// Sign-in with the phone number registered for the shop and an SMS code.
+/// Sign-in with the phone number registered for the shop and a password.
 /// A number becomes a merchant account when an admin links it to a venue
 /// (`POST /api/admin/users/roles`); any other number is told to contact us.
 class SignInScreen extends StatelessWidget {
