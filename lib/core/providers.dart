@@ -109,10 +109,24 @@ final saleRepositoryProvider = Provider<SaleRepository>((ref) {
 
 /// Whether the merchant is signed in, and as whom.
 class SessionState {
-  const SessionState({required this.signedIn, this.username, this.checked = false, this.role = 'merchant'});
+  const SessionState({
+    required this.signedIn,
+    this.username,
+    this.checked = false,
+    this.role = 'merchant',
+    this.mustChangePassword = false,
+    this.numberVerified = true,
+  });
 
   final bool signedIn;
   final String? username;
+
+  /// Signed in with a temporary password the team sent: it must be replaced
+  /// before anything else.
+  final bool mustChangePassword;
+
+  /// False until the number is proven with a Fidelia admin's WhatsApp code.
+  final bool numberVerified;
 
   /// "merchant" (the shop owner) or "cashier" (staff the owner added). A
   /// cashier records sales, collects payments and serves points; money
@@ -138,30 +152,38 @@ class SessionNotifier extends Notifier<SessionState> {
   Future<void> restore() async {
     final auth = ref.read(authRepositoryProvider);
     final valid = await auth.hasValidSession();
-    state = SessionState(
-      signedIn: valid,
-      username: valid ? await auth.currentUsername() : null,
+    state = valid ? await _signedIn() : const SessionState(signedIn: false, checked: true);
+  }
+
+  /// The session as the stored token describes it.
+  Future<SessionState> _signedIn() async {
+    final token = await ref.read(tokenStoreProvider).readToken() ?? '';
+    return SessionState(
+      signedIn: true,
+      username: await ref.read(authRepositoryProvider).currentUsername(),
       checked: true,
-      role: await _role(),
+      role: token.isEmpty ? 'merchant' : jwtRole(token),
+      mustChangePassword: token.isNotEmpty && jwtMustChangePassword(token),
+      numberVerified: token.isEmpty || jwtNumberVerified(token),
     );
   }
 
-  Future<String> _role() async {
-    final token = await ref.read(tokenStoreProvider).readToken();
-    return token == null || token.isEmpty ? 'merchant' : jwtRole(token);
+  Future<SignInResult> signIn({required String phone, required String password}) async {
+    final result = await ref.read(authRepositoryProvider).signIn(phone: phone, password: password);
+    if (result is SignInSuccess) state = await _signedIn();
+    return result;
   }
 
-  Future<SignInResult> verifyCode({required String phone, required String code}) async {
-    final result = await ref.read(authRepositoryProvider).verifyCode(phone: phone, code: code);
-    if (result is SignInSuccess) {
-      state = SessionState(
-        signedIn: true,
-        username: result.username,
-        checked: true,
-        role: await _role(),
-      );
-    }
-    return result;
+  /// Throws [AccountActionException] with the server's words.
+  Future<void> changePassword({String? current, required String newPassword}) async {
+    await ref.read(authRepositoryProvider).changePassword(current: current, newPassword: newPassword);
+    state = await _signedIn();
+  }
+
+  /// Throws [AccountActionException] with the server's words.
+  Future<void> verifyNumber(String code) async {
+    await ref.read(authRepositoryProvider).verifyNumber(code);
+    state = await _signedIn();
   }
 
   Future<void> signOut() async {
@@ -171,8 +193,8 @@ class SessionNotifier extends Notifier<SessionState> {
 
 
   /// The account moved to another number; this device holds its new session.
-  void onNumberChanged(String username) {
-    state = SessionState(signedIn: true, username: username, checked: true, role: state.role);
+  Future<void> onNumberChanged() async {
+    state = await _signedIn();
   }
 
   /// Called when the server rejects our token mid-session.

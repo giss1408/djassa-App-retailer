@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,11 +8,10 @@ import '../core/providers.dart';
 import '../l10n/strings.dart';
 import 'account_screen.dart';
 
-/// Phone number, then the 6-digit code sent by SMS.
+/// Phone number and password.
 ///
-/// Two steps in one widget so "change number" and "resend" never lose what
-/// was typed. Nothing is remembered between launches: the number is the
-/// account, and a shared phone should not offer the last person's.
+/// Nothing is remembered between launches: the number is the account, and a
+/// shared phone should not offer the last person's.
 class PhoneSignInForm extends ConsumerStatefulWidget {
   const PhoneSignInForm({super.key});
 
@@ -25,68 +22,33 @@ class PhoneSignInForm extends ConsumerStatefulWidget {
 class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
   // Prefilled only in debug builds given FIDELIA_DEV_PHONE. See Env.
   final _phone = TextEditingController(text: Env.devPhone);
-  final _code = TextEditingController();
-  bool _codeStep = false;
+  final _password = TextEditingController();
+  bool _hidden = true;
   bool _busy = false;
   String? _error;
-  String? _sentTo;
-  int _resendLeft = 0;
-  Timer? _countdown;
 
   @override
   void dispose() {
-    _countdown?.cancel();
     _phone.dispose();
-    _code.dispose();
+    _password.dispose();
     super.dispose();
   }
 
-  Future<void> _requestCode() async {
+  Future<void> _signIn() async {
     if (_busy) return;
     if (_phone.text.trim().isEmpty) {
       setState(() => _error = Strings.signInPhoneMissing);
+      return;
+    }
+    if (_password.text.isEmpty) {
+      setState(() => _error = Strings.signInPasswordMissing);
       return;
     }
     setState(() {
       _busy = true;
       _error = null;
     });
-    final result = await ref.read(authRepositoryProvider).requestCode(_phone.text.trim());
-    if (!mounted) return;
-    setState(() {
-      _busy = false;
-      switch (result) {
-        case CodeSent(:final phoneMasked, :final resendIn, :final devCode):
-          _codeStep = true;
-          _sentTo = phoneMasked;
-          _code.text = (devCode != null && !Env.isRelease) ? devCode : '';
-          _startCountdown(resendIn.inSeconds);
-        case CodeRequestRefused(:final message) || CodeRequestUnavailable(:final message):
-          _error = message;
-      }
-    });
-  }
-
-  void _startCountdown(int seconds) {
-    _countdown?.cancel();
-    _resendLeft = seconds;
-    _countdown = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted || _resendLeft <= 1) {
-        timer.cancel();
-        if (mounted) setState(() => _resendLeft = 0);
-        return;
-      }
-      setState(() => _resendLeft--);
-    });
-  }
-
-  Future<void> _verify() async {
-    if (_busy || _code.text.length != 6) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    final result = await ref.read(sessionProvider.notifier).verifyCode(phone: _phone.text.trim(), code: _code.text);
+    final result = await ref.read(sessionProvider.notifier).signIn(phone: _phone.text.trim(), password: _password.text);
     if (!mounted) return;
     setState(() {
       _busy = false;
@@ -98,24 +60,12 @@ class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
     });
   }
 
-  void _changeNumber() {
-    _countdown?.cancel();
-    setState(() {
-      _codeStep = false;
-      _error = null;
-      _code.clear();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final colors = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (!_codeStep)
+    return AutofillGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           TextField(
             controller: _phone,
             enabled: !_busy,
@@ -123,69 +73,148 @@ class _PhoneSignInFormState extends ConsumerState<PhoneSignInForm> {
             autocorrect: false,
             // Never suggest a number: a market phone is often shared.
             enableSuggestions: false,
-            textInputAction: TextInputAction.done,
+            textInputAction: TextInputAction.next,
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')), LengthLimitingTextInputFormatter(20)],
-            onSubmitted: (_) => _requestCode(),
             decoration: const InputDecoration(
               labelText: Strings.signInPhoneLabel,
               hintText: Strings.signInPhoneHint,
               helperText: Strings.signInPhoneHelper,
               prefixIcon: Icon(Icons.phone_iphone_rounded),
             ),
-          )
-        else ...[
-          Text('${Strings.signInCodeSentTo} $_sentTo', style: text.bodyMedium),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _code,
-            enabled: !_busy,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            autofillHints: const [AutofillHints.oneTimeCode],
-            textInputAction: TextInputAction.done,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-            // Six digits is the whole answer; no extra tap needed.
-            onChanged: (value) {
-              if (value.length == 6) _verify();
-            },
-            onSubmitted: (_) => _verify(),
-            style: const TextStyle(fontSize: 24, letterSpacing: 8, fontWeight: FontWeight.w700),
-            decoration: const InputDecoration(labelText: Strings.signInCodeLabel, prefixIcon: Icon(Icons.sms_outlined)),
           ),
-        ],
-        if (_error != null) ...[
           const SizedBox(height: 14),
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Icon(Icons.error_outline_rounded, size: 18, color: colors.error),
-            const SizedBox(width: 8),
-            Expanded(child: Text(_error!, style: text.bodyMedium?.copyWith(color: colors.error))),
-          ]),
-        ],
-        const SizedBox(height: 24),
-        FilledButton(
-          onPressed: _busy ? null : (_codeStep ? _verify : _requestCode),
-          child: _busy
-              ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-              : Text(_codeStep ? Strings.signIn : Strings.signInSendCode),
-        ),
-        if (!_codeStep) ...[
+          TextField(
+            controller: _password,
+            enabled: !_busy,
+            obscureText: _hidden,
+            autocorrect: false,
+            enableSuggestions: false,
+            autofillHints: const [AutofillHints.password],
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _signIn(),
+            decoration: InputDecoration(
+              labelText: Strings.signInPasswordLabel,
+              prefixIcon: const Icon(Icons.lock_outline),
+              suffixIcon: IconButton(
+                tooltip: _hidden ? Strings.showPassword : Strings.hidePassword,
+                icon: Icon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                onPressed: () => setState(() => _hidden = !_hidden),
+              ),
+            ),
+          ),
+          ErrorLine(_error),
+          const SizedBox(height: 24),
+          FilledButton(
+            onPressed: _busy ? null : _signIn,
+            child: _busy
+                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                : const Text(Strings.signIn),
+          ),
           const SizedBox(height: 8),
+          TextButton(
+            onPressed: _busy
+                ? null
+                : () => Navigator.of(context).push(MaterialPageRoute(
+                      settings: const RouteSettings(name: 'ask_password'),
+                      builder: (_) => AskPasswordScreen(phone: _phone.text.trim()),
+                    )),
+            child: const Text(Strings.askPassword, textAlign: TextAlign.center),
+          ),
           TextButton(
             onPressed: _busy ? null : () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'lost_number'), builder: (_) => const LostNumberScreen())),
             child: const Text(Strings.lostNumber),
           ),
         ],
-        if (_codeStep) ...[
-          const SizedBox(height: 8),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            TextButton(onPressed: _busy ? null : _changeNumber, child: const Text(Strings.signInChangeNumber)),
-            TextButton(
-              onPressed: (_busy || _resendLeft > 0) ? null : _requestCode,
-              child: Text(_resendLeft > 0 ? '${Strings.signInResendCode} (${_resendLeft}s)' : Strings.signInResendCode),
-            ),
-          ]),
-        ],
-      ],
+      ),
+    );
+  }
+}
+
+/// A first password for a login the team created, or a forgotten one: the
+/// team sends a temporary password on WhatsApp.
+class AskPasswordScreen extends ConsumerStatefulWidget {
+  const AskPasswordScreen({super.key, this.phone = ''});
+
+  final String phone;
+
+  @override
+  ConsumerState<AskPasswordScreen> createState() => _AskPasswordScreenState();
+}
+
+class _AskPasswordScreenState extends ConsumerState<AskPasswordScreen> {
+  late final _phone = TextEditingController(text: widget.phone);
+  bool _busy = false;
+  String? _error;
+  String? _done;
+
+  @override
+  void dispose() {
+    _phone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_busy) return;
+    if (_phone.text.trim().isEmpty) {
+      setState(() => _error = Strings.signInPhoneMissing);
+      return;
+    }
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    try {
+      final message = await ref.read(authRepositoryProvider).requestPassword(_phone.text.trim());
+      if (mounted) setState(() => _done = message);
+    } on AccountActionException catch (error) {
+      if (mounted) setState(() => _error = error.message);
+    }
+    if (mounted) setState(() => _busy = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final done = _done;
+    return Scaffold(
+      appBar: AppBar(title: const Text(Strings.askPasswordTitle)),
+      body: ListView(
+        padding: const EdgeInsets.all(24),
+        children: done != null
+            ? [
+                Icon(Icons.mark_chat_read_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
+                const SizedBox(height: 16),
+                Text(Strings.requestSent, style: Theme.of(context).textTheme.titleLarge),
+                const SizedBox(height: 8),
+                Text(done),
+                const SizedBox(height: 24),
+                FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text(Strings.backToSignIn)),
+              ]
+            : [
+                const Text(Strings.askPasswordIntro),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _phone,
+                  enabled: !_busy,
+                  keyboardType: TextInputType.phone,
+                  enableSuggestions: false,
+                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')), LengthLimitingTextInputFormatter(20)],
+                  onSubmitted: (_) => _submit(),
+                  decoration: const InputDecoration(
+                    labelText: Strings.signInPhoneLabel,
+                    hintText: Strings.signInPhoneHint,
+                    prefixIcon: Icon(Icons.phone_iphone_rounded),
+                  ),
+                ),
+                ErrorLine(_error),
+                const SizedBox(height: 24),
+                FilledButton(
+                  onPressed: _busy ? null : _submit,
+                  child: _busy
+                      ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
+                      : const Text(Strings.askPasswordAction),
+                ),
+              ],
+      ),
     );
   }
 }

@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/auth/auth_repository.dart';
-import '../core/config/env.dart';
 import '../core/providers.dart';
 import '../core/net/api_exception.dart';
 import '../l10n/strings.dart';
+import 'password_screens.dart';
 
 /// The account is a phone number: show it, move it, and cut off other phones.
 class AccountScreen extends ConsumerStatefulWidget {
@@ -102,6 +102,13 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'change_number'), builder: (_) => const ChangeNumberScreen())),
           ),
           ListTile(
+            leading: const Icon(Icons.password_rounded),
+            title: const Text(Strings.changePassword),
+            subtitle: const Text(Strings.changePasswordHint),
+            enabled: !_busy,
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'change_password'), builder: (_) => const ChangePasswordScreen(forced: false))),
+          ),
+          ListTile(
             leading: const Icon(Icons.phonelink_erase_rounded),
             title: const Text(Strings.signOutOthers),
             subtitle: const Text(Strings.signOutOthersHint),
@@ -122,7 +129,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   }
 }
 
-/// New number, then a code from each SIM.
+/// Password and new number, then the code the Fidelia team sends on WhatsApp
+/// to the new number.
 class ChangeNumberScreen extends ConsumerStatefulWidget {
   const ChangeNumberScreen({super.key});
 
@@ -132,17 +140,17 @@ class ChangeNumberScreen extends ConsumerStatefulWidget {
 
 class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
   final _newPhone = TextEditingController();
-  final _oldCode = TextEditingController();
-  final _newCode = TextEditingController();
-  NumberChangeCodes? _sent;
+  final _password = TextEditingController();
+  final _code = TextEditingController();
+  String? _sentTo;
   bool _busy = false;
   String? _error;
 
   @override
   void dispose() {
     _newPhone.dispose();
-    _oldCode.dispose();
-    _newCode.dispose();
+    _password.dispose();
+    _code.dispose();
     super.dispose();
   }
 
@@ -160,25 +168,17 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
     if (mounted) setState(() => _busy = false);
   }
 
-  Future<void> _requestCodes() => _run(() async {
-        final sent = await ref.read(authRepositoryProvider).requestNumberChange(_newPhone.text.trim());
-        if (!mounted) return;
-        setState(() {
-          _sent = sent;
-          if (!Env.isRelease) {
-            _oldCode.text = sent.devOldCode ?? '';
-            _newCode.text = sent.devNewCode ?? '';
-          }
-        });
+  Future<void> _request() => _run(() async {
+        final sentTo = await ref.read(authRepositoryProvider).requestNumberChange(
+              newPhone: _newPhone.text.trim(),
+              password: _password.text,
+            );
+        if (mounted) setState(() => _sentTo = sentTo);
       });
 
   Future<void> _confirm() => _run(() async {
-        final username = await ref.read(authRepositoryProvider).confirmNumberChange(
-              newPhone: _newPhone.text.trim(),
-              oldCode: _oldCode.text,
-              newCode: _newCode.text,
-            );
-        ref.read(sessionProvider.notifier).onNumberChanged(username);
+        final username = await ref.read(authRepositoryProvider).confirmNumberChange(_code.text);
+        await ref.read(sessionProvider.notifier).onNumberChanged();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${Strings.numberChanged} $username')));
         Navigator.of(context).pop();
@@ -186,7 +186,7 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final sent = _sent;
+    final sentTo = _sentTo;
     return Scaffold(
       appBar: AppBar(title: const Text(Strings.changeNumber)),
       body: ListView(
@@ -196,7 +196,7 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
           const SizedBox(height: 20),
           TextField(
             controller: _newPhone,
-            enabled: !_busy && sent == null,
+            enabled: !_busy && sentTo == null,
             keyboardType: TextInputType.phone,
             enableSuggestions: false,
             inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')), LengthLimitingTextInputFormatter(20)],
@@ -206,19 +206,36 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
               prefixIcon: Icon(Icons.phone_iphone_rounded),
             ),
           ),
-          if (sent != null) ...[
-            const SizedBox(height: 16),
-            _CodeField(controller: _oldCode, label: '${Strings.oldNumberCode} (${sent.oldPhoneMasked})', enabled: !_busy),
+          if (sentTo == null) ...[
             const SizedBox(height: 12),
-            _CodeField(controller: _newCode, label: '${Strings.newNumberCode} (${sent.newPhoneMasked})', enabled: !_busy),
+            TextField(
+              controller: _password,
+              enabled: !_busy,
+              obscureText: true,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: const InputDecoration(labelText: Strings.currentPassword, prefixIcon: Icon(Icons.lock_outline)),
+            ),
+          ] else ...[
+            const SizedBox(height: 16),
+            TextField(
+              controller: _code,
+              enabled: !_busy,
+              autofocus: true,
+              keyboardType: TextInputType.number,
+              autofillHints: const [AutofillHints.oneTimeCode],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
+              style: const TextStyle(fontSize: 20, letterSpacing: 6, fontWeight: FontWeight.w700),
+              decoration: InputDecoration(labelText: '${Strings.newNumberCode} $sentTo', prefixIcon: const Icon(Icons.chat_outlined)),
+            ),
           ],
           ErrorLine(_error),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _busy ? null : (sent == null ? _requestCodes : _confirm),
+            onPressed: _busy ? null : (sentTo == null ? _request : _confirm),
             child: _busy
                 ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-                : Text(sent == null ? Strings.sendCodes : Strings.confirmChange),
+                : Text(sentTo == null ? Strings.sendCodes : Strings.confirmChange),
           ),
         ],
       ),
@@ -226,172 +243,25 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
   }
 }
 
-/// Old number gone: prove the new one, say who you are, wait for Fidelia.
-class LostNumberScreen extends ConsumerStatefulWidget {
+/// Old number gone: a person at Fidelia checks who the merchant is and moves
+/// the shop (fidelia-BE app/api/account.py, recovery requests).
+class LostNumberScreen extends StatelessWidget {
   const LostNumberScreen({super.key});
 
   @override
-  ConsumerState<LostNumberScreen> createState() => _LostNumberScreenState();
-}
-
-class _LostNumberScreenState extends ConsumerState<LostNumberScreen> {
-  final _newPhone = TextEditingController();
-  final _code = TextEditingController();
-  final _oldPhone = TextEditingController();
-  final _details = TextEditingController();
-  String? _sentTo;
-  String? _done;
-  bool _busy = false;
-  String? _error;
-
-  @override
-  void dispose() {
-    _newPhone.dispose();
-    _code.dispose();
-    _oldPhone.dispose();
-    _details.dispose();
-    super.dispose();
-  }
-
-  Future<void> _requestCode() async {
-    if (_busy) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    final result = await ref.read(authRepositoryProvider).requestRecoveryCode(_newPhone.text.trim());
-    if (!mounted) return;
-    setState(() {
-      _busy = false;
-      switch (result) {
-        case CodeSent(:final phoneMasked, :final devCode):
-          _sentTo = phoneMasked;
-          if (devCode != null && !Env.isRelease) _code.text = devCode;
-        case CodeRequestRefused(:final message) || CodeRequestUnavailable(:final message):
-          _error = message;
-      }
-    });
-  }
-
-  Future<void> _submit() async {
-    if (_busy) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    try {
-      final message = await ref.read(authRepositoryProvider).fileRecovery(
-            newPhone: _newPhone.text.trim(),
-            code: _code.text,
-            oldPhone: _oldPhone.text.trim(),
-            details: _details.text.trim(),
-          );
-      if (mounted) setState(() => _done = message);
-    } on AccountActionException catch (error) {
-      if (mounted) setState(() => _error = error.message);
-    }
-    if (mounted) setState(() => _busy = false);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final done = _done;
-    if (done != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text(Strings.lostNumberTitle)),
-        body: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Icon(Icons.mark_email_read_outlined, size: 48, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(height: 16),
-            Text(Strings.requestSent, style: text.titleLarge),
-            const SizedBox(height: 8),
-            Text(done),
-            const SizedBox(height: 24),
-            FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text(Strings.backToSignIn)),
-          ],
-        ),
-      );
-    }
-
-    final codeStep = _sentTo != null;
     return Scaffold(
       appBar: AppBar(title: const Text(Strings.lostNumberTitle)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          Icon(Icons.support_agent_rounded, size: 48, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(height: 16),
           const Text(Strings.lostNumberIntro),
-          const SizedBox(height: 20),
-          TextField(
-            controller: _newPhone,
-            enabled: !_busy && !codeStep,
-            keyboardType: TextInputType.phone,
-            enableSuggestions: false,
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')), LengthLimitingTextInputFormatter(20)],
-            decoration: const InputDecoration(
-              labelText: Strings.newPhone,
-              hintText: Strings.signInPhoneHint,
-              prefixIcon: Icon(Icons.phone_iphone_rounded),
-            ),
-          ),
-          if (codeStep) ...[
-            const SizedBox(height: 12),
-            _CodeField(controller: _code, label: '${Strings.signInCodeSentTo} $_sentTo', enabled: !_busy),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _oldPhone,
-              enabled: !_busy,
-              keyboardType: TextInputType.phone,
-              enableSuggestions: false,
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+ ]')), LengthLimitingTextInputFormatter(20)],
-              decoration: const InputDecoration(labelText: Strings.oldPhone, prefixIcon: Icon(Icons.phone_disabled_outlined)),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _details,
-              enabled: !_busy,
-              minLines: 3,
-              maxLines: 5,
-              maxLength: 1000,
-              decoration: const InputDecoration(
-                labelText: Strings.recoveryDetails,
-                hintText: Strings.recoveryDetailsHint,
-                alignLabelWithHint: true,
-              ),
-            ),
-          ],
-          ErrorLine(_error),
           const SizedBox(height: 24),
-          FilledButton(
-            onPressed: _busy ? null : (codeStep ? _submit : _requestCode),
-            child: _busy
-                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white))
-                : Text(codeStep ? Strings.sendRequest : Strings.continueLabel),
-          ),
+          FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text(Strings.backToSignIn)),
         ],
       ),
-    );
-  }
-}
-
-class _CodeField extends StatelessWidget {
-  const _CodeField({required this.controller, required this.label, required this.enabled});
-
-  final TextEditingController controller;
-  final String label;
-  final bool enabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: TextInputType.number,
-      autofillHints: const [AutofillHints.oneTimeCode],
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
-      style: const TextStyle(fontSize: 20, letterSpacing: 6, fontWeight: FontWeight.w700),
-      decoration: InputDecoration(labelText: label, prefixIcon: const Icon(Icons.sms_outlined)),
     );
   }
 }

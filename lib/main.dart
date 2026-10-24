@@ -9,6 +9,7 @@ import 'core/monitoring/usage_tracker.dart';
 import 'core/providers.dart';
 import 'features/demo/demo_mode.dart';
 import 'features/home_screen.dart';
+import 'features/password_screens.dart';
 import 'features/sign_in_screen.dart';
 import 'ui/theme.dart';
 import 'ui/widgets.dart';
@@ -122,9 +123,10 @@ class _SessionGate extends ConsumerWidget {
     // Until the stored token has been inspected, show the splash rather than
     // flashing the login screen at a merchant who is already signed in.
     if (!session.checked) return const _Splash();
-    return session.signedIn
-        ? const _Tracked(name: 'home', child: HomeScreen())
-        : const _Tracked(name: 'sign_in', child: SignInScreen());
+    if (!session.signedIn) return const _Tracked(name: 'sign_in', child: SignInScreen());
+    if (session.mustChangePassword) return const _Tracked(name: 'choose_password', child: ChangePasswordScreen(forced: true));
+    if (!session.numberVerified) return const _Tracked(name: 'verify_number', child: VerifyNumberScreen());
+    return const _Tracked(name: 'home', child: HomeScreen());
   }
 }
 

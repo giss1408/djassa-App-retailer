@@ -4,29 +4,6 @@ import '../net/api_client.dart';
 import '../net/api_exception.dart';
 import 'token_store.dart';
 
-/// Outcome of asking for a sign-in code.
-sealed class CodeRequestResult {
-  const CodeRequestResult();
-}
-
-class CodeSent extends CodeRequestResult {
-  const CodeSent({required this.phoneMasked, required this.resendIn, this.devCode});
-
-  /// "07 •• •• 56 78", to show where the SMS went.
-  final String phoneMasked;
-  final Duration resendIn;
-
-  /// Only from a local backend with OTP_DEV_ECHO=1; always null in production.
-  final String? devCode;
-}
-
-/// The server refused: invalid number, too many codes, wait before resending.
-/// [message] is the server's own French sentence, ready to show.
-class CodeRequestRefused extends CodeRequestResult {
-  const CodeRequestRefused(this.message);
-  final String message;
-}
-
 /// A recovery action failed; [message] is ready to show.
 class AccountActionException implements Exception {
   const AccountActionException(this.message);
@@ -34,30 +11,6 @@ class AccountActionException implements Exception {
 
   @override
   String toString() => message;
-}
-
-/// Codes sent to both numbers for a number change.
-class NumberChangeCodes {
-  const NumberChangeCodes({
-    required this.oldPhoneMasked,
-    required this.newPhoneMasked,
-    required this.resendIn,
-    this.devOldCode,
-    this.devNewCode,
-  });
-
-  final String oldPhoneMasked;
-  final String newPhoneMasked;
-  final Duration resendIn;
-
-  /// Only from a local backend with OTP_DEV_ECHO=1.
-  final String? devOldCode;
-  final String? devNewCode;
-}
-
-class CodeRequestUnavailable extends CodeRequestResult {
-  const CodeRequestUnavailable(this.message);
-  final String message;
 }
 
 /// Outcome of a sign-in attempt, as something the UI can render directly.
@@ -87,14 +40,19 @@ class SignInUnavailable extends SignInResult {
   final String message;
 }
 
-/// Sign-in with phone number + SMS code, session renewal, sign-out.
+/// Sign-in with phone number + password, session renewal, sign-out.
 ///
-/// The backend (`fidelia-BE/backend-api/app/api/auth.py`) sends a 6-digit code
-/// to the number, and exchanges it for a 60-minute access token and a 90-day
-/// single-use refresh token. Both live in [TokenStore]. An expired access
-/// token is renewed with [refresh] before or after the request that needs it
-/// (see `providers.dart`), so the session survives as long as the app is
-/// opened at least once every 90 days.
+/// The backend (`fidelia-BE/backend-api/app/api/password_auth.py`) exchanges
+/// the password for a 60-minute access token and a 90-day single-use refresh
+/// token. Both live in [TokenStore]. An expired access token is renewed with
+/// [refresh] before or after the request that needs it (see `providers.dart`),
+/// so the session survives as long as the app is opened at least once every
+/// 90 days.
+///
+/// A shop's login is created by the Fidelia team, without a password: the
+/// merchant asks for one ([requestPassword]), an admin sends a temporary one
+/// on WhatsApp, and the first session must replace it ([changePassword]).
+/// The same request covers a forgotten password.
 class AuthRepository {
   AuthRepository({required ApiClient client, required TokenStore tokenStore})
       : _client = client,
@@ -126,38 +84,21 @@ class AuthRepository {
 
   Future<String?> currentUsername() => _tokenStore.readUsername();
 
-  /// Sends a sign-in code by SMS to [phone], as the user typed it.
-  Future<CodeRequestResult> requestCode(String phone) async {
-    try {
-      final body = await _client.postJson(
-        '/api/auth/otp/request',
-        body: {'phone': phone, 'app': appRole},
-        authenticated: false,
-      );
-      return _codeSent(body, phone);
-    } on ClientErrorException catch (error) {
-      return CodeRequestRefused(_detail(error));
-    } on ServerErrorException catch (error) {
-      // 503: the SMS provider refused. The server says so in French.
-      return CodeRequestUnavailable(error.statusCode == 503 ? 'Le SMS n\'a pas pu être envoyé. Réessayez.' : 'Le serveur est indisponible');
-    } on NetworkException catch (error) {
-      return CodeRequestUnavailable(error.message);
-    } on ApiException catch (error) {
-      return CodeRequestUnavailable(error.message);
-    }
-  }
+  static const _unusable = 'La reponse du serveur est inutilisable';
 
-  /// Exchanges the SMS code for a session.
-  Future<SignInResult> verifyCode({required String phone, required String code}) async {
+  /// Exchanges the number and password for a session.
+  Future<SignInResult> signIn({required String phone, required String password}) async {
     try {
       final body = await _client.postJson(
-        '/api/auth/otp/verify',
-        body: {'phone': phone, 'code': code, 'app': appRole},
+        '/api/auth/login',
+        body: {'phone': phone.replaceAll(RegExp(r'\s+'), ''), 'country_code': 'CI', 'password': password, 'app': appRole},
         authenticated: false,
       );
-      return await _store(body) ? SignInSuccess(await currentUsername() ?? '') : const SignInUnavailable('La réponse du serveur est inutilisable');
+      return await _store(body) ? SignInSuccess(await currentUsername() ?? '') : const SignInUnavailable(_unusable);
     } on ClientErrorException catch (error) {
-      // 401 wrong/expired code, 403 not a merchant or suspended, 422 bad number.
+      // 409: a login the team created, still waiting for its first password.
+      if (error.statusCode == 409 && error.detail == 'password_not_set') return const SignInRejected(passwordNotSet);
+      // 401 wrong password, 403 not a merchant or suspended, 423 locked.
       return SignInRejected(_detail(error));
     } on ServerErrorException {
       return const SignInUnavailable('Le serveur est indisponible');
@@ -167,6 +108,44 @@ class AuthRepository {
       return SignInUnavailable(error.message);
     }
   }
+
+  static const passwordNotSet = 'Ce compte n\'a pas encore de mot de passe. Demandez-le a Fidelia.';
+
+  /// Asks the team for a temporary password, sent on WhatsApp to [phone]: the
+  /// first one for a new shop login, or a forgotten one. Returns the server's
+  /// answer, which never says whether the number has an account.
+  Future<String> requestPassword(String phone) => _action(() async {
+        final body = await _client.postJson(
+          '/api/auth/password-reset',
+          body: {'phone': phone.replaceAll(RegExp(r'\s+'), ''), 'country_code': 'CI'},
+          authenticated: false,
+        );
+        return body['message'] as String? ?? '';
+      });
+
+  /// Sets a new password. [current] is omitted right after signing in with a
+  /// temporary password. The server's new token pair replaces the stored
+  /// one, which no longer carries the `pc` claim.
+  Future<void> changePassword({String? current, required String newPassword}) => _action(() async {
+        final body = await _client.postJson(
+          '/api/auth/password',
+          body: {if (current != null) 'current': current, 'new': newPassword},
+          // A wrong current password is a 401 that must not end the session.
+          unauthorizedEndsSession: false,
+        );
+        if (!await _store(body)) throw const AccountActionException(_unusable);
+      });
+
+  /// Proves the number with the code a Fidelia admin sent on WhatsApp. The
+  /// new session carries `vf`; every other session on the account ends.
+  Future<void> verifyNumber(String code) => _action(() async {
+        final body = await _client.postJson(
+          '/api/auth/verify-number',
+          body: {'code': code.replaceAll(' ', '')},
+          unauthorizedEndsSession: false,
+        );
+        if (!await _store(body)) throw const AccountActionException(_unusable);
+      });
 
   /// Renews the access token. True when a new one is stored; false when the
   /// server refused the refresh token (the session is over). Throws
@@ -238,85 +217,37 @@ class AuthRepository {
         return revoked is int ? revoked : 0;
       });
 
-  /// Sends a code to the current number and one to [newPhone]. Both are
-  /// needed: a session alone, on a phone left unlocked, cannot move the
-  /// account.
-  Future<NumberChangeCodes> requestNumberChange(String newPhone) => _action(() async {
-        final body = await _client.postJson('/api/auth/change-number/request', body: {'new_phone': newPhone});
-        final resendIn = body['resend_in'];
-        return NumberChangeCodes(
-          oldPhoneMasked: body['old_phone_masked'] as String? ?? '',
-          newPhoneMasked: body['new_phone_masked'] as String? ?? newPhone,
-          resendIn: Duration(seconds: resendIn is int ? resendIn : 60),
-          devOldCode: body['dev_old_code'] as String?,
-          devNewCode: body['dev_new_code'] as String?,
+  /// Asks the team for a WhatsApp code on [newPhone]. The password proves
+  /// the person: a phone left unlocked must not be enough to move the shop.
+  /// Returns the masked new number.
+  Future<String> requestNumberChange({required String newPhone, required String password}) => _action(() async {
+        final body = await _client.postJson(
+          '/api/auth/change-number/request',
+          body: {'new_phone': newPhone, 'country_code': 'CI', 'password': password},
+          unauthorizedEndsSession: false,
         );
+        return body['new_phone_masked'] as String? ?? newPhone;
       });
 
-  /// Moves the account to [newPhone]. The server ends every other session and
-  /// returns a new one for this device, stored here. Returns the masked new
-  /// number to show as the account name.
-  Future<String> confirmNumberChange({
-    required String newPhone,
-    required String oldCode,
-    required String newCode,
-  }) =>
-      _action(() async {
+  /// Moves the account to the new number with the code the team sent there.
+  /// The server ends every other session and returns a new one for this
+  /// device, stored here. Returns the masked new number.
+  Future<String> confirmNumberChange(String code) => _action(() async {
         final body = await _client.postJson(
           '/api/auth/change-number/confirm',
-          body: {'new_phone': newPhone, 'old_code': oldCode, 'new_code': newCode},
+          body: {'code': code.replaceAll(' ', '')},
+          unauthorizedEndsSession: false,
         );
-        if (!await _store(body)) throw const AccountActionException('La réponse du serveur est inutilisable');
+        if (!await _store(body)) throw const AccountActionException(_unusable);
         return await currentUsername() ?? '';
-      });
-
-  /// Lost number, step 1: a code to the new number, which proves it.
-  Future<CodeRequestResult> requestRecoveryCode(String newPhone) async {
-    try {
-      final body = await _client.postJson('/api/auth/recovery/code', body: {'new_phone': newPhone}, authenticated: false);
-      return _codeSent(body, newPhone);
-    } on ClientErrorException catch (error) {
-      return CodeRequestRefused(_detail(error));
-    } on ApiException catch (error) {
-      return CodeRequestUnavailable(error.message);
-    }
-  }
-
-  /// Lost number, step 2: files the request a Fidelia admin reviews. Returns
-  /// the server's message saying what happens next.
-  Future<String> fileRecovery({
-    required String newPhone,
-    required String code,
-    required String oldPhone,
-    required String details,
-  }) =>
-      _action(() async {
-        final body = await _client.postJson(
-          '/api/auth/recovery',
-          body: {'new_phone': newPhone, 'code': code, 'old_phone': oldPhone, 'details': details},
-          authenticated: false,
-        );
-        return body['message'] as String? ?? '';
       });
 
   // --- Joining Fidelia (fidelia-BE app/api/onboarding.py) --------------------
 
-  /// A code to the phone that will become the merchant's login.
-  Future<CodeRequestResult> requestPartnerCode(String phone) async {
-    try {
-      final body = await _client.postJson('/api/partner-requests/code', body: {'phone': phone}, authenticated: false);
-      return _codeSent(body, phone);
-    } on ClientErrorException catch (error) {
-      return CodeRequestRefused(_detail(error));
-    } on ApiException catch (error) {
-      return CodeRequestUnavailable(error.message);
-    }
-  }
-
-  /// Files the request an agent follows up. Returns the server's message.
+  /// Files the request an agent follows up. The agent calls the number, so
+  /// nothing proves it here. Returns the server's message.
   Future<String> filePartnerRequest({
     required String phone,
-    required String code,
     required String contactName,
     required String shopName,
     required String category,
@@ -330,7 +261,6 @@ class AuthRepository {
           '/api/partner-requests',
           body: {
             'phone': phone,
-            'code': code,
             'contact_name': contactName,
             'shop_name': shopName,
             'category': category,
@@ -349,20 +279,11 @@ class AuthRepository {
       return await run();
     } on ClientErrorException catch (error) {
       throw AccountActionException(_detail(error));
-    } on ServerErrorException catch (error) {
-      throw AccountActionException(error.statusCode == 503 ? 'Le SMS n\'a pas pu être envoyé. Réessayez.' : 'Le serveur est indisponible');
+    } on ServerErrorException {
+      throw const AccountActionException('Le serveur est indisponible');
     } on ApiException catch (error) {
       throw AccountActionException(error.message);
     }
-  }
-
-  static CodeSent _codeSent(Map<String, Object?> body, String phone) {
-    final resendIn = body['resend_in'];
-    return CodeSent(
-      phoneMasked: body['phone_masked'] as String? ?? phone,
-      resendIn: Duration(seconds: resendIn is int ? resendIn : 60),
-      devCode: body['dev_code'] as String?,
-    );
   }
 
   static String _detail(ClientErrorException error) =>

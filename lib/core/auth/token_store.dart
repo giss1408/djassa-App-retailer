@@ -122,6 +122,16 @@ String jwtRole(String token) {
   return role is String && role.isNotEmpty ? role : 'merchant';
 }
 
+/// Whether the token carries the `pc` (password change required) claim, set
+/// while the account still uses a temporary password. Same caveat as
+/// [jwtExpiry]: it only decides what the app shows; the server enforces it.
+bool jwtMustChangePassword(String token) => _jwtClaims(token)?['pc'] == true;
+
+/// Whether the number is proven (`vf`). Until a Fidelia admin's WhatsApp code
+/// is typed in, the server answers `403 number_not_verified` to everything
+/// else. Tokens without the claim predate it and count as verified.
+bool jwtNumberVerified(String token) => _jwtClaims(token)?['vf'] != false;
+
 Map<Object?, Object?>? _jwtClaims(String token) {
   final parts = token.split('.');
   if (parts.length != 3) return null;
