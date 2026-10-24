@@ -153,6 +153,16 @@ class _VerifyNumberScreenState extends ConsumerState<VerifyNumberScreen> {
   final _code = TextEditingController();
   bool _busy = false;
   String? _error;
+  // The team marked the number « pas sur WhatsApp ».
+  bool _refused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(authRepositoryProvider).numberRefused().then((refused) {
+      if (mounted) setState(() => _refused = refused);
+    });
+  }
 
   @override
   void dispose() {
@@ -187,6 +197,16 @@ class _VerifyNumberScreenState extends ConsumerState<VerifyNumberScreen> {
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [
+          if (_refused)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(Strings.numberNotOnWhatsApp, style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer)),
+            ),
           const Text(Strings.verifyIntro),
           if (username.isNotEmpty) ...[
             const SizedBox(height: 8),

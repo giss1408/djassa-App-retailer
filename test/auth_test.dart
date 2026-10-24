@@ -121,6 +121,15 @@ void main() {
     expect(await store.readToken(), 'verified');
   });
 
+  test('a number the team turned down reads as not on WhatsApp', () async {
+    await store.save(token: 'unverified', refreshToken: 'refresh-1', username: 'x');
+    respond = (_) => json({'sub': 'tel:+2250700000002', 'role': AuthRepository.appRole, 'verified': false, 'number_refused': true});
+    expect(await auth.numberRefused(), isTrue);
+    expect(sent.single.url.path, '/api/auth/me');
+    respond = (_) => json({'detail': 'down'}, 503);
+    expect(await auth.numberRefused(), isFalse);
+  });
+
   test('a 401 renews the session once and replays the request', () async {
     await store.save(token: 'stale', refreshToken: 'refresh-1', username: 'x');
     respond = (r) {

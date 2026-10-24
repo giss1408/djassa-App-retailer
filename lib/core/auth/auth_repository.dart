@@ -136,6 +136,17 @@ class AuthRepository {
         if (!await _store(body)) throw const AccountActionException(_unusable);
       });
 
+  /// Whether the team turned the number down: it is not on WhatsApp, so no
+  /// code can reach it. False when the server cannot say.
+  Future<bool> numberRefused() async {
+    try {
+      final body = await _client.getJson('/api/auth/me');
+      return body['number_refused'] == true;
+    } on ApiException {
+      return false;
+    }
+  }
+
   /// Proves the number with the code a Fidelia admin sent on WhatsApp. The
   /// new session carries `vf`; every other session on the account ends.
   Future<void> verifyNumber(String code) => _action(() async {

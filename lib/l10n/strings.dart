@@ -60,6 +60,9 @@ class Strings {
   static const verifyCodeLabel = 'Code recu sur WhatsApp';
   static const verifyAction = 'Valider';
   static const verifyCodeMissing = 'Le code a 6 chiffres.';
+  static const numberNotOnWhatsApp =
+      'Votre numero n\'est pas sur WhatsApp : l\'equipe Fidelia ne peut pas vous envoyer le code. '
+      'Contactez l\'agent Fidelia qui a inscrit votre commerce.';
   static const signIn = 'Se connecter';
   static const signingIn = 'Connexion...';
   static const signOut = 'Se deconnecter';
