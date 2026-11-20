@@ -22,6 +22,7 @@ import 'media_screen.dart';
 import 'record_sale_screen.dart';
 import 'shop_location_screen.dart';
 import 'staff_screen.dart';
+import 'wallet_change_screen.dart';
 import 'wave_connect_screen.dart';
 
 /// What the merchant sees on opening the app.
@@ -374,6 +375,8 @@ class _AccountMenu extends ConsumerWidget {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'about_name'), builder: (_) => const AboutNameScreen()));
         } else if (v == 'wave') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'wave_connect'), builder: (_) => const WaveConnectScreen()));
+        } else if (v == 'wallet') {
+          Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'wallet_change'), builder: (_) => const WalletChangeScreen()));
         } else if (v == 'team') {
           Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'team'), builder: (_) => const StaffScreen()));
         } else if (v == 'location') {
@@ -398,6 +401,10 @@ class _AccountMenu extends ConsumerWidget {
         PopupMenuItem(
           value: 'media',
           child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.photo_library_outlined), title: Text(Strings.mediaMenu)),
+        ),
+        PopupMenuItem(
+          value: 'wallet',
+          child: ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.currency_exchange_rounded), title: Text(Strings.walletMenu)),
         ),
         PopupMenuItem(
           value: 'wave',

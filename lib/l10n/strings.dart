@@ -259,6 +259,48 @@ class Strings {
   static const mediaSendAnyway = 'Envoyer quand meme';
   static const mediaLimitReached = 'Limite atteinte : supprimez-en un d\'abord.';
 
+  // Wallet change (lib/features/wallet_change_screen.dart)
+  static const walletMenu = 'Portefeuille de paiement';
+  static const walletTitle = 'Portefeuille de paiement';
+  static const walletIntro = 'C\'est le compte mobile money qui recoit l\'argent de vos clients. Pour votre securite, un changement demande votre mot de passe, un code envoye par l\'equipe Fidelia sur WhatsApp, puis 24 heures d\'attente.';
+  static const walletCurrent = 'Portefeuille actuel';
+  static const walletNone = 'Aucun portefeuille pour le moment';
+  static const walletNoneHint = 'Ajoutez-le ici : vos clients pourront alors payer par Fidelia.';
+  static const walletCapNotice = 'Premiere semaine : vous pouvez recevoir au plus';
+  static const walletRequestTitle = 'Changer de portefeuille';
+  static const walletFirstTitle = 'Ajouter mon portefeuille';
+  static const walletProvider = 'Operateur';
+  static const walletAccount = 'Numero du portefeuille';
+  static const walletRequest = 'Demander le changement';
+  static const walletPasswordTitle = 'Confirmez avec votre mot de passe';
+  static const walletPasswordLabel = 'Mot de passe';
+  static const walletPasswordNeeded = 'Cette action demande de vous connecter avec votre mot de passe. Elle sera disponible avec la prochaine mise a jour de la connexion.';
+  static const walletPending = 'En attente du code';
+  static const walletPendingHint = 'L\'equipe Fidelia vous envoie un code a 6 chiffres sur WhatsApp. Saisissez-le ici.';
+  static const walletCodeLabel = 'Code a 6 chiffres';
+  static const walletConfirm = 'Valider le code';
+  static const walletWaiting = 'Changement confirme';
+  static const walletWaitingHint = 'Le nouveau portefeuille sera actif le';
+  static const walletStillOld = 'En attendant, votre ancien portefeuille reste utilise.';
+  static const walletFrozen = 'Changement gele';
+  static const walletFrozenHint = 'Vous avez signale que ce n\'etait pas vous. L\'equipe Fidelia va vous appeler pour verifier.';
+  static const walletNotMe = 'Ce n\'etait pas moi';
+  static const walletNotMeQuestion = 'Ce n\'etait pas vous ?';
+  static const walletNotMeHint = 'Le changement sera gele et l\'equipe Fidelia sera prevenue tout de suite. Votre ancien portefeuille ne change pas.';
+  static const walletCancel = 'Annuler la demande';
+  static const walletNewActive = 'Votre nouveau portefeuille est actif.';
+  static const walletSent = 'Demande envoyee. L\'equipe Fidelia vous ecrit sur WhatsApp.';
+  static const walletFrozenDone = 'Changement gele. L\'equipe Fidelia vous appelle.';
+  static const walletWrongCode = 'Code incorrect.';
+  static const walletCodeLocked = 'Trop d\'essais. Demandez un nouveau code a l\'equipe Fidelia.';
+  static const walletNoCode = 'Pas de code valable : l\'equipe doit vous en envoyer un.';
+  static const walletInProgress = 'Une demande est deja en cours.';
+  static const walletFrozenReview = 'Un changement gele attend la verification de l\'equipe Fidelia.';
+  static const walletSame = 'C\'est deja votre portefeuille actuel.';
+  static const walletTooMany = 'Trop de demandes aujourd\'hui. Reessayez demain.';
+  static const walletSessionEnded = 'Votre session a ete fermee. Reconnectez-vous.';
+  static const walletUnavailable = 'Service momentanement indisponible. Reessayez plus tard.';
+
   // Wave: the merchant's own Wave Business account (pilot).
   static const waveMenu = 'Connecter Wave';
 

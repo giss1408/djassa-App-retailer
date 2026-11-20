@@ -14,6 +14,7 @@ import 'layaway_api.dart';
 import 'loyalty_api.dart';
 import 'payment_api.dart';
 import 'staff_api.dart';
+import 'wallet_change_api.dart';
 import 'monitoring/usage_tracker.dart';
 import 'net/api_client.dart';
 
@@ -84,6 +85,11 @@ final waveApiProvider = Provider<WaveApi>((ref) => WaveApi(ref.watch(apiClientPr
 
 final paymentApiProvider = Provider<PaymentApi>((ref) => PaymentApi(ref.watch(apiClientProvider)));
 final staffApiProvider = Provider<StaffApi>((ref) => StaffApi(ref.watch(apiClientProvider)));
+
+final walletChangeApiProvider = Provider<WalletChangeApi>((ref) => WalletChangeApi(ref.watch(apiClientProvider)));
+
+/// How the app re-proves the password before a wallet change. Replaced when the app signs in through the auth service.
+final stepUpProvider = Provider<StepUp>((ref) => (_) async => throw const StepUpUnavailable());
 final layawayApiProvider = Provider<LayawayApi>((ref) => LayawayApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {
