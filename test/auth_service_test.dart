@@ -156,6 +156,16 @@ void main() {
     expect(fideliaSent, isEmpty);
   });
 
+  test('with a security delay the change is only scheduled: nothing renewed, the date is kept for the screen', () async {
+    await repo.signIn(phone: '0701020304', password: 'pw-secret-1');
+    final before = authSent.length;
+    authReply = (_) => json({'status': 'scheduled', 'effective_at': '2026-11-21T10:00:00Z', 'phone_masked': '+225 07 •• •• 08'});
+    expect(await repo.confirmNumberChange('123456'), '+225 07 •• •• 08');
+    expect(repo.numberChangeScheduledFor, DateTime.utc(2026, 11, 21, 10).toLocal());
+    expect(authSent.length, before + 1); // no renewal
+    expect(await repo.currentUsername(), '07 •• •• 03 04'); // still the old number
+  });
+
   test('number change refusals are explained', () async {
     await repo.signIn(phone: '0701020304', password: 'pw-secret-1');
     authReply = (_) => json({'detail': 'phone_taken'}, 409);

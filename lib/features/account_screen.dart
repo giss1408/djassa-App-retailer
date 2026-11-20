@@ -178,7 +178,20 @@ class _ChangeNumberScreenState extends ConsumerState<ChangeNumberScreen> {
       });
 
   Future<void> _confirm() => _run(() async {
-        final username = await ref.read(authRepositoryProvider).confirmNumberChange(_code.text);
+        final repo = ref.read(authRepositoryProvider);
+        final username = await repo.confirmNumberChange(_code.text);
+        final when = repo.numberChangeScheduledFor;
+        if (when != null) {
+          // Security delay: nothing changed yet, the old number still signs in.
+          if (!mounted) return;
+          String two(int n) => n.toString().padLeft(2, '0');
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            duration: const Duration(seconds: 8),
+            content: Text('${Strings.numberChangeScheduled} ${two(when.day)}/${two(when.month)} à ${two(when.hour)}h${two(when.minute)}. ${Strings.numberChangeScheduledHint}'),
+          ));
+          Navigator.of(context).pop();
+          return;
+        }
         await ref.read(sessionProvider.notifier).onNumberChanged();
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${Strings.numberChanged} $username')));

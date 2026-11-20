@@ -65,6 +65,9 @@ class AuthRepository {
 
   bool get authMode => _auth != null;
 
+  /// Set by [confirmNumberChange] in auth mode: when the change takes effect if the service applies a security delay (24 h), else null.
+  DateTime? numberChangeScheduledFor;
+
   /// The temporary password just typed to sign in, kept in memory only so the forced "choose a new password" step can send it as
   /// the current one (the auth service wants it; fidelia's own endpoint did not).
   String? _signInPassword;
@@ -358,8 +361,9 @@ class AuthRepository {
   Future<String> confirmNumberChange(String code) => _action(() async {
         final auth = _auth;
         if (auth != null) {
+          final Map<String, Object?> body;
           try {
-            await auth.postJson('/v1/me/phone/confirm', body: {'code': code.replaceAll(' ', '')}, unauthorizedEndsSession: false);
+            body = await auth.postJson('/v1/me/phone/confirm', body: {'code': code.replaceAll(' ', '')}, unauthorizedEndsSession: false);
           } on ClientErrorException catch (e) {
             throw AccountActionException(switch (e.detail) {
               'wrong_activation_code' => 'Code incorrect ou expiré.',
@@ -371,6 +375,13 @@ class AuthRepository {
               _ => e.message,
             });
           }
+          final effective = body['effective_at'];
+          if (body['status'] == 'scheduled' && effective is String) {
+            // A security delay: the old number keeps working until then, nothing to renew yet.
+            numberChangeScheduledFor = DateTime.tryParse(effective)?.toLocal();
+            return body['phone_masked'] as String? ?? '';
+          }
+          numberChangeScheduledFor = null;
           // This session stays alive on the old number's token: renew it, which carries the new number.
           if (!await refresh()) throw const AccountActionException(_unusable);
           return await currentUsername() ?? '';

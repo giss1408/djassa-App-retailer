@@ -79,6 +79,8 @@ class Strings {
   static const newNumberCode = 'Code recu sur WhatsApp au';
   static const confirmChange = 'Changer de numero';
   static const numberChanged = 'Votre compte est maintenant sur le';
+  static const numberChangeScheduled = 'Changement enregistré. Par sécurité il sera effectif le';
+  static const numberChangeScheduledHint = 'D\'ici là, votre ancien numéro reste valable et il a été prévenu.';
   static const signOutOthers = 'Deconnecter les autres telephones';
   static const signOutOthersHint = 'Telephone perdu ou vole : il perd l\'acces dans l\'heure. Les ventes de ce telephone-ci restent.';
   static const signOutOthersConfirm = 'Deconnecter tous les autres telephones ?';
