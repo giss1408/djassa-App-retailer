@@ -95,8 +95,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             subtitle: Text(username),
           ),
           const Divider(),
-          // A number change and "sign out the other phones" are fidelia's own endpoints: not at the auth service yet.
-          if (!Env.authMode) ListTile(
+          ListTile(
             leading: const Icon(Icons.swap_horiz_rounded),
             title: const Text(Strings.changeNumber),
             subtitle: const Text(Strings.changeNumberHint),

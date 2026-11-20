@@ -322,6 +322,28 @@ class AuthRepository {
   /// the person: a phone left unlocked must not be enough to move the shop.
   /// Returns the masked new number.
   Future<String> requestNumberChange({required String newPhone, required String password}) => _action(() async {
+        final auth = _auth;
+        if (auth != null) {
+          try {
+            final body = await auth.postJson(
+              '/v1/me/phone/request',
+              body: {'new_phone': newPhone.replaceAll(RegExp(r'\s+'), ''), 'current_password': password},
+              unauthorizedEndsSession: false,
+            );
+            return body['new_phone_masked'] as String? ?? newPhone;
+          } on ClientErrorException catch (e) {
+            throw AccountActionException(switch (e.detail) {
+              'invalid_credentials' => 'Mot de passe incorrect.',
+              'phone_taken' => 'Ce numéro a déjà un compte Fidelia.',
+              'same_phone' => 'C\'est déjà le numéro de ce compte.',
+              'staff_cannot_change_phone' => 'Les comptes de l\'équipe changent de numéro par un super administrateur.',
+              'login_locked' => 'Trop d\'essais. Réessayez dans 15 minutes.',
+              'rate_limited' => 'Trop de demandes aujourd\'hui. Réessayez demain.',
+              final String other => other,
+              _ => e.message,
+            });
+          }
+        }
         final body = await _client.postJson(
           '/api/auth/change-number/request',
           body: {'new_phone': newPhone, 'country_code': 'CI', 'password': password},
@@ -334,6 +356,25 @@ class AuthRepository {
   /// The server ends every other session and returns a new one for this
   /// device, stored here. Returns the masked new number.
   Future<String> confirmNumberChange(String code) => _action(() async {
+        final auth = _auth;
+        if (auth != null) {
+          try {
+            await auth.postJson('/v1/me/phone/confirm', body: {'code': code.replaceAll(' ', '')}, unauthorizedEndsSession: false);
+          } on ClientErrorException catch (e) {
+            throw AccountActionException(switch (e.detail) {
+              'wrong_activation_code' => 'Code incorrect ou expiré.',
+              'no_activation_code' => 'Aucun code en cours : refaites la demande.',
+              'activation_locked' => 'Trop d\'essais : refaites la demande.',
+              'phone_taken' => 'Ce numéro a déjà un compte Fidelia.',
+              'product_unavailable' => 'Le service est momentanément indisponible. Réessayez dans quelques minutes avec le même code.',
+              final String other => other,
+              _ => e.message,
+            });
+          }
+          // This session stays alive on the old number's token: renew it, which carries the new number.
+          if (!await refresh()) throw const AccountActionException(_unusable);
+          return await currentUsername() ?? '';
+        }
         final body = await _client.postJson(
           '/api/auth/change-number/confirm',
           body: {'code': code.replaceAll(' ', '')},

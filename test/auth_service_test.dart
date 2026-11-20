@@ -140,6 +140,30 @@ void main() {
     expect(authSent, isEmpty);
   });
 
+  test('number change: password + new number at auth, the code from the new number confirms, the session renews with the new number', () async {
+    await repo.signIn(phone: '0701020304', password: 'pw-secret-1');
+    authReply = (r) => r.url.path == '/v1/me/phone/request'
+        ? json({'new_phone_masked': '+225 07 •• •• 08', 'status': 'waiting_for_code'}, 202)
+        : r.url.path == '/v1/me/phone/confirm'
+            ? json({'phone_masked': '+225 07 •• •• 08'})
+            : json({'access_token': _access(), 'refresh_token': 'refresh-2', 'must_change_password': false, 'role': 'merchant', 'user_id': 'u'});
+    expect(await repo.requestNumberChange(newPhone: '07 05 06 07 08', password: 'pw-secret-1'), '+225 07 •• •• 08');
+    expect(jsonDecode(authSent.last.body), {'new_phone': '0705060708', 'current_password': 'pw-secret-1'});
+    await repo.confirmNumberChange('123 456');
+    expect(authSent.map((x) => x.url.path).skip(1), ['/v1/me/phone/request', '/v1/me/phone/confirm', '/v1/refresh']);
+    expect(jsonDecode(authSent[2].body), {'code': '123456'});
+    expect(await store.readRefreshToken(), 'refresh-2');
+    expect(fideliaSent, isEmpty);
+  });
+
+  test('number change refusals are explained', () async {
+    await repo.signIn(phone: '0701020304', password: 'pw-secret-1');
+    authReply = (_) => json({'detail': 'phone_taken'}, 409);
+    await expectLater(repo.requestNumberChange(newPhone: '0705060708', password: 'x'), throwsA(isA<AccountActionException>().having((x) => x.message, 'message', 'Ce numéro a déjà un compte Fidelia.')));
+    authReply = (_) => json({'detail': 'wrong_activation_code'}, 400);
+    await expectLater(repo.confirmNumberChange('000000'), throwsA(isA<AccountActionException>().having((x) => x.message, 'message', 'Code incorrect ou expiré.')));
+  });
+
   test('without an auth client the repository is exactly the legacy one', () async {
     final legacy = AuthRepository(
       client: ApiClient(inner: MockClient((r) async {
