@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/auth/auth_repository.dart';
+import '../core/config/env.dart';
 import '../core/providers.dart';
 import '../core/net/api_exception.dart';
 import '../l10n/strings.dart';
@@ -94,7 +95,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             subtitle: Text(username),
           ),
           const Divider(),
-          ListTile(
+          // A number change and "sign out the other phones" are fidelia's own endpoints: not at the auth service yet.
+          if (!Env.authMode) ListTile(
             leading: const Icon(Icons.swap_horiz_rounded),
             title: const Text(Strings.changeNumber),
             subtitle: const Text(Strings.changeNumberHint),
@@ -108,7 +110,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             enabled: !_busy,
             onTap: () => Navigator.of(context).push(MaterialPageRoute(settings: const RouteSettings(name: 'change_password'), builder: (_) => const ChangePasswordScreen(forced: false))),
           ),
-          ListTile(
+          if (!Env.authMode) ListTile(
             leading: const Icon(Icons.phonelink_erase_rounded),
             title: const Text(Strings.signOutOthers),
             subtitle: const Text(Strings.signOutOthersHint),

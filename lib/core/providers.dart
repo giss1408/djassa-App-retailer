@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'auth/auth_repository.dart';
+import 'config/env.dart';
 import 'auth/token_store.dart';
 import 'data/database.dart';
 import 'data/sale_dao.dart';
@@ -68,10 +69,19 @@ final Provider<ApiClient> apiClientProvider = Provider<ApiClient>((ref) {
   return client;
 });
 
+/// The platform auth service (SSO), or null while the build has no FIDELIA_AUTH_BASE (fidelia's own sign-in then).
+final Provider<ApiClient?> authServiceClientProvider = Provider<ApiClient?>((ref) {
+  if (!Env.authMode) return null;
+  final client = ApiClient(tokenProvider: ref.watch(freshTokenProvider), baseUrl: Env.authBase);
+  ref.onDispose(client.close);
+  return client;
+});
+
 final Provider<AuthRepository> authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(
     client: ref.watch(apiClientProvider),
     tokenStore: ref.watch(tokenStoreProvider),
+    authClient: ref.watch(authServiceClientProvider),
   );
 });
 
@@ -89,7 +99,10 @@ final staffApiProvider = Provider<StaffApi>((ref) => StaffApi(ref.watch(apiClien
 final walletChangeApiProvider = Provider<WalletChangeApi>((ref) => WalletChangeApi(ref.watch(apiClientProvider)));
 
 /// How the app re-proves the password before a wallet change. Replaced when the app signs in through the auth service.
-final stepUpProvider = Provider<StepUp>((ref) => (_) async => throw const StepUpUnavailable());
+final stepUpProvider = Provider<StepUp>((ref) {
+  if (!Env.authMode) return (_) async => throw const StepUpUnavailable();
+  return (password) => ref.read(authRepositoryProvider).stepUp(password);  // a wrong password comes back as an AccountActionException with its message
+});
 final layawayApiProvider = Provider<LayawayApi>((ref) => LayawayApi(ref.watch(apiClientProvider)));
 
 final saleDaoProvider = Provider<SaleDao>((ref) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/auth/auth_repository.dart';
 import '../core/net/api_exception.dart';
 import '../core/providers.dart';
 import '../core/wallet_change_api.dart';
@@ -65,6 +66,8 @@ class _WalletChangeScreenState extends ConsumerState<WalletChangeScreen> {
       if (mounted && done != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
     } on StepUpUnavailable {
       if (mounted) setState(() => _error = Strings.walletPasswordNeeded);
+    } on AccountActionException catch (e) {
+      if (mounted) setState(() => _error = e.message);
     } on ApiException catch (e) {
       if (mounted) setState(() => _error = walletErrorMessage(e));
     } finally {

@@ -54,9 +54,22 @@ class SignInUnavailable extends SignInResult {
 /// on WhatsApp, and the first session must replace it ([changePassword]).
 /// The same request covers a forgotten password.
 class AuthRepository {
-  AuthRepository({required ApiClient client, required TokenStore tokenStore})
+  AuthRepository({required ApiClient client, required TokenStore tokenStore, ApiClient? authClient})
       : _client = client,
-        _tokenStore = tokenStore;
+        _tokenStore = tokenStore,
+        _auth = authClient;
+
+  /// Talks to the platform auth service (SSO) when set: sign-in, renewal, sign-out, password reset and change go there instead of
+  /// fidelia's own endpoints, and the access token it issues is what fidelia's API receives. Null = fidelia's own sign-in.
+  final ApiClient? _auth;
+
+  bool get authMode => _auth != null;
+
+  /// The temporary password just typed to sign in, kept in memory only so the forced "choose a new password" step can send it as
+  /// the current one (the auth service wants it; fidelia's own endpoint did not).
+  String? _signInPassword;
+
+  static const _product = 'fidelia';
 
   /// The session this app opens.
   /// Needs the merchant role, granted by an admin with the shop's venue.
@@ -88,6 +101,7 @@ class AuthRepository {
 
   /// Exchanges the number and password for a session.
   Future<SignInResult> signIn({required String phone, required String password}) async {
+    if (_auth != null) return _authSignIn(phone, password);
     try {
       final body = await _client.postJson(
         '/api/auth/login',
@@ -115,6 +129,14 @@ class AuthRepository {
   /// first one for a new shop login, or a forgotten one. Returns the server's
   /// answer, which never says whether the number has an account.
   Future<String> requestPassword(String phone) => _action(() async {
+        if (_auth != null) {
+          final body = await _auth.postJson(
+            '/v1/password/reset-request',
+            body: {'phone': phone.replaceAll(RegExp(r'\s+'), ''), 'product': _product},
+            authenticated: false,
+          );
+          return body['message'] as String? ?? '';
+        }
         final body = await _client.postJson(
           '/api/auth/password-reset',
           body: {'phone': phone.replaceAll(RegExp(r'\s+'), ''), 'country_code': 'CI'},
@@ -127,6 +149,19 @@ class AuthRepository {
   /// temporary password. The server's new token pair replaces the stored
   /// one, which no longer carries the `pc` claim.
   Future<void> changePassword({String? current, required String newPassword}) => _action(() async {
+        if (_auth != null) {
+          final currentPassword = current ?? _signInPassword;
+          if (currentPassword == null) throw const AccountActionException('Saisissez votre mot de passe actuel.');
+          await _auth.postJson(
+            '/v1/password/change',
+            body: {'current_password': currentPassword, 'new_password': newPassword},
+            unauthorizedEndsSession: false,
+          );
+          _signInPassword = null;
+          // The service answers with nothing to store: renew, which issues a token without the "must change" mark.
+          if (!await refresh()) throw const AccountActionException(_unusable);
+          return;
+        }
         final body = await _client.postJson(
           '/api/auth/password',
           body: {if (current != null) 'current': current, 'new': newPassword},
@@ -150,6 +185,7 @@ class AuthRepository {
   /// Proves the number with the code a Fidelia admin sent on WhatsApp. The
   /// new session carries `vf`; every other session on the account ends.
   Future<void> verifyNumber(String code) => _action(() async {
+        if (_auth != null) throw const AccountActionException('Verification du numero : voir l\'equipe Fidelia.');
         final body = await _client.postJson(
           '/api/auth/verify-number',
           body: {'code': code.replaceAll(' ', '')},
@@ -174,25 +210,78 @@ class AuthRepository {
     final refreshToken = await _tokenStore.readRefreshToken();
     if (refreshToken == null || refreshToken.isEmpty) return false;
     try {
-      final body = await _client.postJson(
-        '/api/auth/refresh',
+      final body = await (_auth ?? _client).postJson(
+        _auth != null ? '/v1/refresh' : '/api/auth/refresh',
         body: {'refresh_token': refreshToken},
         authenticated: false,
       );
-      return _store(body);
+      return _store(body, username: await currentUsername());
     } on ClientErrorException {
       return false;
     }
   }
 
-  Future<bool> _store(Map<String, Object?> body) async {
+  // --- Sign-in through the platform auth service ----------------------------
+
+  Future<SignInResult> _authSignIn(String phone, String password) async {
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    try {
+      final body = await _auth!.postJson(
+        '/v1/login',
+        body: {'phone': phone.replaceAll(RegExp(r'\s+'), ''), 'password': password, 'product': _product, 'app': appRole},
+        authenticated: false,
+      );
+      final stored = await _store(body, username: maskPhone(digits));
+      if (!stored) return const SignInUnavailable(_unusable);
+      _signInPassword = body['must_change_password'] == true ? password : null;
+      return SignInSuccess(await currentUsername() ?? '');
+    } on ClientErrorException catch (error) {
+      return SignInRejected(switch (error.detail) {
+        'invalid_credentials' => 'Numero ou mot de passe incorrect.',
+        'not_activated' => 'Ce compte n\'est pas encore active. Demandez le code a Fidelia.',
+        'account_blocked' => 'Ce compte est suspendu. Contactez Fidelia.',
+        'no_access_to_app' => 'Ce numero n\'est enregistre dans aucun commerce. Contactez Fidelia, ou le gerant si vous y travaillez.',
+        'login_locked' => 'Trop d\'essais. Reessayez dans 15 minutes.',
+        'temp_password_expired' => 'Ce mot de passe temporaire a expire. Demandez-en un nouveau.',
+        'rate_limited' => 'Trop de tentatives. Reessayez dans quelques minutes.',
+        final String other => other,
+        _ => error.message,
+      });
+    } on ServerErrorException {
+      return const SignInUnavailable('Le serveur est indisponible');
+    } on NetworkException catch (error) {
+      return SignInUnavailable(error.message);
+    } on ApiException catch (error) {
+      return SignInUnavailable(error.message);
+    }
+  }
+
+  /// "07 •• •• 03 04" from the digits typed, the way the account name is shown.
+  static String maskPhone(String digits) {
+    final d = digits.length > 10 ? digits.substring(digits.length - 10) : digits;
+    return d.length < 10 ? '•• •• ••' : '${d.substring(0, 2)} •• •• ${d.substring(6, 8)} ${d.substring(8, 10)}';
+  }
+
+  /// Re-proves the password at the auth service and keeps the fresh access token it returns (same session, fresh proof):
+  /// the next sensitive call (wallet, staff, exports) carries it. Throws [AccountActionException] with a ready message.
+  Future<void> stepUp(String password) => _action(() async {
+        final auth = _auth;
+        if (auth == null) throw const AccountActionException('Connexion par mot de passe requise.');
+        final body = await auth.postJson('/v1/step-up', body: {'password': password}, unauthorizedEndsSession: false);
+        final access = body['access_token'];
+        final refresh = await _tokenStore.readRefreshToken();
+        if (access is! String || access.isEmpty || refresh == null) throw const AccountActionException(_unusable);
+        await _tokenStore.save(token: access, refreshToken: refresh, username: await currentUsername() ?? '');
+      });
+
+  Future<bool> _store(Map<String, Object?> body, {String? username}) async {
     final access = body['access_token'];
     final refresh = body['refresh_token'];
     if (access is! String || access.isEmpty || refresh is! String || refresh.isEmpty) return false;
     await _tokenStore.save(
       token: access,
       refreshToken: refresh,
-      username: body['phone_masked'] as String? ?? '',
+      username: body['phone_masked'] as String? ?? username ?? '',
     );
     return true;
   }
@@ -204,9 +293,10 @@ class AuthRepository {
   /// Queued sales are intentionally preserved — see [TokenStore.clear].
   Future<void> signOut() async {
     final refreshToken = await _tokenStore.readRefreshToken();
+    _signInPassword = null;
     if (refreshToken != null && refreshToken.isNotEmpty) {
       try {
-        await _client.postJson('/api/auth/logout', body: {'refresh_token': refreshToken}, authenticated: false);
+        await (_auth ?? _client).postJson(_auth != null ? '/v1/logout' : '/api/auth/logout', body: {'refresh_token': refreshToken}, authenticated: false);
       } on ApiException {
         // Best effort; the local wipe below is what matters on this device.
       }
